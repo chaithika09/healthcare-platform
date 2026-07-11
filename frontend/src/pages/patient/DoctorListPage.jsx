@@ -1,0 +1,193 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FiSearch, FiFilter, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
+
+const specialties = ["All", "Cardiologist", "Neurologist", "Dermatologist", "Pediatrician", "Orthopedic", "Gynecologist", "Psychiatrist", "Ophthalmologist"];
+
+const doctors = [
+  { id: 1, name: "Dr. Sarah Johnson",  specialty: "Cardiologist",   rating: 4.9, reviews: 312, experience: 12, location: "New York, NY",   fee: 150, available: true,  avatar: "SJ", tags: ["Video", "In-person"] },
+  { id: 2, name: "Dr. Michael Chen",   specialty: "Neurologist",    rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true,  avatar: "MC", tags: ["Video"] },
+  { id: 3, name: "Dr. Emily Davis",    specialty: "Dermatologist",  rating: 4.7, reviews: 189, experience: 8,  location: "Chicago, IL",    fee: 120, available: false, avatar: "ED", tags: ["In-person"] },
+  { id: 4, name: "Dr. James Wilson",   specialty: "Pediatrician",   rating: 4.9, reviews: 421, experience: 20, location: "Houston, TX",    fee: 100, available: true,  avatar: "JW", tags: ["Video", "In-person"] },
+  { id: 5, name: "Dr. Priya Sharma",   specialty: "Gynecologist",   rating: 4.8, reviews: 298, experience: 11, location: "Phoenix, AZ",    fee: 140, available: true,  avatar: "PS", tags: ["Video"] },
+  { id: 6, name: "Dr. Robert Brown",   specialty: "Orthopedic",     rating: 4.6, reviews: 167, experience: 18, location: "Philadelphia, PA",fee: 200, available: true,  avatar: "RB", tags: ["In-person"] },
+  { id: 7, name: "Dr. Lisa Martinez",  specialty: "Psychiatrist",   rating: 4.9, reviews: 356, experience: 14, location: "San Antonio, TX", fee: 160, available: false, avatar: "LM", tags: ["Video"] },
+  { id: 8, name: "Dr. David Kim",      specialty: "Ophthalmologist",rating: 4.7, reviews: 203, experience: 9,  location: "San Diego, CA",  fee: 130, available: true,  avatar: "DK", tags: ["In-person"] },
+];
+
+const gradients = [
+  "from-blue-500 to-blue-700", "from-green-500 to-green-700", "from-purple-500 to-purple-700",
+  "from-orange-500 to-orange-700", "from-pink-500 to-pink-700", "from-teal-500 to-teal-700",
+];
+
+export default function DoctorListPage() {
+  const [search, setSearch] = useState("");
+  const [selectedSpec, setSelectedSpec] = useState("All");
+  const [sortBy, setSortBy] = useState("rating");
+  const [showFilters, setShowFilters] = useState(false);
+  const [availableOnly, setAvailableOnly] = useState(false);
+
+  const filtered = doctors
+    .filter((d) => {
+      const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) ||
+        d.specialty.toLowerCase().includes(search.toLowerCase());
+      const matchSpec = selectedSpec === "All" || d.specialty === selectedSpec;
+      const matchAvail = !availableOnly || d.available;
+      return matchSearch && matchSpec && matchAvail;
+    })
+    .sort((a, b) => sortBy === "rating" ? b.rating - a.rating : a.fee - b.fee);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-gray-900">Find a Doctor</h1>
+        <p className="text-gray-500 text-sm mt-1">{filtered.length} doctors available</p>
+      </div>
+
+      {/* Search & Filter bar */}
+      <div className="flex gap-3">
+        <div className="flex-1 relative">
+          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <input
+            type="text"
+            placeholder="Search by name or specialty..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input pl-10"
+          />
+        </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`btn-outline gap-2 flex-shrink-0 ${showFilters ? "bg-primary-50" : ""}`}
+        >
+          <FiSliders size={16} /> Filters
+        </button>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="input w-auto flex-shrink-0 cursor-pointer"
+        >
+          <option value="rating">Top Rated</option>
+          <option value="fee">Lowest Fee</option>
+        </select>
+      </div>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="card p-4 space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900 text-sm">Filters</h3>
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={availableOnly}
+                onChange={(e) => setAvailableOnly(e.target.checked)}
+                className="w-4 h-4 rounded text-primary-600"
+              />
+              Available today only
+            </label>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Specialty chips */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {specialties.map((s) => (
+          <button
+            key={s}
+            onClick={() => setSelectedSpec(s)}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              selectedSpec === s
+                ? "bg-primary-500 text-white shadow-primary"
+                : "bg-white border border-gray-200 text-gray-600 hover:border-primary-300"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* Doctor cards */}
+      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        {filtered.map((doc, i) => (
+          <motion.div
+            key={doc.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="card-hover p-5"
+          >
+            <div className="flex items-start gap-4">
+              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
+                {doc.avatar}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm leading-tight">{doc.name}</h3>
+                    <p className="text-xs text-primary-600 font-medium mt-0.5">{doc.specialty}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                    doc.available ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                  }`}>
+                    {doc.available ? "Available" : "Busy"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1 mt-2">
+                  <FiStar size={12} className="text-amber-400 fill-amber-400" />
+                  <span className="text-xs font-semibold text-gray-900">{doc.rating}</span>
+                  <span className="text-xs text-gray-400">({doc.reviews} reviews)</span>
+                </div>
+
+                <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1"><FiClock size={11} /> {doc.experience}y exp</span>
+                  <span className="flex items-center gap-1"><FiMapPin size={11} /> {doc.location.split(",")[0]}</span>
+                </div>
+
+                <div className="flex gap-1.5 mt-2">
+                  {doc.tags.map((t) => (
+                    <span key={t} className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      t === "Video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
+                    }`}>
+                      {t === "Video" && <FiVideo size={9} className="inline mr-0.5" />}{t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+              <div>
+                <span className="text-lg font-bold text-gray-900">${doc.fee}</span>
+                <span className="text-xs text-gray-400 ml-1">/ session</span>
+              </div>
+              <Link
+                to={`/doctors/${doc.id}`}
+                className="btn-primary btn-sm"
+              >
+                Book Now
+              </Link>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-16">
+          <span className="text-5xl">🔍</span>
+          <p className="text-gray-500 mt-4">No doctors found matching your criteria.</p>
+          <button onClick={() => { setSearch(""); setSelectedSpec("All"); }} className="btn-outline mt-4">
+            Clear Filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
