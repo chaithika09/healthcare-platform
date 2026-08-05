@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiDownload, FiEye, FiSearch, FiCalendar, FiUser, FiPackage, FiClock } from "react-icons/fi";
+import { FiDownload, FiSearch, FiCalendar, FiPackage, FiClock } from "react-icons/fi";
 
 const prescriptions = [
   {

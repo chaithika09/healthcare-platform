@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiSearch, FiCheckCircle, FiCalendar, FiDroplet } from "react-icons/fi";
+import { FiSearch, FiCheckCircle, FiCalendar } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const tests = [
