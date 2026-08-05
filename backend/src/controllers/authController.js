@@ -19,8 +19,9 @@ exports.register = async (req, res, next) => {
     const otp       = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-    // In development, auto-verify email so users don't need real SMTP
-    const isDev = process.env.NODE_ENV !== "production";
+    // Auto-verify email in both dev and production
+    // (OTP is sent via email but not required for login)
+    const isDev = true; // Always auto-verify for better UX
 
     const user = await User.create({
       name, email, password, phone,
