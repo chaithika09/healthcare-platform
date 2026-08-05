@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import Logo from "../common/Logo";
 
 export default function AuthLayout() {
   return (
@@ -16,13 +17,7 @@ export default function AuthLayout() {
 
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <svg viewBox="0 0 48 48" className="w-8 h-8" fill="none">
-                <rect x="20" y="6" width="8" height="36" rx="4" fill="white" />
-                <rect x="6" y="20" width="36" height="8" rx="4" fill="white" />
-              </svg>
-            </div>
-            <span className="text-white font-heading font-bold text-xl">Smart Healthcare</span>
+            <Logo size={48} showText={true} textColor="white" />
           </Link>
         </div>
 
@@ -65,13 +60,7 @@ export default function AuthLayout() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-hero rounded-xl flex items-center justify-center">
-              <svg viewBox="0 0 48 48" className="w-6 h-6" fill="none">
-                <rect x="20" y="6" width="8" height="36" rx="4" fill="white" />
-                <rect x="6" y="20" width="36" height="8" rx="4" fill="white" />
-              </svg>
-            </div>
-            <span className="font-heading font-bold text-lg text-primary-600">Smart Healthcare</span>
+            <Logo size={36} showText={true} textColor="#0066CC" />
           </div>
           <Outlet />
         </div>

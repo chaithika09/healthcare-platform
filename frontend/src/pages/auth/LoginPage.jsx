@@ -7,6 +7,12 @@ import { useAuthStore } from "../../store/authStore";
 import { authAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
+const DEMOS = {
+  patient: { email: "lschaithika+patient@gmail.com", password: "Demo@1234" },
+  doctor:  { email: "lschaithika+doctor@gmail.com",  password: "Demo@1234" },
+  admin:   { email: "lschaithika+admin@gmail.com",   password: "Demo@1234" },
+};
+
 export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,7 +20,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -33,14 +39,11 @@ export default function LoginPage() {
     }
   };
 
-  // Demo login helper
-  const demoLogin = (role) => {
-    const demos = {
-      patient: { email: "patient@demo.com", password: "Demo@1234" },
-      doctor:  { email: "doctor@demo.com",  password: "Demo@1234" },
-      admin:   { email: "admin@demo.com",   password: "Demo@1234" },
-    };
-    onSubmit(demos[role]);
+  // Fill form fields only — user must click Sign In themselves
+  const fillDemo = (role) => {
+    setValue("email",    DEMOS[role].email,    { shouldValidate: true });
+    setValue("password", DEMOS[role].password, { shouldValidate: true });
+    toast(`Demo ${role} credentials filled. Click Sign In to login.`, { icon: "💡" });
   };
 
   return (
@@ -84,7 +87,10 @@ export default function LoginPage() {
           <div className="relative">
             <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
-              {...register("password", { required: "Password is required", minLength: { value: 6, message: "Min 6 characters" } })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: { value: 6, message: "Min 6 characters" },
+              })}
               type={showPass ? "text" : "password"}
               placeholder="••••••••"
               className={`input pl-10 pr-10 ${errors.password ? "input-error" : ""}`}
@@ -117,20 +123,26 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Demo accounts */}
+      {/* Demo quick fill — fills form only, does NOT auto-login */}
       <div className="mt-6">
-        <p className="text-xs text-gray-400 text-center mb-3">Quick demo access</p>
+        <p className="text-xs text-gray-400 text-center mb-3">
+          💡 Quick fill demo credentials
+        </p>
         <div className="grid grid-cols-3 gap-2">
           {["patient", "doctor", "admin"].map((role) => (
             <button
               key={role}
-              onClick={() => demoLogin(role)}
+              type="button"
+              onClick={() => fillDemo(role)}
               className="py-2 px-3 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-all capitalize"
             >
               {role}
             </button>
           ))}
         </div>
+        <p className="text-xs text-gray-400 text-center mt-2">
+          Click a role to fill credentials, then click Sign In
+        </p>
       </div>
 
       <p className="text-center text-sm text-gray-500 mt-6">

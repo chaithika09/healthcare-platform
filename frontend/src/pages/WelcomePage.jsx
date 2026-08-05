@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiArrowRight, FiShield, FiVideo, FiFileText } from "react-icons/fi";
+import Logo from "../components/common/Logo";
 
 const features = [
   { icon: FiShield,   color: "bg-blue-100 text-blue-600",   title: "Secure & Private",    desc: "HIPAA-compliant data protection" },
@@ -23,12 +24,9 @@ export default function WelcomePage() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/30"
+            className="flex justify-center mb-6"
           >
-            <svg viewBox="0 0 48 48" className="w-12 h-12" fill="none">
-              <rect x="20" y="6" width="8" height="36" rx="4" fill="white" />
-              <rect x="6" y="20" width="36" height="8" rx="4" fill="white" />
-            </svg>
+            <Logo size={80} showText={false} />
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}

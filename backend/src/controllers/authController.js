@@ -220,13 +220,23 @@ exports.forgotPassword = async (req, res, next) => {
     user.resetPasswordExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
-    const resetUrl = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
+
     // Non-blocking — don't fail if SMTP not configured
     sendPasswordResetEmail(email, resetUrl, user.name).catch((err) =>
       logger.warn(`Reset email not sent (SMTP not configured): ${err.message}`)
     );
 
-    res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+    const isDev = process.env.NODE_ENV !== "production";
+
+    logger.info(`Password reset requested for: ${email} | Reset URL: ${resetUrl}`);
+
+    res.json({
+      success: true,
+      message: "If that email exists, a reset link has been sent.",
+      // In development, return the reset link directly so it works without SMTP
+      ...(isDev && { resetUrl, devNote: "SMTP not configured — use this link directly in development" }),
+    });
   } catch (error) {
     next(error);
   }

@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useUIStore } from "../../store/uiStore";
+import { LogoIcon } from "../common/Logo";
 import toast from "react-hot-toast";
 
 const patientNav = [
@@ -100,14 +101,9 @@ export default function Sidebar() {
                 exit={{ opacity: 0, x: -10 }}
                 className="flex items-center gap-2.5"
               >
-                <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg viewBox="0 0 48 48" className="w-5 h-5" fill="none">
-                    <rect x="20" y="6" width="8" height="36" rx="4" fill="white" />
-                    <rect x="6" y="20" width="36" height="8" rx="4" fill="white" />
-                  </svg>
-                </div>
+                <LogoIcon size={32} />
                 <span className="font-heading font-bold text-sm text-primary-700 whitespace-nowrap">
-                  Smart Health
+                  SmartHealth
                 </span>
               </motion.div>
             )}
