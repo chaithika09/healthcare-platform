@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiSearch, FiCheckCircle, FiCalendar } from "react-icons/fi";
+import { FiSearch, FiCheckCircle, FiCalendar, FiActivity } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const tests = [
@@ -80,7 +80,7 @@ export default function LabTestBooking() {
                   onClick={() => toggleCart(test)}>
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                      <FiDroplet size={18} className="text-blue-600" />
+                      <FiActivity size={18} className="text-blue-600" />
                     </div>
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${inCart ? "border-primary-500 bg-primary-500" : "border-gray-300"}`}>
                       {inCart && <FiCheckCircle size={12} className="text-white" />}
