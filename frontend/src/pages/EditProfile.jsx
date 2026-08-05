@@ -10,24 +10,50 @@ export default function EditProfile() {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill ONLY with what user has already saved — nothing hardcoded
+  const existingProfile = user?.profile || {};
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      dob: "1985-01-15",
-      gender: "male",
-      bloodGroup: "O+",
-      address: "123 Main St, New York, NY",
-      bio: "",
+      name:        user?.name        || "",
+      email:       user?.email       || "",
+      phone:       user?.phone       || "",
+      dob:         existingProfile.dateOfBirth  || "",
+      gender:      existingProfile.gender       || "",
+      bloodGroup:  existingProfile.bloodGroup   || "",
+      height:      existingProfile.height       || "",
+      weight:      existingProfile.weight       || "",
+      address:     existingProfile.address      || "",
+      allergies:   existingProfile.allergies?.join(", ")  || "",
+      conditions:  existingProfile.conditions?.join(", ") || "",
+      medications: existingProfile.medications?.join(", ")|| "",
     },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 1500));
-      setUser({ ...user, ...data });
+      await new Promise((r) => setTimeout(r, 800));
+
+      // Save into auth store — profile sub-object
+      setUser({
+        ...user,
+        name:  data.name,
+        phone: data.phone,
+        profile: {
+          dateOfBirth: data.dob,
+          gender:      data.gender,
+          bloodGroup:  data.bloodGroup,
+          height:      data.height,
+          weight:      data.weight,
+          address:     data.address,
+          allergies:   data.allergies  ? data.allergies.split(",").map(s => s.trim()).filter(Boolean)  : [],
+          conditions:  data.conditions ? data.conditions.split(",").map(s => s.trim()).filter(Boolean) : [],
+          medications: data.medications? data.medications.split(",").map(s => s.trim()).filter(Boolean): [],
+        },
+      });
+
       toast.success("Profile updated successfully!");
       navigate("/profile");
     } catch {
@@ -45,7 +71,7 @@ export default function EditProfile() {
 
       <div>
         <h1 className="text-2xl font-heading font-bold text-gray-900">Edit Profile</h1>
-        <p className="text-gray-500 text-sm mt-1">Update your personal information</p>
+        <p className="text-gray-500 text-sm mt-1">Fill in your personal information</p>
       </div>
 
       {/* Avatar */}
@@ -60,26 +86,31 @@ export default function EditProfile() {
         </div>
         <div>
           <p className="font-medium text-gray-900 text-sm">Profile Photo</p>
-          <p className="text-xs text-gray-500">JPG, PNG up to 5MB</p>
+          <p className="text-xs text-gray-500">Click camera icon to change</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Basic Info */}
         <div className="card p-5 space-y-4">
           <h3 className="font-semibold text-gray-900">Basic Information</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="label">Full Name *</label>
-              <input {...register("name", { required: "Name is required" })} className={`input ${errors.name ? "input-error" : ""}`} />
+              <input
+                {...register("name", { required: "Name is required" })}
+                placeholder="Enter your full name"
+                className={`input ${errors.name ? "input-error" : ""}`}
+              />
               {errors.name && <p className="error-message">{errors.name.message}</p>}
             </div>
             <div>
-              <label className="label">Email *</label>
-              <input {...register("email", { required: true })} type="email" className="input" />
+              <label className="label">Email</label>
+              <input {...register("email")} type="email" disabled className="input opacity-60 cursor-not-allowed" />
             </div>
             <div>
-              <label className="label">Phone</label>
-              <input {...register("phone")} type="tel" className="input" />
+              <label className="label">Phone Number</label>
+              <input {...register("phone")} type="tel" placeholder="+1 555-0100" className="input" />
             </div>
             <div>
               <label className="label">Date of Birth</label>
@@ -88,29 +119,28 @@ export default function EditProfile() {
             <div>
               <label className="label">Gender</label>
               <select {...register("gender")} className="input">
+                <option value="">Select gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
                 <option value="prefer_not">Prefer not to say</option>
               </select>
             </div>
-          </div>
-          <div>
-            <label className="label">Address</label>
-            <input {...register("address")} placeholder="Your address" className="input" />
-          </div>
-          <div>
-            <label className="label">Bio (optional)</label>
-            <textarea {...register("bio")} rows={3} placeholder="Tell us about yourself..." className="input resize-none" />
+            <div className="col-span-2">
+              <label className="label">Address</label>
+              <input {...register("address")} placeholder="Your full address" className="input" />
+            </div>
           </div>
         </div>
 
+        {/* Medical Info */}
         <div className="card p-5 space-y-4">
           <h3 className="font-semibold text-gray-900">Medical Information</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Blood Group</label>
               <select {...register("bloodGroup")} className="input">
+                <option value="">Select blood group</option>
                 {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((bg) => (
                   <option key={bg} value={bg}>{bg}</option>
                 ))}
@@ -118,20 +148,24 @@ export default function EditProfile() {
             </div>
             <div>
               <label className="label">Height (cm)</label>
-              <input {...register("height")} type="number" placeholder="178" className="input" />
+              <input {...register("height")} type="number" placeholder="e.g. 170" className="input" />
             </div>
             <div>
               <label className="label">Weight (kg)</label>
-              <input {...register("weight")} type="number" placeholder="70" className="input" />
+              <input {...register("weight")} type="number" placeholder="e.g. 65" className="input" />
             </div>
           </div>
           <div>
-            <label className="label">Allergies (comma separated)</label>
-            <input {...register("allergies")} placeholder="e.g., Penicillin, Sulfa drugs" className="input" />
+            <label className="label">Allergies <span className="text-gray-400 font-normal">(comma separated)</span></label>
+            <input {...register("allergies")} placeholder="e.g. Penicillin, Pollen, Dust" className="input" />
           </div>
           <div>
-            <label className="label">Chronic Conditions</label>
-            <input {...register("conditions")} placeholder="e.g., Hypertension, Diabetes" className="input" />
+            <label className="label">Chronic Conditions <span className="text-gray-400 font-normal">(comma separated)</span></label>
+            <input {...register("conditions")} placeholder="e.g. Diabetes, Hypertension" className="input" />
+          </div>
+          <div>
+            <label className="label">Current Medications <span className="text-gray-400 font-normal">(comma separated)</span></label>
+            <input {...register("medications")} placeholder="e.g. Metformin 500mg, Amlodipine 5mg" className="input" />
           </div>
         </div>
 
