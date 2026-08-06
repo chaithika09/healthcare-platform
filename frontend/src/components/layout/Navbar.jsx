@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,11 +12,26 @@ import toast from "react-hot-toast";
 export default function Navbar() {
   const { user, logout } = useAuthStore();
   const { darkMode, toggleDarkMode, toggleSidebar } = useUIStore();
+  const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifCount] = useState(3);
+  const [notifCount, setNotifCount] = useState(0);
+
+  // Fetch real unread count from API
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const { notificationAPI } = await import("../../services/api");
+        const res = await notificationAPI.getAll();
+        setNotifCount(res.data.data.unreadCount || 0);
+      } catch {
+        setNotifCount(0);
+      }
+    };
+    if (isAuthenticated) fetchCount();
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logout();

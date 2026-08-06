@@ -1,16 +1,24 @@
 /* ============================================================
    Smart Healthcare Portal — Global Styles
-   Tailwind CSS directives + custom CSS variables & utilities
    ============================================================ */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ------------------------------------------------------------
-   CSS Custom Properties (Design Tokens)
-   ------------------------------------------------------------ */
+/* ── Light mode tokens ──────────────────────────────────────── */
 :root {
+  --bg:          #F8FAFC;
+  --bg-card:     #FFFFFF;
+  --bg-muted:    #F1F5F9;
+  --text:        #0F172A;
+  --text-muted:  #475569;
+  --text-faint:  #94A3B8;
+  --border:      #E2E8F0;
+  --sidebar-bg:  #FFFFFF;
+  --nav-hover:   #EFF6FF;
+  --input-bg:    #FFFFFF;
+
   /* Primary palette — Blues */
   --color-primary-50:  #E6F0FA;
   --color-primary-100: #CCE0F5;
@@ -26,7 +34,7 @@
   /* Secondary palette — Greens */
   --color-secondary-50:  #E6F7F2;
   --color-secondary-100: #CCEFE5;
-  --color-secondary-200: #99DFCB;
+  --color-secondary-200: #99DFCB;                 
   --color-secondary-300: #66CFB1;
   --color-secondary-400: #33BF97;
   --color-secondary-500: #00A86B;
@@ -447,4 +455,121 @@
     box-shadow: none;
     border: 1px solid #e2e8f0;
   }
+}
+
+/* ── Dark mode tokens ───────────────────────────────────────── */
+.dark {
+  --bg:         #0F172A;
+  --bg-card:    #1E293B;
+  --bg-muted:   #1E293B;
+  --text:       #F1F5F9;
+  --text-muted: #94A3B8;
+  --text-faint: #64748B;
+  --border:     #334155;
+  --sidebar-bg: #1E293B;
+  --nav-hover:  #0F172A;
+  --input-bg:   #1E293B;
+}
+
+/* ── Apply dark mode globally ───────────────────────────────── */
+.dark body,
+.dark #root {
+  background-color: #0F172A;
+  color: #F1F5F9;
+}
+
+.dark .card,
+.dark .card-hover,
+.dark .modal-content {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark .bg-white {
+  background-color: #1E293B !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #0F172A !important;
+}
+
+.dark .bg-background,
+.dark .bg-\[#F8FAFC\] {
+  background-color: #0F172A !important;
+}
+
+.dark .text-gray-900 { color: #F1F5F9 !important; }
+.dark .text-gray-800 { color: #E2E8F0 !important; }
+.dark .text-gray-700 { color: #CBD5E1 !important; }
+.dark .text-gray-600 { color: #94A3B8 !important; }
+.dark .text-gray-500 { color: #64748B !important; }
+.dark .text-gray-400 { color: #475569 !important; }
+
+.dark .border-gray-100,
+.dark .border-gray-200 {
+  border-color: #334155 !important;
+}
+
+.dark .divide-gray-50 > * + * {
+  border-color: #334155 !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #334155 !important;
+}
+
+.dark .input {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark .input::placeholder { color: #475569 !important; }
+
+.dark select option {
+  background-color: #1E293B;
+  color: #F1F5F9;
+}
+
+.dark header,
+.dark .sticky {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark aside {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark .nav-item {
+  color: #94A3B8 !important;
+}
+
+.dark .nav-item:hover {
+  background-color: #0F172A !important;
+  color: #60A5FA !important;
+}
+
+.dark .table thead {
+  background-color: #0F172A !important;
+}
+
+.dark .table td {
+  border-color: #334155 !important;
+}
+
+.dark .table tbody tr:hover {
+  background-color: #334155 !important;
+}
+
+.dark .skeleton {
+  background-color: #334155 !important;
+}
+
+/* Smooth dark mode transition */
+body, .card, header, aside, .input, .bg-white {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

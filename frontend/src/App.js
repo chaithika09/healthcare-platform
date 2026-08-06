@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
+import { useUIStore } from "./store/uiStore";
 import LoadingScreen from "./components/common/LoadingScreen";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
@@ -65,6 +66,20 @@ const NotFoundPage      = lazy(() => import("./pages/NotFoundPage"));
 
 export default function App() {
   const { user, isAuthenticated } = useAuthStore();
+  const { darkMode } = useUIStore();
+
+  // Apply dark class to <html> element
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      document.body.style.backgroundColor = "#0F172A";
+      document.body.style.color = "#F1F5F9";
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.body.style.backgroundColor = "#F8FAFC";
+      document.body.style.color = "#0F172A";
+    }
+  }, [darkMode]);
 
   const getDashboardPath = () => {
     if (!user) return "/login";
