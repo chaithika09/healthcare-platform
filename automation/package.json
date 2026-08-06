@@ -1,0 +1,23 @@
+{
+  "name": "mediq-selenium-automation",
+  "version": "1.0.0",
+  "description": "MedIQ+ Healthcare Portal — Selenium E2E Automation Framework",
+  "private": true,
+  "scripts": {
+    "test":            "node tests/runner.js",
+    "report:html":     "node reports/generate-html.js",
+    "report:excel":    "node reports/generate-excel.js",
+    "report:summary":  "node reports/generate-summary.js",
+    "report:all":      "npm run report:html && npm run report:excel && npm run report:summary",
+    "ci":              "npm test && npm run report:all"
+  },
+  "dependencies": {
+    "selenium-webdriver": "4.16.0",
+    "chromedriver":       "latest",
+    "xlsx":               "0.18.5",
+    "winston":            "3.11.0",
+    "fs-extra":           "11.2.0",
+    "axios":              "1.6.2"
+  },
+  "engines": { "node": ">=18.0.0" }
+}

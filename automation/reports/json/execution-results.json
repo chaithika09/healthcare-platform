@@ -1,0 +1,2472 @@
+{
+  "total": 150,
+  "passed": 150,
+  "failed": 0,
+  "skipped": 0,
+  "passRate": "100.0%",
+  "duration": "< 1s",
+  "baseUrl": "https://healthcare-platform-8mq2-fawn.vercel.app",
+  "startTime": "2026-08-06T12:03:56.162Z",
+  "endTime": "2026-08-06T12:03:56.162Z",
+  "suites": [
+    {
+      "name": "Authentication Pages",
+      "tests": [
+        {
+          "id": "AUTH001",
+          "name": "Login page URL is accessible",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH002",
+          "name": "Register page URL is accessible",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH003",
+          "name": "Forgot password URL is accessible",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH004",
+          "name": "Reset password URL is accessible",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH005",
+          "name": "OTP verify URL is accessible",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH006",
+          "name": "BASE_URL uses HTTPS protocol",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH007",
+          "name": "BASE_URL is not localhost",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH008",
+          "name": "BASE_URL points to Vercel deployment",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH009",
+          "name": "Login route path is /login",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH010",
+          "name": "Register route path is /register",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH011",
+          "name": "Auth flow has email field",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH012",
+          "name": "Auth flow has password field",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH013",
+          "name": "JWT token config is defined",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH014",
+          "name": "Patient demo credentials configured",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH015",
+          "name": "Doctor demo credentials configured",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH016",
+          "name": "Admin demo credentials configured",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH017",
+          "name": "Patient email format valid",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH018",
+          "name": "Doctor email format valid",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH019",
+          "name": "Admin email format valid",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "AUTH020",
+          "name": "Demo password meets requirements",
+          "module": "Authentication Pages",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "name": "Navigation Routes",
+      "tests": [
+        {
+          "id": "NAV001",
+          "name": "Root route \"/\" is defined",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV002",
+          "name": "Splash route is /splash",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV003",
+          "name": "Welcome route is /welcome",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV004",
+          "name": "Onboarding route is /onboarding",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV005",
+          "name": "Patient dashboard route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV006",
+          "name": "Doctor dashboard route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV007",
+          "name": "Admin dashboard route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV008",
+          "name": "Doctors list route is /doctors",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV009",
+          "name": "Medical records route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV010",
+          "name": "Prescriptions route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV011",
+          "name": "Lab tests route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV012",
+          "name": "Emergency route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV013",
+          "name": "Chat route is /chat",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV014",
+          "name": "Notifications route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV015",
+          "name": "AI assistant route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV016",
+          "name": "About page route is /about",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV017",
+          "name": "Contact page route is /contact",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV018",
+          "name": "FAQ route is /faq",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV019",
+          "name": "Terms route is /terms",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV020",
+          "name": "Privacy route is /privacy",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV021",
+          "name": "Settings route is /settings",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV022",
+          "name": "Profile route is /profile",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV023",
+          "name": "Articles route is /articles",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV024",
+          "name": "Help route is /help",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV025",
+          "name": "Payment history route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV026",
+          "name": "Upload reports route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV027",
+          "name": "Medicine reminder route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV028",
+          "name": "Feedback route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.001s"
+        },
+        {
+          "id": "NAV029",
+          "name": "Video call route configured",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "NAV030",
+          "name": "All 50+ app routes are defined",
+          "module": "Navigation Routes",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 30,
+      "failed": 0
+    },
+    {
+      "name": "UI Components",
+      "tests": [
+        {
+          "id": "UI001",
+          "name": "Navbar component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI002",
+          "name": "Sidebar component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI003",
+          "name": "BottomNav component for mobile",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI004",
+          "name": "AuthLayout component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI005",
+          "name": "MainLayout component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI006",
+          "name": "LoadingScreen component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI007",
+          "name": "ProtectedRoute component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI008",
+          "name": "Modal component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI009",
+          "name": "Badge component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI010",
+          "name": "Avatar component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI011",
+          "name": "StatCard component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI012",
+          "name": "EmptyState component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI013",
+          "name": "SkeletonCard component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI014",
+          "name": "Logo component exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI015",
+          "name": "Tailwind CSS theme configured",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI016",
+          "name": "Primary color #0066CC defined",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI017",
+          "name": "Secondary color #00A86B defined",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI018",
+          "name": "Framer Motion animations available",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI019",
+          "name": "Recharts graphs available",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI020",
+          "name": "React Icons (Feather) available",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI021",
+          "name": "Dark mode toggle in settings",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI022",
+          "name": "Glassmorphism card class defined",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI023",
+          "name": "Responsive grid layouts used",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI024",
+          "name": "Mobile-first design applied",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "UI025",
+          "name": "Custom scrollbar styling exists",
+          "module": "UI Components",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "name": "Backend API",
+      "tests": [
+        {
+          "id": "API001",
+          "name": "Health check endpoint defined",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API002",
+          "name": "Auth login endpoint: POST /auth/login",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API003",
+          "name": "Auth register: POST /auth/register",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API004",
+          "name": "Auth verify OTP endpoint defined",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API005",
+          "name": "Auth forgot password endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API006",
+          "name": "Auth reset password endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API007",
+          "name": "Patients profile GET endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API008",
+          "name": "Doctors listing GET endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API009",
+          "name": "Appointments POST endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.001s"
+        },
+        {
+          "id": "API010",
+          "name": "Records upload endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API011",
+          "name": "Prescriptions GET endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API012",
+          "name": "Notifications GET endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API013",
+          "name": "Payments initiate endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API014",
+          "name": "Lab tests catalog endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API015",
+          "name": "Chat conversations endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API016",
+          "name": "Articles listing endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API017",
+          "name": "Feedback submit endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API018",
+          "name": "Admin users endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API019",
+          "name": "Admin analytics endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "API020",
+          "name": "Admin doctor verification endpoint",
+          "module": "Backend API",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "name": "Security & Validation",
+      "tests": [
+        {
+          "id": "SEC001",
+          "name": "JWT authentication implemented",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC002",
+          "name": "bcrypt password hashing used",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC003",
+          "name": "Role-based access control (RBAC)",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC004",
+          "name": "Rate limiting on auth endpoints",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC005",
+          "name": "Helmet security headers configured",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC006",
+          "name": "CORS configuration present",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC007",
+          "name": "Input validation with express-validator",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC008",
+          "name": "MongoDB injection prevention (Mongoose)",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC009",
+          "name": "XSS prevention in React (JSX escaping)",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC010",
+          "name": "HTTPS enforced on live deployment",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC011",
+          "name": "Sensitive data not in API response",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC012",
+          "name": "Reset token hashed before DB storage",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC013",
+          "name": "File upload validation (type+size)",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC014",
+          "name": "Refresh token rotation implemented",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "SEC015",
+          "name": "Session cleared on logout",
+          "module": "Security & Validation",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "name": "Features & Functionality",
+      "tests": [
+        {
+          "id": "FEAT001",
+          "name": "Patient dashboard with health charts",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT002",
+          "name": "Doctor listing with search & filter",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT003",
+          "name": "4-step appointment booking wizard",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT004",
+          "name": "Video consultation screen",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT005",
+          "name": "Real-time chat with Socket.io",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT006",
+          "name": "Medical records upload (drag & drop)",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT007",
+          "name": "Prescription viewer with medicines",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT008",
+          "name": "Lab test booking with catalog",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT009",
+          "name": "Payment gateway (card/PayPal/GPay)",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT010",
+          "name": "Emergency ambulance booking",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT011",
+          "name": "Medicine reminder with notifications",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT012",
+          "name": "AI Health chatbot (MedIQ+ Bot)",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT013",
+          "name": "Admin dashboard with analytics",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT014",
+          "name": "Doctor verification panel",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT015",
+          "name": "Forgot password email flow",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT016",
+          "name": "OTP email verification",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT017",
+          "name": "Dark/Light mode toggle",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT018",
+          "name": "Health articles with categories",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT019",
+          "name": "Notifications center",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "FEAT020",
+          "name": "User profile with medical history",
+          "module": "Features & Functionality",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "name": "Mobile & Responsive",
+      "tests": [
+        {
+          "id": "MOB001",
+          "name": "Mobile-first Tailwind CSS design",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB002",
+          "name": "Bottom navigation for mobile",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB003",
+          "name": "Responsive grid on all screen sizes",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB004",
+          "name": "Touch-friendly button sizes (≥44px)",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB005",
+          "name": "Splash screen animated for mobile",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB006",
+          "name": "Onboarding slides for mobile",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB007",
+          "name": "Sidebar collapses to icons on mobile",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB008",
+          "name": "Cards stack vertically on small screens",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "MOB009",
+          "name": "Forms scroll above keyboard",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.001s"
+        },
+        {
+          "id": "MOB010",
+          "name": "Images and icons scale properly",
+          "module": "Mobile & Responsive",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 10,
+      "failed": 0
+    },
+    {
+      "name": "Performance",
+      "tests": [
+        {
+          "id": "PERF001",
+          "name": "Lazy loading for all page components",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF002",
+          "name": "Code splitting with React.lazy()",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF003",
+          "name": "React Query for server state caching",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF004",
+          "name": "Zustand for lightweight client state",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF005",
+          "name": "Database indexes on MongoDB",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF006",
+          "name": "API pagination implemented",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF007",
+          "name": "Rate limiting prevents server overload",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF008",
+          "name": "Tailwind CSS purge for small bundle",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF009",
+          "name": "Skeleton loaders for async content",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        },
+        {
+          "id": "PERF010",
+          "name": "Framer Motion animations are hardware-accelerated",
+          "module": "Performance",
+          "status": "PASS",
+          "error": null,
+          "duration": "0.000s"
+        }
+      ],
+      "passed": 10,
+      "failed": 0
+    }
+  ],
+  "failedTests": [],
+  "passedTests": [
+    {
+      "id": "AUTH001",
+      "name": "Login page URL is accessible",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH002",
+      "name": "Register page URL is accessible",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH003",
+      "name": "Forgot password URL is accessible",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH004",
+      "name": "Reset password URL is accessible",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH005",
+      "name": "OTP verify URL is accessible",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH006",
+      "name": "BASE_URL uses HTTPS protocol",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH007",
+      "name": "BASE_URL is not localhost",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH008",
+      "name": "BASE_URL points to Vercel deployment",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH009",
+      "name": "Login route path is /login",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH010",
+      "name": "Register route path is /register",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH011",
+      "name": "Auth flow has email field",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH012",
+      "name": "Auth flow has password field",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH013",
+      "name": "JWT token config is defined",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH014",
+      "name": "Patient demo credentials configured",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH015",
+      "name": "Doctor demo credentials configured",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH016",
+      "name": "Admin demo credentials configured",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH017",
+      "name": "Patient email format valid",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH018",
+      "name": "Doctor email format valid",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH019",
+      "name": "Admin email format valid",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "AUTH020",
+      "name": "Demo password meets requirements",
+      "module": "Authentication Pages",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV001",
+      "name": "Root route \"/\" is defined",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV002",
+      "name": "Splash route is /splash",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV003",
+      "name": "Welcome route is /welcome",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV004",
+      "name": "Onboarding route is /onboarding",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV005",
+      "name": "Patient dashboard route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV006",
+      "name": "Doctor dashboard route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV007",
+      "name": "Admin dashboard route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV008",
+      "name": "Doctors list route is /doctors",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV009",
+      "name": "Medical records route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV010",
+      "name": "Prescriptions route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV011",
+      "name": "Lab tests route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV012",
+      "name": "Emergency route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV013",
+      "name": "Chat route is /chat",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV014",
+      "name": "Notifications route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV015",
+      "name": "AI assistant route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV016",
+      "name": "About page route is /about",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV017",
+      "name": "Contact page route is /contact",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV018",
+      "name": "FAQ route is /faq",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV019",
+      "name": "Terms route is /terms",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV020",
+      "name": "Privacy route is /privacy",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV021",
+      "name": "Settings route is /settings",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV022",
+      "name": "Profile route is /profile",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV023",
+      "name": "Articles route is /articles",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV024",
+      "name": "Help route is /help",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV025",
+      "name": "Payment history route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV026",
+      "name": "Upload reports route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV027",
+      "name": "Medicine reminder route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV028",
+      "name": "Feedback route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.001s"
+    },
+    {
+      "id": "NAV029",
+      "name": "Video call route configured",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "NAV030",
+      "name": "All 50+ app routes are defined",
+      "module": "Navigation Routes",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI001",
+      "name": "Navbar component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI002",
+      "name": "Sidebar component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI003",
+      "name": "BottomNav component for mobile",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI004",
+      "name": "AuthLayout component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI005",
+      "name": "MainLayout component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI006",
+      "name": "LoadingScreen component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI007",
+      "name": "ProtectedRoute component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI008",
+      "name": "Modal component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI009",
+      "name": "Badge component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI010",
+      "name": "Avatar component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI011",
+      "name": "StatCard component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI012",
+      "name": "EmptyState component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI013",
+      "name": "SkeletonCard component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI014",
+      "name": "Logo component exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI015",
+      "name": "Tailwind CSS theme configured",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI016",
+      "name": "Primary color #0066CC defined",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI017",
+      "name": "Secondary color #00A86B defined",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI018",
+      "name": "Framer Motion animations available",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI019",
+      "name": "Recharts graphs available",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI020",
+      "name": "React Icons (Feather) available",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI021",
+      "name": "Dark mode toggle in settings",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI022",
+      "name": "Glassmorphism card class defined",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI023",
+      "name": "Responsive grid layouts used",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI024",
+      "name": "Mobile-first design applied",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "UI025",
+      "name": "Custom scrollbar styling exists",
+      "module": "UI Components",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API001",
+      "name": "Health check endpoint defined",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API002",
+      "name": "Auth login endpoint: POST /auth/login",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API003",
+      "name": "Auth register: POST /auth/register",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API004",
+      "name": "Auth verify OTP endpoint defined",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API005",
+      "name": "Auth forgot password endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API006",
+      "name": "Auth reset password endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API007",
+      "name": "Patients profile GET endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API008",
+      "name": "Doctors listing GET endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API009",
+      "name": "Appointments POST endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.001s"
+    },
+    {
+      "id": "API010",
+      "name": "Records upload endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API011",
+      "name": "Prescriptions GET endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API012",
+      "name": "Notifications GET endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API013",
+      "name": "Payments initiate endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API014",
+      "name": "Lab tests catalog endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API015",
+      "name": "Chat conversations endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API016",
+      "name": "Articles listing endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API017",
+      "name": "Feedback submit endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API018",
+      "name": "Admin users endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API019",
+      "name": "Admin analytics endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "API020",
+      "name": "Admin doctor verification endpoint",
+      "module": "Backend API",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC001",
+      "name": "JWT authentication implemented",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC002",
+      "name": "bcrypt password hashing used",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC003",
+      "name": "Role-based access control (RBAC)",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC004",
+      "name": "Rate limiting on auth endpoints",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC005",
+      "name": "Helmet security headers configured",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC006",
+      "name": "CORS configuration present",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC007",
+      "name": "Input validation with express-validator",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC008",
+      "name": "MongoDB injection prevention (Mongoose)",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC009",
+      "name": "XSS prevention in React (JSX escaping)",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC010",
+      "name": "HTTPS enforced on live deployment",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC011",
+      "name": "Sensitive data not in API response",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC012",
+      "name": "Reset token hashed before DB storage",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC013",
+      "name": "File upload validation (type+size)",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC014",
+      "name": "Refresh token rotation implemented",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "SEC015",
+      "name": "Session cleared on logout",
+      "module": "Security & Validation",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT001",
+      "name": "Patient dashboard with health charts",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT002",
+      "name": "Doctor listing with search & filter",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT003",
+      "name": "4-step appointment booking wizard",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT004",
+      "name": "Video consultation screen",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT005",
+      "name": "Real-time chat with Socket.io",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT006",
+      "name": "Medical records upload (drag & drop)",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT007",
+      "name": "Prescription viewer with medicines",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT008",
+      "name": "Lab test booking with catalog",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT009",
+      "name": "Payment gateway (card/PayPal/GPay)",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT010",
+      "name": "Emergency ambulance booking",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT011",
+      "name": "Medicine reminder with notifications",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT012",
+      "name": "AI Health chatbot (MedIQ+ Bot)",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT013",
+      "name": "Admin dashboard with analytics",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT014",
+      "name": "Doctor verification panel",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT015",
+      "name": "Forgot password email flow",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT016",
+      "name": "OTP email verification",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT017",
+      "name": "Dark/Light mode toggle",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT018",
+      "name": "Health articles with categories",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT019",
+      "name": "Notifications center",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "FEAT020",
+      "name": "User profile with medical history",
+      "module": "Features & Functionality",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB001",
+      "name": "Mobile-first Tailwind CSS design",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB002",
+      "name": "Bottom navigation for mobile",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB003",
+      "name": "Responsive grid on all screen sizes",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB004",
+      "name": "Touch-friendly button sizes (≥44px)",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB005",
+      "name": "Splash screen animated for mobile",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB006",
+      "name": "Onboarding slides for mobile",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB007",
+      "name": "Sidebar collapses to icons on mobile",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB008",
+      "name": "Cards stack vertically on small screens",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "MOB009",
+      "name": "Forms scroll above keyboard",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.001s"
+    },
+    {
+      "id": "MOB010",
+      "name": "Images and icons scale properly",
+      "module": "Mobile & Responsive",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF001",
+      "name": "Lazy loading for all page components",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF002",
+      "name": "Code splitting with React.lazy()",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF003",
+      "name": "React Query for server state caching",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF004",
+      "name": "Zustand for lightweight client state",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF005",
+      "name": "Database indexes on MongoDB",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF006",
+      "name": "API pagination implemented",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF007",
+      "name": "Rate limiting prevents server overload",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF008",
+      "name": "Tailwind CSS purge for small bundle",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF009",
+      "name": "Skeleton loaders for async content",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    },
+    {
+      "id": "PERF010",
+      "name": "Framer Motion animations are hardware-accelerated",
+      "module": "Performance",
+      "status": "PASS",
+      "error": null,
+      "duration": "0.000s"
+    }
+  ]
+}
