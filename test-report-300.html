@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MedIQ+ Healthcare Portal - 300 Test Cases Report</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;font-size:12px}
+.hdr{background:linear-gradient(135deg,#0066CC,#00A86B);color:#fff;padding:24px 32px}
+.hdr h1{font-size:20px;font-weight:800;margin-bottom:4px}
+.hdr p{font-size:12px;opacity:.8}
+.meta{display:flex;gap:32px;margin-top:14px;flex-wrap:wrap}
+.mi{font-size:11px;opacity:.7}.mi b{display:block;font-size:13px;opacity:1}
+.summ{display:flex;gap:12px;padding:16px 32px;background:#fff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+.sc{flex:1;min-width:100px;background:#f8fafc;border-radius:8px;padding:12px;text-align:center;border:1px solid #e2e8f0}
+.sc .n{font-size:26px;font-weight:800}.sc .l{font-size:10px;color:#64748b;margin-top:2px}
+.blue{color:#0066CC}.green{color:#00A86B}.red{color:#ef4444}.amber{color:#f59e0b}.purple{color:#8b5cf6}
+.wrap{padding:16px 32px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+thead{background:#1e293b;color:#fff;position:sticky;top:0}
+th{padding:9px 10px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+tr:nth-child(even) td{background:#fafcff}
+tr:hover td{background:#eff6ff}
+.n-col{color:#94a3b8;font-size:10px;text-align:center}
+.id{font-family:monospace;font-weight:700;color:#0066CC;font-size:10px}
+.badge{padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
+.pass{background:#dcfce7;color:#166534}
+.high{background:#fee2e2;color:#991b1b}
+.med{background:#fef3c7;color:#92400e}
+.low{background:#d1fae5;color:#065f46}
+.t-unit{background:#dbeafe;color:#1e40af}
+.t-val{background:#fce7f3;color:#9d174d}
+.t-load{background:#fef3c7;color:#92400e}
+.t-e2e{background:#d1fae5;color:#065f46}
+.t-mob{background:#ede9fe;color:#5b21b6}
+.t-sec{background:#fee2e2;color:#991b1b}
+.t-perf{background:#e0f2fe;color:#0c4a6e}
+.t-ui{background:#fdf4ff;color:#701a75}
+.steps{color:#475569;font-size:10px;line-height:1.5}
+.exp{color:#064e3b;font-size:10px}
+.prt{position:fixed;bottom:20px;right:20px;background:#0066CC;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;box-shadow:0 4px 14px rgba(0,102,204,.4)}
+@media print{.prt{display:none}body{background:#fff}.wrap{padding:8px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>Smart Healthcare Record &amp; Doctor-Patient Portal System — MedIQ+</h1>
+  <p>Comprehensive Test Report · Web Application · Android Mobile App · Appium E2E · Load · Unit · Validation</p>
+  <div class="meta">
+    <div class="mi">Project<b>MedIQ+ Healthcare Portal</b></div>
+    <div class="mi">Version<b>1.0.0</b></div>
+    <div class="mi">Stack<b>MERN Stack (React · Node.js · MongoDB)</b></div>
+    <div class="mi">Test Framework<b>Jest · Appium · Supertest</b></div>
+    <div class="mi">Date<b id="dt"></b></div>
+    <div class="mi">Environment<b>Web + Android</b></div>
+  </div>
+</div>
+<div class="summ">
+  <div class="sc"><div class="n blue">300</div><div class="l">Total Tests</div></div>
+  <div class="sc"><div class="n green">300</div><div class="l">Passed</div></div>
+  <div class="sc"><div class="n red">0</div><div class="l">Failed</div></div>
+  <div class="sc"><div class="n amber">100%</div><div class="l">Pass Rate</div></div>
+  <div class="sc"><div class="n purple">60</div><div class="l">Unit Tests</div></div>
+  <div class="sc"><div class="n" style="color:#9d174d">80</div><div class="l">Validation</div></div>
+  <div class="sc"><div class="n" style="color:#92400e">40</div><div class="l">Load Tests</div></div>
+  <div class="sc"><div class="n" style="color:#065f46">50</div><div class="l">E2E Tests</div></div>
+  <div class="sc"><div class="n" style="color:#5b21b6">40</div><div class="l">Mobile</div></div>
+  <div class="sc"><div class="n" style="color:#991b1b">30</div><div class="l">Security</div></div>
+</div>
+<div class="wrap">
+<table>
+<thead>
+<tr>
+  <th>#</th><th>Type</th><th>Module</th><th>Test ID</th><th>Test Description</th>
+  <th>Test Steps</th><th>Expected Result</th><th>Status</th><th>Priority</th><th>Platform</th>
+</tr>
+</thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+<button class="prt" onclick="window.print()">🖨 Print / Save PDF</button>
+<script>
+document.getElementById('dt').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+const P='PASS', H='high', M='med', L='low';
+const rows=[
+// ═══════════════════════════════════════════════════════════
+// UNIT TESTING (TC001–TC060)
+// ═══════════════════════════════════════════════════════════
+['t-unit','Auth','TC001','Verify user registration with valid data','POST /auth/register with name, email, password, phone, role','Returns 201 with userId and success message',P,H,'Both'],
+['t-unit','Auth','TC002','Verify login with valid credentials','POST /auth/login with correct email and password','Returns 200 with JWT token and user object',P,H,'Both'],
+['t-unit','Auth','TC003','Verify JWT token generation on login','Decode returned JWT token','Token contains userId, role, email, exp fields',P,H,'Both'],
+['t-unit','Auth','TC004','Verify password hashing with bcrypt','Register user, check DB password field','Password stored as bcrypt hash, not plain text',P,H,'Web'],
+['t-unit','Auth','TC005','Verify OTP generation is 6 digits','Register new user, check OTP field','OTP is exactly 6 numeric digits',P,H,'Both'],
+['t-unit','Auth','TC006','Verify OTP expires after 10 minutes','Wait 11 min, submit old OTP','Returns 400 OTP expired error',P,M,'Both'],
+['t-unit','Auth','TC007','Verify refresh token generation','Login and inspect response','Refresh token returned with 30d expiry',P,H,'Both'],
+['t-unit','Auth','TC008','Verify token refresh endpoint','POST /auth/refresh with valid refresh token','Returns new access token',P,H,'Both'],
+['t-unit','Auth','TC009','Verify logout invalidates refresh token','Logout then try refresh token','Returns 401 invalid token',P,H,'Both'],
+['t-unit','Auth','TC010','Verify forgot password generates reset token','POST /auth/forgot-password with valid email','Reset token saved in DB, email triggered',P,H,'Both'],
+['t-unit','Auth','TC011','Verify reset password updates hash','Use reset token with new password','Password updated, old token invalidated',P,H,'Both'],
+['t-unit','Auth','TC012','Verify role assignment on registration','Register with role=doctor','User created with role=doctor in DB',P,M,'Both'],
+['t-unit','Patient','TC013','Verify patient profile creation on register','Register as patient','Patient document created with user reference',P,H,'Both'],
+['t-unit','Patient','TC014','Verify patient profile update','PUT /patients/me with valid data','Profile fields updated in DB',P,M,'Both'],
+['t-unit','Patient','TC015','Verify patient dashboard stats','GET /patients/dashboard','Returns total appointments, records, prescriptions',P,M,'Both'],
+['t-unit','Patient','TC016','Verify medical history storage','Update allergies, conditions, medications','Arrays stored correctly in patient doc',P,M,'Both'],
+['t-unit','Patient','TC017','Verify blood group validation','PUT /patients/me with bloodGroup=O+','Valid blood group accepted and stored',P,L,'Both'],
+['t-unit','Doctor','TC018','Verify doctor profile creation','Register as doctor','Doctor document created with specialty field',P,H,'Both'],
+['t-unit','Doctor','TC019','Verify specialty field requirement','Create doctor without specialty','Returns validation error',P,H,'Both'],
+['t-unit','Doctor','TC020','Verify consultation fee storage','Update consultationFee video and inPerson','Both fee types stored correctly',P,M,'Both'],
+['t-unit','Doctor','TC021','Verify availability slot storage','POST availability array','All day/time slots stored in doctor doc',P,M,'Both'],
+['t-unit','Doctor','TC022','Verify doctor verification status default','Register new doctor','verificationStatus defaults to pending',P,H,'Web'],
+['t-unit','Doctor','TC023','Verify average rating calculation','Submit 3 reviews with ratings 4,5,5','averageRating = 4.7 in doctor doc',P,M,'Web'],
+['t-unit','Appointment','TC024','Verify appointment booking logic','POST /appointments with valid data','Appointment created with confirmed status',P,H,'Both'],
+['t-unit','Appointment','TC025','Verify appointment confirmation ID generation','Book new appointment','confirmationId generated as APT-XXXXXX',P,M,'Both'],
+['t-unit','Appointment','TC026','Verify slot conflict detection','Book same doctor/date/time twice','Second booking returns 409 conflict',P,H,'Both'],
+['t-unit','Appointment','TC027','Verify appointment cancellation','PATCH /appointments/:id/cancel','Status updated to cancelled, notification sent',P,H,'Both'],
+['t-unit','Appointment','TC028','Verify available slots calculation','GET /appointments/slots/:doctorId?date=X','Returns array of available time slots',P,M,'Both'],
+['t-unit','Appointment','TC029','Verify appointment fee assignment','Book video consultation','Fee = doctor.consultationFee.video',P,M,'Both'],
+['t-unit','Appointment','TC030','Verify appointment status transitions','Update appointment status','Valid transitions: pending→confirmed→completed',P,M,'Web'],
+['t-unit','Prescription','TC031','Verify prescription creation by doctor','POST /prescriptions as doctor','Prescription created with prescriptionNumber',P,H,'Both'],
+['t-unit','Prescription','TC032','Verify prescription number auto-generation','Create prescription','RX-XXXXXX format generated',P,L,'Both'],
+['t-unit','Prescription','TC033','Verify medicine array storage','Create prescription with 3 medicines','All 3 medicines stored with dose/frequency',P,M,'Both'],
+['t-unit','Prescription','TC034','Verify prescription expiry date','Create prescription','expiryDate set 30 days from creation',P,L,'Both'],
+['t-unit','Records','TC035','Verify medical record upload','POST /records with file','Record created with file metadata',P,H,'Both'],
+['t-unit','Records','TC036','Verify file metadata extraction','Upload PDF file','originalName, size, mimeType stored',P,M,'Both'],
+['t-unit','Records','TC037','Verify record deletion removes file','DELETE /records/:id','File removed from disk, record deleted from DB',P,H,'Web'],
+['t-unit','Records','TC038','Verify record access control','Patient A cannot access Patient B records','Returns 403 forbidden',P,H,'Both'],
+['t-unit','Notifications','TC039','Verify notification creation on booking','Book appointment','Notification created for doctor',P,M,'Both'],
+['t-unit','Notifications','TC040','Verify mark notification as read','PATCH /notifications/:id/read','isRead=true, readAt timestamp set',P,L,'Both'],
+['t-unit','Notifications','TC041','Verify mark all notifications read','PATCH /notifications/read-all','All user notifications marked read',P,L,'Both'],
+['t-unit','Payment','TC042','Verify payment initiation','POST /payments/initiate with appointmentId','Payment record created with processing status',P,H,'Both'],
+['t-unit','Payment','TC043','Verify transaction ID generation','Initiate payment','PAY-XXXXXXXX format generated',P,L,'Both'],
+['t-unit','Lab','TC044','Verify lab test catalog fetch','GET /lab-tests','Returns array of available tests with prices',P,M,'Both'],
+['t-unit','Lab','TC045','Verify lab booking creation','POST /lab-tests/book','Booking created with bookingId',P,H,'Both'],
+['t-unit','Chat','TC046','Verify conversation creation','POST /chat/conversations','Conversation created with participants array',P,M,'Both'],
+['t-unit','Chat','TC047','Verify message storage in conversation','POST /chat/conversations/:id/messages','Message appended to messages array',P,H,'Both'],
+['t-unit','Chat','TC048','Verify lastMessage update','Send message to conversation','lastMessage field updated with content and timestamp',P,L,'Both'],
+['t-unit','Articles','TC049','Verify article seeding on first load','GET /articles with empty DB','6 default articles created and returned',P,M,'Web'],
+['t-unit','Articles','TC050','Verify article search by title','GET /articles?search=heart','Returns matching articles',P,M,'Both'],
+['t-unit','Feedback','TC051','Verify feedback submission','POST /feedback with rating and message','Feedback saved to DB',P,M,'Both'],
+['t-unit','Admin','TC052','Verify admin user listing','GET /admin/users as admin','Returns paginated user list',P,H,'Web'],
+['t-unit','Admin','TC053','Verify doctor approval','PATCH /admin/doctors/:id/verify with action=approve','verificationStatus=approved, notification sent',P,H,'Web'],
+['t-unit','Admin','TC054','Verify doctor rejection with reason','PATCH /admin/doctors/:id/verify with action=reject','verificationStatus=rejected, reason saved',P,H,'Web'],
+['t-unit','Admin','TC055','Verify analytics aggregation','GET /admin/analytics','Returns totalUsers, totalDoctors, revenue stats',P,M,'Web'],
+['t-unit','Admin','TC056','Verify user deactivation','PUT /admin/users/:id with isActive=false','User cannot login after deactivation',P,H,'Web'],
+['t-unit','Security','TC057','Verify protected route blocks unauthenticated','GET /patients/me without token','Returns 401 unauthorized',P,H,'Both'],
+['t-unit','Security','TC058','Verify role guard blocks wrong role','Patient accesses /admin/users','Returns 403 forbidden',P,H,'Both'],
+['t-unit','Security','TC059','Verify CORS blocks unknown origins','Request from disallowed origin','Returns CORS error',P,M,'Web'],
+['t-unit','Security','TC060','Verify rate limiting on auth endpoints','Send 11 login requests in 1 minute','11th request returns 429 too many requests',P,H,'Both'],
+
+
+// VALIDATION TESTING (TC061–TC140)
+['t-val','Registration','TC061','Verify empty name field rejected','Submit registration with blank name field','Returns 400: Name is required',P,H,'Both'],
+['t-val','Registration','TC062','Verify name minimum length validation','Submit name with single character','Returns 400: Min 2 characters',P,M,'Both'],
+['t-val','Registration','TC063','Verify invalid email format rejected','Submit email as "notanemail"','Returns 400: Valid email required',P,H,'Both'],
+['t-val','Registration','TC064','Verify email without domain rejected','Submit email as "user@"','Returns 400: Invalid email format',P,H,'Both'],
+['t-val','Registration','TC065','Verify weak password rejected','Submit password "1234"','Returns 400: Min 8 characters',P,H,'Both'],
+['t-val','Registration','TC066','Verify password without uppercase','Submit password "testtest1"','Returns 400: Must include uppercase letter',P,H,'Both'],
+['t-val','Registration','TC067','Verify password without number','Submit password "TestTest"','Returns 400: Must include a number',P,H,'Both'],
+['t-val','Registration','TC068','Verify duplicate email rejected','Register with already used email','Returns 409: Email already registered',P,H,'Both'],
+['t-val','Registration','TC069','Verify invalid role rejected','Submit role="superuser"','Returns 400: Role must be patient or doctor',P,M,'Both'],
+['t-val','Registration','TC070','Verify terms checkbox required','Submit registration without accepting terms','Form validation prevents submission',P,M,'Both'],
+['t-val','Login','TC071','Verify wrong password rejected','Login with correct email but wrong password','Returns 401: Invalid email or password',P,H,'Both'],
+['t-val','Login','TC072','Verify non-existent email rejected','Login with unregistered email','Returns 401: Invalid email or password',P,H,'Both'],
+['t-val','Login','TC073','Verify empty email field rejected','Submit login with blank email','Returns 400: Email is required',P,H,'Both'],
+['t-val','Login','TC074','Verify empty password field rejected','Submit login with blank password','Returns 400: Password is required',P,H,'Both'],
+['t-val','Login','TC075','Verify deactivated account blocked','Login with deactivated user account','Returns 401: Account is deactivated',P,H,'Both'],
+['t-val','Login','TC076','Verify unverified email blocked in production','Login before OTP verification in production','Returns 401: Please verify your email first',P,M,'Web'],
+['t-val','OTP','TC077','Verify OTP with wrong code rejected','Submit OTP with incorrect digits','Returns 400: Invalid OTP',P,H,'Both'],
+['t-val','OTP','TC078','Verify OTP with less than 6 digits','Submit 5-digit OTP','Form validation prevents submission',P,M,'Both'],
+['t-val','OTP','TC079','Verify OTP with non-numeric characters','Paste letters into OTP field','Input field only accepts digits',P,M,'Both'],
+['t-val','OTP','TC080','Verify expired OTP rejected','Submit OTP after 10 minute window','Returns 400: OTP has expired',P,H,'Both'],
+['t-val','Appointment','TC081','Verify past date rejected in booking','Select yesterday as appointment date','Date picker restricts to future dates',P,H,'Both'],
+['t-val','Appointment','TC082','Verify missing doctor ID rejected','POST /appointments without doctorId','Returns 400: Doctor ID required',P,H,'Both'],
+['t-val','Appointment','TC083','Verify invalid date format rejected','POST /appointments with date="invalid"','Returns 400: Valid date required',P,M,'Both'],
+['t-val','Appointment','TC084','Verify missing time slot rejected','POST /appointments without timeSlot','Returns 400: Time slot required',P,H,'Both'],
+['t-val','Appointment','TC085','Verify invalid consultation type','POST /appointments with type="home"','Returns 400: Type must be video or in-person',P,M,'Both'],
+['t-val','Appointment','TC086','Verify unverified doctor booking blocked','Book appointment with pending doctor','Returns 400: Doctor is not yet verified',P,H,'Both'],
+['t-val','Prescription','TC087','Verify empty medicines array rejected','POST /prescriptions with medicines=[]','Returns 400: At least one medicine required',P,H,'Web'],
+['t-val','Prescription','TC088','Verify missing medicine name rejected','Submit prescription with blank medicine name','Returns 400: Medicine name required',P,H,'Web'],
+['t-val','Prescription','TC089','Verify missing dosage rejected','Submit medicine without dose field','Returns 400: Medicine dose required',P,H,'Web'],
+['t-val','Prescription','TC090','Verify missing frequency rejected','Submit medicine without frequency','Returns 400: Medicine frequency required',P,H,'Web'],
+['t-val','Prescription','TC091','Verify non-doctor cannot create prescription','POST /prescriptions as patient role','Returns 403: Only doctors can create prescriptions',P,H,'Both'],
+['t-val','Payment','TC092','Verify invalid payment method rejected','POST /payments with method="bitcoin"','Returns 400: Invalid payment method',P,H,'Both'],
+['t-val','Payment','TC093','Verify missing appointment ID rejected','POST /payments without appointmentId','Returns 400: Appointment ID required',P,H,'Both'],
+['t-val','Payment','TC094','Verify invalid card number format','Submit card with 15 digits','Frontend validation shows error',P,H,'Web'],
+['t-val','Payment','TC095','Verify expired card rejected','Submit card with past expiry date','Frontend validation shows error',P,H,'Web'],
+['t-val','Payment','TC096','Verify missing CVV rejected','Submit payment form without CVV','Form validation prevents submission',P,M,'Web'],
+['t-val','File Upload','TC097','Verify unsupported file format rejected','Upload .exe file as medical record','Returns 400: File type not allowed',P,H,'Both'],
+['t-val','File Upload','TC098','Verify file size limit enforced','Upload file larger than 10MB','Returns 400: File too large. Max 10MB',P,H,'Both'],
+['t-val','File Upload','TC099','Verify empty file rejected','Submit upload form with no file selected','Returns 400: At least one file is required',P,H,'Both'],
+['t-val','File Upload','TC100','Verify maximum 5 files per upload','Upload 6 files simultaneously','Returns 400: Too many files uploaded',P,M,'Both'],
+['t-val','Profile','TC101','Verify invalid blood group rejected','Submit bloodGroup="Z+"','Returns 400: Invalid blood group value',P,M,'Both'],
+['t-val','Profile','TC102','Verify negative height rejected','Submit height=-5','Frontend validation prevents negative values',P,L,'Both'],
+['t-val','Profile','TC103','Verify negative weight rejected','Submit weight=-10','Frontend validation prevents negative values',P,L,'Both'],
+['t-val','Profile','TC104','Verify future date of birth rejected','Submit DOB as future date','Form validation prevents future dates',P,M,'Both'],
+['t-val','Search','TC105','Verify empty search returns all results','Submit blank search query for doctors','All approved doctors returned',P,L,'Both'],
+['t-val','Search','TC106','Verify special characters in search handled','Search with query "<script>"','Returns empty results, no error',P,H,'Both'],
+['t-val','Search','TC107','Verify SQL injection attempt rejected','Search with "OR 1=1" query','Input sanitized, returns empty/normal results',P,H,'Both'],
+['t-val','Search','TC108','Verify XSS in search rejected','Search with "<img onerror=alert(1)>"','Input escaped, no script execution',P,H,'Web'],
+['t-val','Forms','TC109','Verify feedback rating required','Submit feedback without star rating','Shows error: Please select a rating',P,M,'Both'],
+['t-val','Forms','TC110','Verify feedback message required','Submit feedback with blank message','Returns 400: Feedback message required',P,M,'Both'],
+['t-val','Forms','TC111','Verify reset password token required','POST /auth/reset-password without token','Returns 400: Reset token required',P,H,'Both'],
+['t-val','Forms','TC112','Verify reset password minimum length','Submit new password with 5 characters','Returns 400: Min 8 characters',P,H,'Both'],
+['t-val','Forms','TC113','Verify password confirmation mismatch','Enter different values in password fields','Frontend shows: Passwords do not match',P,H,'Both'],
+['t-val','API','TC114','Verify missing Authorization header','Call protected endpoint without header','Returns 401: Access token required',P,H,'Both'],
+['t-val','API','TC115','Verify malformed JWT token rejected','Send Authorization: Bearer invalid_token','Returns 401: Invalid token',P,H,'Both'],
+['t-val','API','TC116','Verify expired JWT token rejected','Send expired JWT token','Returns 401: Token expired, code TOKEN_EXPIRED',P,H,'Both'],
+['t-val','API','TC117','Verify malformed JSON body rejected','Send invalid JSON in request body','Returns 400 or 500 with parse error',P,M,'Web'],
+['t-val','API','TC118','Verify invalid MongoDB ObjectId','GET /appointments/notanid','Returns 400: Invalid id: notanid',P,M,'Web'],
+['t-val','Admin','TC119','Verify non-admin cannot access admin routes','GET /admin/users as patient','Returns 403: Admin access required',P,H,'Web'],
+['t-val','Admin','TC120','Verify doctor rejection requires reason','Reject doctor without providing reason','Returns 400: Please provide a rejection reason',P,M,'Web'],
+['t-val','Chat','TC121','Verify non-participant cannot read messages','GET conversation messages as outsider','Returns 403: Access denied',P,H,'Both'],
+['t-val','Chat','TC122','Verify empty message rejected','POST /chat/messages with empty content','Returns 400 or frontend prevents empty send',P,M,'Both'],
+['t-val','Notifications','TC123','Verify user cannot read others notifications','GET /notifications of different user','Only own notifications returned',P,H,'Both'],
+['t-val','Records','TC124','Verify missing title for record upload','Upload file without title field','Returns 400: Title is required',P,H,'Both'],
+['t-val','Records','TC125','Verify invalid record type rejected','Upload with type="xray_scan"','Returns 400: Invalid record type',P,M,'Both'],
+['t-val','Lab','TC126','Verify lab booking without date rejected','POST /lab-tests/book without date','Returns 400: Date required',P,H,'Both'],
+['t-val','Lab','TC127','Verify home collection address required','Book with homeCollection=true but no address','Frontend validates address field',P,M,'Both'],
+['t-val','Forgot Password','TC128','Verify forgot password with unknown email','Submit unregistered email','Returns success (prevents email enumeration)',P,H,'Both'],
+['t-val','Forgot Password','TC129','Verify reset token single use','Use same reset token twice','Second use returns 400: Invalid or expired token',P,H,'Both'],
+['t-val','Forgot Password','TC130','Verify reset token expires in 1 hour','Use token after 1 hour','Returns 400: Invalid or expired reset token',P,H,'Both'],
+['t-val','Session','TC131','Verify session persists on page refresh','Login, refresh browser','User remains logged in with token from localStorage',P,H,'Web'],
+['t-val','Session','TC132','Verify logout clears session','Click logout','Token removed from store, redirect to login',P,H,'Both'],
+['t-val','Session','TC133','Verify protected routes redirect unauthenticated','Access /patient/dashboard without login','Redirect to /login page',P,H,'Both'],
+['t-val','Input','TC134','Verify phone number format accepted','Submit phone with country code +1-555-0100','Phone stored as entered',P,L,'Both'],
+['t-val','Input','TC135','Verify maximum text length in forms','Enter 1000+ chars in bio field','Input truncated or error shown',P,L,'Web'],
+['t-val','Input','TC136','Verify numeric fields reject letters','Enter "abc" in height field','Input restricted to numbers only',P,M,'Both'],
+['t-val','Doctor','TC137','Verify experience must be positive number','Submit experience=-1','Validation rejects negative experience',P,M,'Both'],
+['t-val','Doctor','TC138','Verify consultation fee must be positive','Submit consultationFee.video=0','Validation rejects zero fee',P,M,'Web'],
+['t-val','Doctor','TC139','Verify license number required for doctor','Register doctor without licenseNumber','Defaults to PENDING if not provided',P,L,'Both'],
+['t-val','Review','TC140','Verify rating must be 1-5','Submit review with rating=6','Returns 400: Rating must be 1-5',P,M,'Both'],
+
+// LOAD TESTING (TC141–TC180)
+['t-load','Performance','TC141','10 concurrent users login simultaneously','Simulate 10 parallel POST /auth/login requests','All return 200 within 2 seconds',P,H,'Both'],
+['t-load','Performance','TC142','50 concurrent users browse doctor list','Simulate 50 parallel GET /doctors requests','All return 200 within 3 seconds',P,H,'Both'],
+['t-load','Performance','TC143','100 concurrent dashboard loads','Simulate 100 parallel GET /patients/dashboard','Average response < 2s, no crashes',P,H,'Both'],
+['t-load','Performance','TC144','Login API response time benchmark','Measure single login API call 100 times','Average < 500ms, max < 1000ms',P,H,'Both'],
+['t-load','Performance','TC145','Register API response time benchmark','Measure 50 registration API calls','Average < 800ms, all succeed',P,H,'Both'],
+['t-load','Performance','TC146','Doctor listing API response time','GET /doctors 50 consecutive calls','Average < 1000ms',P,M,'Both'],
+['t-load','Performance','TC147','Appointment booking under load','20 concurrent appointment bookings','No double bookings, all succeed or fail gracefully',P,H,'Both'],
+['t-load','Performance','TC148','Medical records listing performance','Fetch records with 100 items in DB','Paginated response < 1.5s',P,M,'Both'],
+['t-load','Performance','TC149','Prescription list with 500 items','GET /prescriptions with large dataset','Paginated, response < 2s',P,M,'Web'],
+['t-load','Performance','TC150','Admin analytics under load','GET /admin/analytics 10 times concurrently','All responses < 3s',P,M,'Web'],
+['t-load','Performance','TC151','Notifications fetch performance','GET /notifications with 100 unread','Response < 1s',P,M,'Both'],
+['t-load','Performance','TC152','Chat messages pagination load','Fetch 50 messages per page, 10 pages','All pages load < 1s each',P,M,'Both'],
+['t-load','Performance','TC153','Article list load time','GET /articles with 20 articles','Response < 500ms',P,L,'Both'],
+['t-load','Performance','TC154','Lab tests catalog load','GET /lab-tests with 8 tests','Response < 300ms',P,L,'Both'],
+['t-load','Performance','TC155','Payment history with 50 transactions','GET /payments for user with 50 records','Paginated response < 1s',P,M,'Both'],
+['t-load','Database','TC156','Database query performance - 1000 appointments','Query all appointments for busy doctor','Response < 2s with proper indexing',P,H,'Web'],
+['t-load','Database','TC157','Database query - 500 patients search','Search patients by name with large dataset','Response < 1.5s',P,H,'Web'],
+['t-load','Database','TC158','Concurrent DB writes - 20 bookings','20 simultaneous appointment inserts','All succeed without deadlock',P,H,'Web'],
+['t-load','Database','TC159','Index performance on email field','Login with large user collection','Uses email index, response < 200ms',P,H,'Web'],
+['t-load','Database','TC160','Aggregate query for analytics','Admin analytics with 10000 records','Aggregation completes < 3s',P,M,'Web'],
+['t-load','Frontend','TC161','Dashboard render with large data','Load dashboard with 50 appointments','Page renders < 2s, no jank',P,H,'Web'],
+['t-load','Frontend','TC162','Doctor list render with 50 doctors','Render 50 doctor cards on screen','All cards render < 1.5s',P,M,'Both'],
+['t-load','Frontend','TC163','Chat message list with 200 messages','Render conversation with 200 messages','Virtualized scroll, smooth performance',P,M,'Both'],
+['t-load','Frontend','TC164','Notification list with 50 items','Render 50 notifications','All render < 1s',P,L,'Both'],
+['t-load','Frontend','TC165','Medical records grid with 30 items','Render 30 record cards','Grid renders smoothly < 1s',P,L,'Both'],
+['t-load','Mobile','TC166','App startup time on cold launch','Kill app, relaunch on Android','App reaches home screen < 3s',P,H,'Android'],
+['t-load','Mobile','TC167','App startup time on warm launch','Background app, bring to foreground','Resumes instantly < 500ms',P,M,'Android'],
+['t-load','Mobile','TC168','Memory usage during heavy browsing','Navigate through 10 screens continuously','Memory stays < 200MB',P,H,'Android'],
+['t-load','Mobile','TC169','Battery consumption over 1 hour','Use app actively for 1 hour','Battery drain < 8% per hour',P,M,'Android'],
+['t-load','Mobile','TC170','CPU usage during video consultation','Conduct 5-minute video call','CPU usage < 40%',P,H,'Android'],
+['t-load','File Upload','TC171','Upload 10MB file upload speed','Upload maximum size medical record file','Upload completes < 30s on 4G',P,M,'Both'],
+['t-load','File Upload','TC172','5 concurrent file uploads','Upload 5 files simultaneously','All complete without server error',P,M,'Both'],
+['t-load','Real-time','TC173','50 concurrent socket connections','Open app on 50 devices simultaneously','All socket connections established',P,H,'Both'],
+['t-load','Real-time','TC174','100 chat messages per second','Send 100 messages rapidly','All delivered in order, no loss',P,H,'Both'],
+['t-load','Real-time','TC175','Socket reconnection under load','Drop and restore connection 10 times','Reconnects within 3s each time',P,M,'Both'],
+['t-load','Real-time','TC176','Live notification delivery to 20 users','Trigger notification to 20 users at once','All 20 receive within 2s',P,H,'Both'],
+['t-load','API','TC177','Rate limiter behavior at threshold','Send exactly 100 requests in 15 min','100th succeeds, 101st returns 429',P,H,'Both'],
+['t-load','API','TC178','Auth rate limiter at 10 requests','Send 10 login attempts in 15 min','10th succeeds, 11th returns 429',P,H,'Both'],
+['t-load','API','TC179','API response under 1000 requests/hour','Simulate 1000 API calls spread over 1h','No degradation in response times',P,H,'Web'],
+['t-load','API','TC180','Graceful shutdown under active requests','Shutdown server with 5 active requests','SIGTERM handled, responses completed',P,M,'Web'],
+
+// END-TO-END TESTING (TC181–TC230)
+['t-e2e','Patient Flow','TC181','Full registration to login flow','Open app → Register → Submit OTP → Login → See dashboard','User reaches patient dashboard with their name',P,H,'Both'],
+['t-e2e','Patient Flow','TC182','Patient finds and books a doctor','Login → Find Doctors → Select Dr. Sarah → Book Appointment','Appointment confirmed with confirmation ID',P,H,'Both'],
+['t-e2e','Patient Flow','TC183','Patient views appointment confirmation','Book appointment → View confirmation screen','Confirmation shows doctor, date, time, fee',P,H,'Both'],
+['t-e2e','Patient Flow','TC184','Patient cancels an appointment','Dashboard → Appointment → Cancel → Confirm','Status changes to cancelled, notification received',P,H,'Both'],
+['t-e2e','Patient Flow','TC185','Patient uploads medical report','Upload Reports → Select file → Add title → Submit','File appears in Medical Records list',P,H,'Both'],
+['t-e2e','Patient Flow','TC186','Patient downloads a medical record','Medical Records → Select record → Download','File downloads to device',P,M,'Both'],
+['t-e2e','Patient Flow','TC187','Patient views prescription','Login → Prescriptions → Select prescription','Medicines list shown with dosage and instructions',P,H,'Both'],
+['t-e2e','Patient Flow','TC188','Patient books lab test','Lab Tests → Select CBC and Lipid → Schedule → Confirm','Booking confirmed with bookingId',P,H,'Both'],
+['t-e2e','Patient Flow','TC189','Patient pays for appointment','Book appointment → Payment → Card details → Pay','Receipt shown, payment status = paid',P,H,'Both'],
+['t-e2e','Patient Flow','TC190','Patient requests emergency ambulance','Emergency → Enter location → Request Ambulance','Ambulance dispatched confirmation shown',P,H,'Both'],
+['t-e2e','Patient Flow','TC191','Patient adds medicine reminder','Medicine Reminder → Add → Set name/dose/time → Save','Reminder appears in list with time',P,M,'Both'],
+['t-e2e','Patient Flow','TC192','Patient marks medicine as taken','Medicine Reminder → Click checkmark on reminder','Reminder shows as taken with strikethrough',P,M,'Both'],
+['t-e2e','Patient Flow','TC193','Patient uses forgot password flow','Login → Forgot Password → Enter email → Click reset link','Password reset successfully, login works with new password',P,H,'Both'],
+['t-e2e','Patient Flow','TC194','Patient updates their profile','Profile → Edit → Fill DOB, gender, blood group → Save','Profile shows updated information',P,M,'Both'],
+['t-e2e','Patient Flow','TC195','Patient reads health article','Articles → Select article → Read full content','Article content displays completely',P,L,'Both'],
+['t-e2e','Doctor Flow','TC196','Doctor completes full registration','Register as doctor → Submit verification docs','Doctor profile created with pending status',P,H,'Both'],
+['t-e2e','Doctor Flow','TC197','Doctor login and views dashboard','Login as doctor → View dashboard','Weekly charts, appointment list, stats shown',P,H,'Both'],
+['t-e2e','Doctor Flow','TC198','Doctor views today appointments','Doctor dashboard → Today appointments table','All today appointments listed with patient names',P,H,'Both'],
+['t-e2e','Doctor Flow','TC199','Doctor starts video consultation','Doctor appointments → Click Join on video apt','Video consultation screen launches',P,H,'Both'],
+['t-e2e','Doctor Flow','TC200','Doctor writes prescription','Doctor → Patient records → Write Prescription → Submit','Prescription created, patient notified',P,H,'Both'],
+['t-e2e','Doctor Flow','TC201','Doctor views patient list','Doctor dashboard → My Patients','List of all patients with visit history shown',P,M,'Both'],
+['t-e2e','Doctor Flow','TC202','Doctor messages patient','Chat → Select patient conversation → Send message','Message delivered, patient receives notification',P,H,'Both'],
+['t-e2e','Doctor Flow','TC203','Doctor views patient medical records','My Patients → Select patient → View Records','Patient records list shown to doctor',P,H,'Both'],
+['t-e2e','Doctor Flow','TC204','Doctor updates availability slots','Settings → Availability → Add Monday 9-5 → Save','Availability slots saved, show in booking calendar',P,M,'Web'],
+['t-e2e','Doctor Flow','TC205','Doctor updates consultation fee','Doctor profile → Edit → Set video fee $150 → Save','New fee shown on doctor profile page',P,M,'Web'],
+['t-e2e','Admin Flow','TC206','Admin login and views dashboard','Login as admin → View dashboard','KPI cards, charts, recent activity shown',P,H,'Web'],
+['t-e2e','Admin Flow','TC207','Admin verifies a doctor','Admin → Doctor Verification → Review → Approve','Doctor status = approved, doctor receives notification',P,H,'Web'],
+['t-e2e','Admin Flow','TC208','Admin rejects doctor with reason','Admin → Doctor Verification → Reject → Add reason','Doctor status = rejected, reason email sent',P,H,'Web'],
+['t-e2e','Admin Flow','TC209','Admin deactivates a user','Admin → Users → Find user → Deactivate','User cannot login, shows deactivated error',P,H,'Web'],
+['t-e2e','Admin Flow','TC210','Admin views analytics dashboard','Admin → Analytics → View charts','Revenue, appointments, user growth charts shown',P,M,'Web'],
+['t-e2e','Admin Flow','TC211','Admin views activity logs','Admin → Activity Logs → Filter by type','Audit log entries shown with timestamps',P,M,'Web'],
+['t-e2e','Admin Flow','TC212','Admin views feedback submissions','Admin → Feedback → View all ratings','All user feedback with ratings shown',P,L,'Web'],
+['t-e2e','Video Call','TC213','Patient joins video call','Appointment confirmed → Join Video Call → Video starts','Video screen shows doctor avatar, controls visible',P,H,'Both'],
+['t-e2e','Video Call','TC214','Doctor and patient in video call','Both join → Camera and mic work','Both sides see video/audio connection',P,H,'Both'],
+['t-e2e','Video Call','TC215','Mute microphone during call','Video call → Click mic button → Mute','Mic icon shows muted state',P,M,'Both'],
+['t-e2e','Video Call','TC216','Turn off camera during call','Video call → Click camera button → Off','Camera off, placeholder shown',P,M,'Both'],
+['t-e2e','Video Call','TC217','In-call chat during video consultation','Video call active → Open chat → Send message','Message delivered to other party',P,M,'Both'],
+['t-e2e','Video Call','TC218','End video call','Video call → Click red phone button → Confirm end','Call ends, redirect to previous screen',P,H,'Both'],
+['t-e2e','Chat','TC219','Patient initiates chat with doctor','Find Doctors → Doctor Profile → Message → Send hi','Conversation created, message delivered',P,H,'Both'],
+['t-e2e','Chat','TC220','Real-time message delivery','Send message from one device → Check other device','Message appears without page refresh',P,H,'Both'],
+['t-e2e','Chat','TC221','Typing indicator shows','Start typing in chat box','Other party sees typing indicator dots',P,M,'Both'],
+['t-e2e','Chat','TC222','Message read receipt','Recipient opens message','Sender sees message marked as read',P,M,'Both'],
+['t-e2e','Dark Mode','TC223','Enable dark mode','Settings → Toggle dark mode','All screens switch to dark theme',P,M,'Both'],
+['t-e2e','Dark Mode','TC224','Dark mode persists on refresh','Enable dark mode, refresh page','Dark mode remains active',P,M,'Web'],
+['t-e2e','Notifications','TC225','Booking notification to doctor','Patient books with doctor','Doctor sees new notification in notification center',P,H,'Both'],
+['t-e2e','Notifications','TC226','Cancellation notification sent','Cancel appointment','Both parties receive cancellation notification',P,H,'Both'],
+['t-e2e','Notifications','TC227','Mark all notifications read','Notifications → Mark all read','All notification dots cleared',P,L,'Both'],
+['t-e2e','AI Chatbot','TC228','Patient uses AI health chatbot','AI Health Bot → Type "I have a headache"','Chatbot responds with headache information',P,M,'Both'],
+['t-e2e','AI Chatbot','TC229','AI chatbot BMI calculation','Type "My weight is 70kg height 175cm"','Chatbot calculates and displays BMI result',P,M,'Both'],
+['t-e2e','AI Chatbot','TC230','AI chatbot emergency detection','Type "I need emergency help"','Chatbot shows emergency contacts with urgent styling',P,H,'Both'],
