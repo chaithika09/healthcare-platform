@@ -88,14 +88,18 @@ export default function DoctorAppointments() {
                 <>
                   {apt.type === "video" && (
                     <Link to={`/video-call/${apt.id}`} className="btn-primary btn-sm gap-1">
-                      <FiVideo size={12} /> Join
+                      <FiVideo size={12} /> Join Call
                     </Link>
                   )}
-                  <button className="btn-outline btn-sm">View</button>
+                  <Link to="/doctor/patients" className="btn-outline btn-sm">
+                    View Details
+                  </Link>
                 </>
               )}
               {apt.status === "completed" && (
-                <button className="btn-ghost btn-sm text-gray-500">Records</button>
+                <Link to="/doctor/patients" className="btn-ghost btn-sm text-primary-600">
+                  Medical Records
+                </Link>
               )}
             </div>
           </motion.div>

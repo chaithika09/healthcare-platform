@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { FiArrowLeft, FiCalendar, FiVideo, FiUser, FiClock, FiFileText } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../../store/authStore";
+import { useAppointmentStore } from "../../store/appointmentStore";
 
 const timeSlots = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM"];
 
@@ -20,15 +22,41 @@ export default function BookAppointment() {
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
-  const doctor = { name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ" };
+  const doctorsList = [
+    { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ" },
+    { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC" },
+    { id: 3, name: "Dr. Emily Davis",   specialty: "Dermatologist",fee: 120, avatar: "ED" },
+    { id: 4, name: "Dr. James Wilson",  specialty: "Pediatrician",  fee: 100, avatar: "JW" },
+    { id: 5, name: "Dr. Priya Sharma",  specialty: "Gynecologist",  fee: 140, avatar: "PS" },
+    { id: 6, name: "Dr. Robert Brown",  specialty: "Orthopedic",    fee: 200, avatar: "RB" },
+    { id: 7, name: "Dr. Lisa Martinez", specialty: "Psychiatrist",  fee: 160, avatar: "LM" },
+    { id: 8, name: "Dr. David Kim",     specialty: "Ophthalmologist",fee: 130, avatar: "DK" },
+  ];
+
+  const doctor = doctorsList.find((d) => d.id === parseInt(id)) || doctorsList[0];
+
+  const { user } = useAuthStore();
+  const { addAppointment } = useAppointmentStore();
 
   const handleBook = async (data) => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 1500)); // simulate API
+      await new Promise((r) => setTimeout(r, 600));
+      const booked = addAppointment({
+        doctorName: doctor.name,
+        specialty: doctor.specialty,
+        fee: doctor.fee,
+        avatar: doctor.avatar,
+        date: selectedDate,
+        time: selectedSlot,
+        type: consultType,
+        symptoms: data.symptoms,
+        patientName: user?.name || "Patient",
+        patientEmail: user?.email || "patient@example.com",
+      });
       toast.success("Appointment booked successfully!");
       navigate("/appointment-confirm", {
-        state: { doctor, date: selectedDate, slot: selectedSlot, type: consultType, symptoms: data.symptoms },
+        state: { doctor, date: selectedDate, slot: selectedSlot, type: consultType, symptoms: data.symptoms, aptId: booked.id },
       });
     } catch {
       toast.error("Booking failed. Please try again.");

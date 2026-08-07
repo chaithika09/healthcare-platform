@@ -142,6 +142,13 @@ exports.update = async (req, res, next) => {
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found" });
 
+    // Ownership check
+    const isOwner = appointment.patient.toString() === req.user._id.toString() ||
+                    appointment.doctor.toString()  === req.user._id.toString();
+    if (!isOwner && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
     if (status) appointment.status = status;
     if (doctorNotes) appointment.doctorNotes = doctorNotes;
     if (diagnosis)   appointment.diagnosis   = diagnosis;
@@ -160,6 +167,13 @@ exports.cancel = async (req, res, next) => {
     const { reason } = req.body;
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found" });
+
+    // Ownership check
+    const isOwner = appointment.patient.toString() === req.user._id.toString() ||
+                    appointment.doctor.toString()  === req.user._id.toString();
+    if (!isOwner && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Access denied" });
+    }
 
     if (["completed", "cancelled"].includes(appointment.status)) {
       return res.status(400).json({ success: false, message: `Cannot cancel a ${appointment.status} appointment` });

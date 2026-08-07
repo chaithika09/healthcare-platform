@@ -1,119 +1,155 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiShield, FiVideo, FiFileText } from "react-icons/fi";
+import { FiArrowRight, FiShield, FiVideo, FiFileText, FiCpu, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
 import Logo from "../components/common/Logo";
+import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 
 const features = [
-  { icon: FiShield,   color: "bg-blue-100 text-blue-600",   title: "Secure & Private",    desc: "HIPAA-compliant data protection" },
-  { icon: FiVideo,    color: "bg-green-100 text-green-600", title: "Video Consultations",  desc: "Connect with doctors remotely" },
-  { icon: FiFileText, color: "bg-purple-100 text-purple-600",title: "Digital Records",     desc: "Access your health history anytime" },
+  { icon: FiCpu,       color: "bg-blue-50 text-blue-600",    title: "AI Health Assistant",  desc: "24/7 symptom checker & instant guidance" },
+  { icon: FiVideo,     color: "bg-green-50 text-green-600",  title: "HD Video Consult",     desc: "Connect with verified doctors remotely" },
+  { icon: FiFileText,  color: "bg-purple-50 text-purple-600", title: "Digital EHR Records",   desc: "Secure lab reports & prescriptions" },
+  { icon: FiAlertCircle,color:"bg-red-50 text-red-600",     title: "24/7 Emergency Support",desc: "Instant urgent care & ambulance booking" },
 ];
 
 export default function WelcomePage() {
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Hero */}
-      <div className="bg-gradient-hero relative overflow-hidden flex-shrink-0">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary-500/20 rounded-full translate-y-1/2 -translate-x-1/2" />
-        </div>
-        <div className="relative z-10 px-6 pt-16 pb-20 text-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center mb-6"
-          >
-            <Logo size={80} showText={false} />
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl font-heading font-bold text-white"
-          >
-            Smart Healthcare Portal
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-white/80 mt-3 text-base leading-relaxed max-w-sm mx-auto"
-          >
-            Connect with top doctors, manage your health records, and get care from anywhere.
-          </motion.p>
-        </div>
-      </div>
+  const { setAuth } = useAuthStore();
+  const navigate = useNavigate();
 
-      {/* Features */}
-      <div className="flex-1 px-6 py-8">
+  const launchDemo = (role) => {
+    const mockUser = {
+      _id: "demo_" + role + "_" + Date.now(),
+      name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : "Demo Patient",
+      email: `demo.${role}@healthcare.app`,
+      role: role,
+      phone: "+1 (555) 019-2834",
+      specialty: role === "doctor" ? "Cardiologist" : undefined,
+    };
+    setAuth(mockUser, "demo_token_" + Date.now(), "demo_refresh_" + Date.now());
+    toast.success(`Launched Portal as ${role.toUpperCase()}`);
+    navigate(`/${role}/dashboard`, { replace: true });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-between relative overflow-hidden">
+      {/* Background ambient lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-blue-600/20 via-teal-500/10 to-transparent blur-3xl pointer-events-none" />
+
+      {/* Top Header */}
+      <header className="relative z-10 px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
+        <div className="flex items-center gap-3">
+          <Logo size={42} showText={true} />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-medium text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Portal Active
+          </div>
+          <Link
+            to="/login"
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold text-white transition-all"
+          >
+            Sign In
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Hero */}
+      <main className="relative z-10 px-6 py-8 max-w-5xl mx-auto w-full flex-1 flex flex-col justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-4 mb-8"
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-2xl mx-auto space-y-4"
         >
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-              className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-card"
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-xs font-semibold text-blue-300">
+            ✨ Next-Generation Smart Healthcare Platform
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-heading font-extrabold tracking-tight leading-tight">
+            Your Complete Digital <br />
+            <span className="bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+              Health & Doctor Portal
+            </span>
+          </h1>
+
+          <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+            Experience modern healthcare. Book virtual appointments, access digital medical records, and consult AI health assistants in one secure portal.
+          </p>
+
+          {/* Quick Portal Access */}
+          <div className="pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              ⚡ Open App as Role:
+            </p>
+            <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+              {[
+                { role: "patient", icon: "🧑‍⚕️", label: "Patient" },
+                { role: "doctor",  icon: "👨‍⚕️", label: "Doctor" },
+                { role: "admin",   icon: "🛡️", label: "Admin" },
+              ].map((item) => (
+                <button
+                  key={item.role}
+                  onClick={() => launchDemo(item.role)}
+                  className="p-3 bg-white/10 hover:bg-white/20 border border-white/15 rounded-2xl flex flex-col items-center gap-1 text-center transition-all hover:scale-105"
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-xs font-bold text-white">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Standard Auth CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+            <Link
+              to="/register"
+              className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 font-bold rounded-2xl text-sm text-white shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all"
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${f.color}`}>
-                <f.icon size={22} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm">{f.title}</h3>
-                <p className="text-gray-500 text-xs mt-0.5">{f.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+              Create Account <FiArrowRight size={16} />
+            </Link>
+            <Link
+              to="/login"
+              className="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold rounded-2xl text-sm text-slate-200 flex items-center justify-center transition-all"
+            >
+              Log In to Portal
+            </Link>
+          </div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Feature Cards Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="grid grid-cols-3 gap-3 mb-8"
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12"
         >
-          {[
-            { value: "500+", label: "Doctors" },
-            { value: "10K+", label: "Patients" },
-            { value: "4.9★", label: "Rating" },
-          ].map((s) => (
-            <div key={s.label} className="bg-primary-50 rounded-2xl p-3 text-center">
-              <p className="text-xl font-bold text-primary-600">{s.value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+          {features.map((f) => (
+            <div key={f.title} className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 backdrop-blur-md flex items-start gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${f.color}`}>
+                <f.icon size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white text-sm">{f.title}</h3>
+                <p className="text-slate-400 text-xs mt-0.5 leading-snug">{f.desc}</p>
+              </div>
             </div>
           ))}
         </motion.div>
 
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="space-y-3"
-        >
-          <Link
-            to="/onboarding"
-            className="btn-primary btn-lg w-full justify-center text-base"
-          >
-            Get Started <FiArrowRight size={18} />
-          </Link>
-          <Link
-            to="/login"
-            className="btn-outline btn-lg w-full justify-center text-base"
-          >
-            I already have an account
-          </Link>
-        </motion.div>
-      </div>
+        {/* Trust Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-xs text-slate-400">
+          <span className="flex items-center gap-1.5"><FiShield className="text-teal-400" size={14} /> HIPAA Compliant</span>
+          <span className="flex items-center gap-1.5"><FiCheckCircle className="text-blue-400" size={14} /> 256-Bit SSL Encryption</span>
+          <span className="flex items-center gap-1.5"><FiCheckCircle className="text-emerald-400" size={14} /> Verified Specialists</span>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 px-6 py-4 text-center text-xs text-slate-500 border-t border-slate-800">
+        Smart Healthcare Portal · Version 1.0.0 · All Rights Reserved
+      </footer>
     </div>
   );
 }

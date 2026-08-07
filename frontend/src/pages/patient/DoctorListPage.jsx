@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiSearch, FiFilter, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
 
@@ -22,7 +22,9 @@ const gradients = [
 ];
 
 export default function DoctorListPage() {
-  const [search, setSearch] = useState("");
+  const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get("search") || "";
+  const [search, setSearch] = useState(queryParam);
   const [selectedSpec, setSelectedSpec] = useState("All");
   const [sortBy, setSortBy] = useState("rating");
   const [showFilters, setShowFilters] = useState(false);

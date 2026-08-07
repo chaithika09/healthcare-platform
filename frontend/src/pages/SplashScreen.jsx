@@ -8,23 +8,26 @@ export default function SplashScreen() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
+  const handleContinue = () => {
+    if (isAuthenticated && user) {
+      const path =
+        user.role === "doctor" ? "/doctor/dashboard" :
+        user.role === "admin"  ? "/admin/dashboard"  : "/patient/dashboard";
+      navigate(path, { replace: true });
+    } else {
+      navigate("/welcome", { replace: true });
+    }
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isAuthenticated && user) {
-        const path =
-          user.role === "doctor" ? "/doctor/dashboard" :
-          user.role === "admin"  ? "/admin/dashboard"  : "/patient/dashboard";
-        navigate(path, { replace: true });
-      } else {
-        navigate("/register", { replace: true });
-      }
-    }, 3500);
+    const timer = setTimeout(handleContinue, 2600);
     return () => clearTimeout(timer);
   }, [isAuthenticated, user, navigate]);
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
+      onClick={handleContinue}
+      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden cursor-pointer select-none"
       style={{ background: "linear-gradient(160deg, #020b18 0%, #041e3a 35%, #072a20 70%, #020b18 100%)" }}
     >
       {/* ── Animated background particles ── */}

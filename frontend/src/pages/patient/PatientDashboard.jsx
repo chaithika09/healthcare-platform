@@ -10,6 +10,7 @@ import {
   FiArrowRight, FiClock, FiCheckCircle, FiUser, FiVideo
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
+import { useAppointmentStore } from "../../store/appointmentStore";
 
 const healthData = [
   { month: "Jan", bp: 120, sugar: 95, weight: 72 },
@@ -20,10 +21,9 @@ const healthData = [
   { month: "Jun", bp: 117, sugar: 90, weight: 70 },
 ];
 
-const appointments = [
-  { id: 1, doctor: "Dr. Sarah Johnson", specialty: "Cardiologist", date: "Today, 3:00 PM", type: "video", status: "upcoming", avatar: "SJ" },
-  { id: 2, doctor: "Dr. Michael Chen",  specialty: "Neurologist",  date: "Jun 28, 10:00 AM", type: "in-person", status: "upcoming", avatar: "MC" },
-  { id: 3, doctor: "Dr. Emily Davis",   specialty: "Dermatologist", date: "Jun 20, 2:00 PM", type: "video", status: "completed", avatar: "ED" },
+const demoAppointments = [
+  { id: 1, doctorName: "Dr. Sarah Johnson", specialty: "Cardiologist", date: "Today, 3:00 PM", type: "video", status: "upcoming", avatar: "SJ" },
+  { id: 2, doctorName: "Dr. Michael Chen",  specialty: "Neurologist",  date: "Jun 28, 10:00 AM", type: "in-person", status: "upcoming", avatar: "MC" },
 ];
 
 const quickActions = [
@@ -40,17 +40,25 @@ const vitals = [
   { label: "Weight",         value: "70",     unit: "kg",    icon: "⚖️", status: "normal", trend: "↓ 1%" },
 ];
 
-const pieData = [
-  { name: "Completed", value: 12, color: "#00A86B" },
-  { name: "Upcoming",  value: 3,  color: "#0066CC" },
-  { name: "Cancelled", value: 1,  color: "#EF4444" },
-];
-
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
 export default function PatientDashboard() {
   const { user } = useAuthStore();
+  const { getAppointmentsByUser } = useAppointmentStore();
+
+  const userAppointments = getAppointmentsByUser(user?.email);
+  const isDemoAccount = user?.email?.includes("lschaithika+patient");
+  const displayAppointments = userAppointments.length > 0
+    ? userAppointments
+    : isDemoAccount ? demoAppointments : [];
+
+  const totalApts = displayAppointments.length;
+  const pieData = [
+    { name: "Completed", value: isDemoAccount ? 12 : 0, color: "#00A86B" },
+    { name: "Upcoming",  value: totalApts,  color: "#0066CC" },
+    { name: "Cancelled", value: 0,  color: "#EF4444" },
+  ];
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -58,11 +66,11 @@ export default function PatientDashboard() {
       <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold text-gray-900">
-            Good morning, {user?.name?.split(" ")[0] || "Patient"} 👋
+            Welcome back, {user?.name?.split(" ")[0] || "Patient"} 👋
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Here's your health overview for today</p>
+          <p className="text-gray-500 text-sm mt-1">Here's your personal health dashboard</p>
         </div>
-        <Link to="/book-appointment/new" className="btn-primary gap-2 self-start sm:self-auto">
+        <Link to="/doctors" className="btn-primary gap-2 self-start sm:self-auto">
           <FiCalendar size={16} /> Book Appointment
         </Link>
       </motion.div>
@@ -70,10 +78,10 @@ export default function PatientDashboard() {
       {/* Stats row */}
       <motion.div variants={fadeUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Appointments", value: "16", icon: FiCalendar, color: "bg-blue-50 text-blue-600",   change: "+2 this month" },
-          { label: "Medical Records",    value: "8",  icon: FiFileText, color: "bg-green-50 text-green-600", change: "Last updated 2d ago" },
-          { label: "Prescriptions",      value: "3",  icon: FiActivity, color: "bg-purple-50 text-purple-600",change: "2 active" },
-          { label: "Lab Tests",          value: "5",  icon: FiHeart,    color: "bg-orange-50 text-orange-600",change: "1 pending" },
+          { label: "Total Appointments", value: totalApts.toString(), icon: FiCalendar, color: "bg-blue-50 text-blue-600",   change: totalApts > 0 ? "Active appointments" : "No active bookings" },
+          { label: "Medical Records",    value: isDemoAccount ? "8" : "0",  icon: FiFileText, color: "bg-green-50 text-green-600", change: isDemoAccount ? "Last updated 2d ago" : "No records uploaded" },
+          { label: "Prescriptions",      value: isDemoAccount ? "3" : "0",  icon: FiActivity, color: "bg-purple-50 text-purple-600",change: isDemoAccount ? "2 active" : "No active prescriptions" },
+          { label: "Lab Tests",          value: isDemoAccount ? "5" : "0",  icon: FiHeart,    color: "bg-orange-50 text-orange-600",change: isDemoAccount ? "1 pending" : "No pending lab tests" },
         ].map((s) => (
           <div key={s.label} className="card p-5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color} mb-3`}>
@@ -137,7 +145,7 @@ export default function PatientDashboard() {
         {/* Appointment stats pie */}
         <motion.div variants={fadeUp} className="card p-6">
           <h2 className="font-heading font-semibold text-gray-900 mb-1">Appointments</h2>
-          <p className="text-xs text-gray-500 mb-4">All time summary</p>
+          <p className="text-xs text-gray-500 mb-4">Summary overview</p>
           <ResponsiveContainer width="100%" height={140}>
             <PieChart>
               <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
@@ -185,40 +193,58 @@ export default function PatientDashboard() {
       {/* Upcoming Appointments */}
       <motion.div variants={fadeUp}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-gray-900">Appointments</h2>
+          <h2 className="text-base font-semibold text-gray-900">Upcoming Appointments</h2>
           <Link to="/doctors" className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1">
             Book new <FiArrowRight size={14} />
           </Link>
         </div>
-        <div className="space-y-3">
-          {appointments.map((apt) => (
-            <div key={apt.id} className="card p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-hero flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                {apt.avatar}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">{apt.doctor}</p>
-                <p className="text-xs text-gray-500">{apt.specialty}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <FiClock size={11} /> {apt.date}
-                  </span>
-                  <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
-                    apt.type === "video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
-                  }`}>
-                    {apt.type === "video" ? <FiVideo size={10} /> : <FiUser size={10} />}
-                    {apt.type === "video" ? "Video" : "In-person"}
-                  </span>
-                </div>
-              </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
-                apt.status === "upcoming" ? "bg-primary-100 text-primary-700" : "bg-green-100 text-green-700"
-              }`}>
-                {apt.status === "upcoming" ? "Upcoming" : <span className="flex items-center gap-1"><FiCheckCircle size={11} /> Done</span>}
-              </span>
+
+        {displayAppointments.length === 0 ? (
+          <div className="card p-8 text-center space-y-3">
+            <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+              🗓️
             </div>
-          ))}
-        </div>
+            <h3 className="font-heading font-semibold text-gray-900 text-lg">No Appointments Scheduled</h3>
+            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+              You haven't booked any doctor consultations yet. Find a specialist to schedule your first visit.
+            </p>
+            <div>
+              <Link to="/doctors" className="btn-primary inline-flex gap-2">
+                <FiUser size={16} /> Find & Book Doctor
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {displayAppointments.map((apt) => (
+              <div key={apt.id} className="card p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-hero flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                  {apt.avatar || apt.doctorName?.split(" ").map(n => n[0]).join("").slice(0, 2) || "DR"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm">{apt.doctorName || apt.doctor}</p>
+                  <p className="text-xs text-gray-500">{apt.specialty}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <FiClock size={11} /> {apt.date} {apt.time ? `at ${apt.time}` : ""}
+                    </span>
+                    <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                      apt.type === "video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
+                    }`}>
+                      {apt.type === "video" ? <FiVideo size={10} /> : <FiUser size={10} />}
+                      {apt.type === "video" ? "Video" : "In-person"}
+                    </span>
+                  </div>
+                </div>
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
+                  apt.status === "upcoming" ? "bg-primary-100 text-primary-700" : "bg-green-100 text-green-700"
+                }`}>
+                  {apt.status === "upcoming" ? "Upcoming" : <span className="flex items-center gap-1"><FiCheckCircle size={11} /> Done</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

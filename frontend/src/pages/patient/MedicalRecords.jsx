@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiFileText, FiDownload, FiEye, FiUpload, FiSearch, FiFilter, FiCalendar, FiUser } from "react-icons/fi";
+import { FiFileText, FiDownload, FiEye, FiUpload, FiSearch, FiCalendar, FiUser } from "react-icons/fi";
+import { useAuthStore } from "../../store/authStore";
 
-const records = [
+const sampleRecords = [
   { id: 1, title: "Blood Test Report",       type: "Lab Report",    doctor: "Dr. Sarah Johnson", date: "2024-06-15", size: "2.4 MB", format: "PDF", category: "lab" },
   { id: 2, title: "Chest X-Ray",             type: "Radiology",     doctor: "Dr. Michael Chen",  date: "2024-06-10", size: "8.1 MB", format: "DICOM", category: "imaging" },
   { id: 3, title: "ECG Report",              type: "Cardiology",    doctor: "Dr. Sarah Johnson", date: "2024-05-28", size: "1.2 MB", format: "PDF", category: "lab" },
@@ -21,8 +22,12 @@ const typeColors = {
 };
 
 export default function MedicalRecords() {
+  const { user } = useAuthStore();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
+
+  const isDemoAccount = user?.email?.includes("lschaithika+patient");
+  const records = isDemoAccount ? sampleRecords : [];
 
   const filtered = records.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||

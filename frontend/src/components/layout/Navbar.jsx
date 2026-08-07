@@ -39,6 +39,13 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  const handleSearchSubmit = (e) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate(`/doctors?search=${encodeURIComponent(searchQuery.trim())}`);
+      setShowSearch(false);
+    }
+  };
+
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 shadow-sm">
       {/* Left */}
@@ -55,10 +62,11 @@ export default function Navbar() {
           <FiSearch size={16} className="text-gray-400 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search doctors, records..."
+            placeholder="Search doctors, records... (Press Enter)"
             className="bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none w-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchSubmit}
           />
         </div>
       </div>

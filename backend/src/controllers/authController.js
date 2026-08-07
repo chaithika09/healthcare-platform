@@ -19,16 +19,15 @@ exports.register = async (req, res, next) => {
     const otp       = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-    // Auto-verify email in both dev and production
-    // (OTP is sent via email but not required for login)
-    const isDev = true; // Always auto-verify for better UX
+    // Auto-verify email in development/demo mode
+    const isDev = process.env.NODE_ENV !== "production" || process.env.AUTO_VERIFY_EMAIL === "true";
 
     const user = await User.create({
       name, email, password, phone,
       role: role || "patient",
       otp,
       otpExpiry,
-      isEmailVerified: isDev, // auto-verify in dev
+      isEmailVerified: isDev,
     });
 
     // Create role-specific profile
@@ -230,7 +229,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     const isDev = process.env.NODE_ENV !== "production";
 
-    logger.info(`Password reset requested for: ${email} | Reset URL: ${resetUrl}`);
+    logger.info(`Password reset requested for: ${email}`);
 
     res.json({
       success: true,

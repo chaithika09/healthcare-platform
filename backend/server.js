@@ -43,10 +43,12 @@ app.use(helmet({
 }));
 
 // ── CORS ──────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CORS_ORIGINS || "*").split(",");
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",")
+  : ["http://localhost:3000", "https://healthcare-platform-8mq2-fawn.vercel.app"];
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow all origins if CORS_ORIGINS=* or in development
     if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
       callback(null, true);
     } else {

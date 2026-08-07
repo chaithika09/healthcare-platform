@@ -1,0 +1,25 @@
+{
+  "name": "mediq-selenium-e2e",
+  "version": "2.0.0",
+  "description": "MedIQ+ Healthcare Portal — Selenium E2E Tests + Excel Reports + Security Analysis (Node.js)",
+  "private": true,
+  "scripts": {
+    "test":            "node tests/e2e-runner.js",
+    "test:report":     "node tests/e2e-runner.js && node reports/excel-report.js",
+    "report:excel":    "node reports/excel-report.js",
+    "report:html":     "node reports/html-report.js",
+    "run:all":         "node tests/e2e-runner.js && node reports/excel-report.js && node reports/html-report.js",
+    "clean":           "node -e \"require('fs-extra').emptyDirSync('./reports/output'); require('fs-extra').emptyDirSync('./reports/json'); console.log('Cleaned.');\""
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.16.0",
+    "chromedriver":       "^latest",
+    "xlsx":               "^0.18.5",
+    "fs-extra":           "^11.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "MedIQ+ QA Team",
+  "license": "MIT"
+}

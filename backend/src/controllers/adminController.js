@@ -14,10 +14,13 @@ exports.getUsers = async (req, res, next) => {
     if (role)   query.role = role;
     if (status === "active")   query.isActive = true;
     if (status === "inactive") query.isActive = false;
-    if (search) query.$or = [
-      { name:  { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
-    ];
+    if (search) {
+      const sanitized = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.$or = [
+        { name:  { $regex: sanitized, $options: "i" } },
+        { email: { $regex: sanitized, $options: "i" } },
+      ];
+    }
 
     const total = await User.countDocuments(query);
     const users = await User.find(query)

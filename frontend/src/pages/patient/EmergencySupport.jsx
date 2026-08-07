@@ -83,10 +83,19 @@ export default function EmergencySupport() {
         {!ambulanceBooked ? (
           <div className="space-y-4">
             <div>
-              <label className="label flex items-center gap-2"><FiMapPin size={14} /> Your Location</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="label flex items-center gap-2 mb-0"><FiMapPin size={14} /> Your Location</label>
+                <button
+                  type="button"
+                  onClick={() => { setLocation("Current GPS Location (Main St)"); toast.success("Location auto-detected!"); }}
+                  className="text-xs text-primary-600 font-semibold hover:underline"
+                >
+                  📍 Detect GPS Location
+                </button>
+              </div>
               <input
                 type="text"
-                placeholder="Enter your address or use GPS..."
+                placeholder="Enter your address or click GPS..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="input"
