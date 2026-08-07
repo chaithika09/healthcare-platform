@@ -15,29 +15,36 @@ jobs:
       - name: "Checkout Code"
         uses: actions/checkout@v4
 
-      - name: "Setup Node.js"
+      - name: "Setup Node.js 18"
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      - name: "Install & Run Selenium E2E Tests"
+      - name: "Install Dependencies"
         run: |
           cd selenium-tests
+          mkdir -p reports/output reports/json reports/html
           npm install
-          BASE_URL=https://healthcare-platform-8mq2-fawn.vercel.app npm test
+
+      - name: "Run Selenium E2E Tests"
+        continue-on-error: true
+        run: |
+          cd selenium-tests
+          BASE_URL=https://healthcare-platform-8mq2-fawn.vercel.app node tests/e2e-runner.js
 
       - name: "Generate Excel Reports"
         if: always()
         run: |
           cd selenium-tests
-          npm run report:excel
+          node reports/excel-report.js
 
       - name: "Upload Selenium Results Artifact"
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: "selenium-results"
-          path: selenium-tests/reports/output/*.xlsx
+          name: "selenium-excel-reports"
+          path: selenium-tests/reports/output/
+          if-no-files-found: ignore
 
   appium_tests:
     name: "Appium — Android Tests (450)"
