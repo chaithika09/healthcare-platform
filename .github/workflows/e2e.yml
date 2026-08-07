@@ -24,10 +24,9 @@ jobs:
         run: |
           cd selenium-tests
           mkdir -p reports/output reports/json reports/html
-          npm install
+          npm install --ignore-scripts || npm install
 
       - name: "Run Selenium E2E Tests"
-        continue-on-error: true
         run: |
           cd selenium-tests
           BASE_URL=https://healthcare-platform-8mq2-fawn.vercel.app node tests/e2e-runner.js
