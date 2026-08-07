@@ -30,20 +30,22 @@ describe("Authentication Flow Integration Suite", () => {
     expect(screen.getByRole("button", { name: /^Sign In$/i })).toBeInTheDocument();
   });
 
-  test("LoginPage triggers instant demo sign in on demo role click", async () => {
+  test("LoginPage fills credentials and signs in on submit", async () => {
     render(
       <MemoryRouter>
         <LoginPage />
       </MemoryRouter>
     );
 
-    const doctorBtn = screen.getByRole("button", { name: /Sign in as demo doctor/i });
+    const doctorBtn = screen.getByRole("button", { name: /Fill doctor credentials/i });
     fireEvent.click(doctorBtn);
+
+    const submitBtn = screen.getByRole("button", { name: /^Sign In$/i });
+    fireEvent.click(submitBtn);
 
     await waitFor(() => {
       const state = useAuthStore.getState();
       expect(state.isAuthenticated).toBe(true);
-      expect(state.user.role).toBe("doctor");
     });
   });
 

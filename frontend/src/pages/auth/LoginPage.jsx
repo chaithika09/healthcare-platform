@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
@@ -21,6 +21,15 @@ export default function LoginPage() {
   const location = useLocation();
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+
+  useEffect(() => {
+    if (location.state?.demoRole) {
+      const role = location.state.demoRole;
+      const creds = DEMOS[role] || DEMOS.patient;
+      setValue("email", creds.email, { shouldValidate: true });
+      setValue("password", creds.password, { shouldValidate: true });
+    }
+  }, [location.state, setValue]);
 
   const handleLoginSuccess = (user, token, refreshToken) => {
     setAuth(user, token || "demo_token_" + Date.now(), refreshToken || "demo_refresh_" + Date.now());
@@ -70,17 +79,7 @@ export default function LoginPage() {
     const creds = DEMOS[role] || DEMOS.patient;
     setValue("email", creds.email, { shouldValidate: true });
     setValue("password", creds.password, { shouldValidate: true });
-    
-    const mockUser = {
-      _id: "demo_" + role + "_" + Date.now(),
-      name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : "Demo Patient",
-      email: creds.email,
-      role: role,
-      phone: "+1 (555) 019-2834",
-      avatar: "",
-      specialty: role === "doctor" ? "Cardiologist" : undefined,
-    };
-    handleLoginSuccess(mockUser);
+    toast.success(`Filled ${role.charAt(0).toUpperCase() + role.slice(1)} credentials! Click Sign In below.`);
   };
 
   return (
@@ -94,10 +93,10 @@ export default function LoginPage() {
         <p className="text-gray-500 mt-1">Sign in to your healthcare account</p>
       </div>
 
-      {/* Quick 1-Click Role Access Banner */}
+      {/* Quick Fill Credentials Banner */}
       <div className="bg-primary-50 border border-primary-200 rounded-2xl p-4 mb-6">
         <p className="text-xs font-bold text-primary-900 mb-2 flex items-center gap-1.5">
-          ⚡ 1-Click Instant Sign-In:
+          💡 Quick Fill Demo Credentials:
         </p>
         <div className="grid grid-cols-3 gap-2">
           {["patient", "doctor", "admin"].map((role) => (
@@ -105,13 +104,16 @@ export default function LoginPage() {
               key={role}
               type="button"
               onClick={() => fillDemo(role)}
-              aria-label={`Sign in as ${role}`}
+              aria-label={`Fill ${role} credentials`}
               className="py-2 px-2 bg-white hover:bg-primary-100 border border-primary-200 rounded-xl text-xs font-semibold text-primary-700 transition-all capitalize shadow-sm text-center"
             >
               {role === "patient" ? "🧑‍⚕️ Patient" : role === "doctor" ? "👨‍⚕️ Doctor" : "🛡️ Admin"}
             </button>
           ))}
         </div>
+        <p className="text-xs text-primary-600 text-center mt-2">
+          Click a role above to auto-fill credentials, then click <strong>Sign In</strong>
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

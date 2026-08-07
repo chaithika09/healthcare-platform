@@ -18,17 +18,7 @@ export default function WelcomePage() {
   const navigate = useNavigate();
 
   const launchDemo = (role) => {
-    const mockUser = {
-      _id: "demo_" + role + "_" + Date.now(),
-      name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : "Demo Patient",
-      email: `demo.${role}@healthcare.app`,
-      role: role,
-      phone: "+1 (555) 019-2834",
-      specialty: role === "doctor" ? "Cardiologist" : undefined,
-    };
-    setAuth(mockUser, "demo_token_" + Date.now(), "demo_refresh_" + Date.now());
-    toast.success(`Launched Portal as ${role.toUpperCase()}`);
-    navigate(`/${role}/dashboard`, { replace: true });
+    navigate("/login", { state: { demoRole: role } });
   };
 
   return (
