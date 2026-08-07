@@ -6,7 +6,7 @@ import {
   FiUsers, FiSettings, FiBell, FiLogOut, FiActivity,
   FiShield, FiBarChart2, FiClipboard, FiHeart, FiAlertCircle,
   FiBook, FiStar, FiHelpCircle, FiChevronLeft, FiChevronRight,
-  FiUser, FiCreditCard, FiDroplet, FiUpload, FiCpu
+  FiUser, FiCreditCard, FiDroplet, FiUpload
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useUIStore } from "../../store/uiStore";
@@ -26,7 +26,6 @@ const patientNav = [
   { to: "/chat",              icon: FiMessageSquare,label: "Messages" },
   { to: "/notifications",     icon: FiBell,         label: "Notifications" },
   { to: "/articles",          icon: FiBook,         label: "Health Articles" },
-  { to: "/ai-assistant",      icon: FiCpu,          label: "AI Health Bot" },
 ];
 
 const doctorNav = [
