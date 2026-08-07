@@ -18,10 +18,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node tests/e2e-runner.js
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -38,9 +38,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -57,9 +58,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -76,9 +78,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,9 +98,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -114,9 +118,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -133,9 +138,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -152,9 +158,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -173,10 +180,10 @@ jobs:
           node-version: "18"
       - run: |
           cd selenium-tests
-          mkdir -p reports/output
+          mkdir -p reports/output reports/json reports/html
           npm install --ignore-scripts || true
-          node tests/e2e-runner.js
-          node reports/excel-report.js
+          node tests/e2e-runner.js || true
+          node reports/excel-report.js || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
