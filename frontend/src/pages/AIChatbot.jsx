@@ -5,6 +5,7 @@ import {
   FiAlertCircle, FiInfo, FiMic
 } from "react-icons/fi";
 import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 
 // ── AI Knowledge Base ─────────────────────────────────────────
 const KB = {
@@ -363,13 +364,26 @@ export default function AIChatbot() {
               placeholder="Ask me about symptoms, health tips, appointments..."
               className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
             />
-            <button className="text-gray-300 hover:text-primary-500 transition-colors flex-shrink-0">
+            <button
+              onClick={() => {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                  toast.success("Listening... Speak your symptoms clearly.");
+                } else {
+                  toast.error("Speech recognition is not supported in this browser.");
+                }
+              }}
+              type="button"
+              aria-label="Voice input"
+              className="text-gray-400 hover:text-primary-500 transition-colors flex-shrink-0"
+            >
               <FiMic size={16} />
             </button>
           </div>
           <button
+            type="button"
             onClick={() => sendMessage()}
             disabled={!input.trim() || isTyping}
+            aria-label="Send message"
             className="w-11 h-11 bg-primary-600 hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl flex items-center justify-center transition-all shadow-primary flex-shrink-0"
           >
             <FiSend size={16} />

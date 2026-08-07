@@ -5,7 +5,7 @@ const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api/v1"
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 4000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -23,9 +23,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const isAuthRequest = error.config?.url?.includes("/auth/");
+    const token = useAuthStore.getState().token;
+    const isDemoToken = token && (token.startsWith("demo_") || token.includes("demo"));
+
+    // Do NOT force logout or redirect if using demo sessions or during auth requests
+    if (error.response?.status === 401 && !isAuthRequest && !isDemoToken) {
       useAuthStore.getState().logout();
-      window.location.href = "/login";
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

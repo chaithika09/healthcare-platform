@@ -52,7 +52,8 @@ export default function Navbar() {
       <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+          aria-label="Toggle navigation sidebar"
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400"
         >
           <FiMenu size={20} />
         </button>
@@ -62,6 +63,7 @@ export default function Navbar() {
           <FiSearch size={16} className="text-gray-400 flex-shrink-0" />
           <input
             type="text"
+            aria-label="Search doctors and medical records"
             placeholder="Search doctors, records... (Press Enter)"
             className="bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none w-full"
             value={searchQuery}
@@ -73,8 +75,9 @@ export default function Navbar() {
 
       {/* Right */}
       <div className="flex items-center gap-2">
-        {/* Mobile search */}
+        {/* Mobile search button */}
         <button
+          aria-label="Toggle mobile search input"
           className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500"
           onClick={() => setShowSearch(!showSearch)}
         >
@@ -84,6 +87,7 @@ export default function Navbar() {
         {/* Dark mode */}
         <button
           onClick={toggleDarkMode}
+          aria-label="Toggle theme color mode"
           className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
         >
           {darkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
@@ -92,6 +96,7 @@ export default function Navbar() {
         {/* Notifications */}
         <Link
           to="/notifications"
+          aria-label={`View notifications, ${notifCount} unread`}
           className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
         >
           <FiBell size={20} />
@@ -106,6 +111,8 @@ export default function Navbar() {
         <div className="relative">
           <button
             onClick={() => setShowProfile(!showProfile)}
+            aria-label="User profile menu"
+            aria-expanded={showProfile}
             className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
           >
             <div className="w-8 h-8 rounded-full bg-gradient-hero flex items-center justify-center text-white font-bold text-sm">
@@ -173,8 +180,12 @@ export default function Navbar() {
               <input
                 autoFocus
                 type="text"
-                placeholder="Search doctors, records..."
+                aria-label="Mobile search doctors and medical records"
+                placeholder="Search doctors, records... (Press Enter)"
                 className="bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchSubmit}
               />
             </div>
           </motion.div>

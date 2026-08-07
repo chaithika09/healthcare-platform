@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCalendar, FiVideo, FiUser, FiClock, FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const appointments = [
   { id: 1, patient: "John Smith",   age: 45, date: "2024-06-27", time: "9:00 AM",  type: "video",     status: "upcoming",  reason: "Follow-up checkup" },
@@ -22,8 +23,16 @@ export default function DoctorAppointments() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState("");
+  const [list, setList] = useState(appointments);
 
-  const filtered = appointments.filter((a) => {
+  const handleStatusChange = (id, newStatus) => {
+    setList((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
+    );
+    toast.success(`Appointment marked as ${newStatus}`);
+  };
+
+  const filtered = list.filter((a) => {
     const matchSearch = a.patient.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || a.status === filter;
     const matchDate = !selectedDate || a.date === selectedDate;
@@ -91,9 +100,18 @@ export default function DoctorAppointments() {
                       <FiVideo size={12} /> Join Call
                     </Link>
                   )}
-                  <Link to="/doctor/patients" className="btn-outline btn-sm">
-                    View Details
-                  </Link>
+                  <button
+                    onClick={() => handleStatusChange(apt.id, "completed")}
+                    className="btn-outline btn-sm text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    Complete
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange(apt.id, "cancelled")}
+                    className="btn-outline btn-sm text-red-500 border-red-200 hover:bg-red-50"
+                  >
+                    Cancel
+                  </button>
                 </>
               )}
               {apt.status === "completed" && (

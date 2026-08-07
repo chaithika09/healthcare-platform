@@ -35,6 +35,9 @@ export default function Modal({ isOpen, onClose, title, children, size = "md", s
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || "Dialog window"}
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -47,6 +50,7 @@ export default function Modal({ isOpen, onClose, title, children, size = "md", s
                 {showClose && (
                   <button
                     onClick={onClose}
+                    aria-label="Close dialog"
                     className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-600 transition-colors ml-auto"
                   >
                     <FiX size={18} />

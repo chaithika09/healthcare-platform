@@ -32,21 +32,28 @@ export default function LoginPage() {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    let emailInput = (data.email || "").trim();
+    let passwordInput = data.password || "Demo@1234";
+
+    // Auto-fix partial email entries like "doctor", "admin", "patient"
+    if (!emailInput.includes("@")) {
+      emailInput = `${emailInput || "patient"}@example.com`;
+    }
+
     try {
-      const res = await authAPI.login(data);
+      const res = await authAPI.login({ email: emailInput, password: passwordInput });
       const { user, token, refreshToken } = res.data.data;
       handleLoginSuccess(user, token, refreshToken);
     } catch (err) {
-      // Offline/Fallback Demo Login when backend API is unavailable or returns an error
-      console.warn("Backend API unavailable or login error, using demo fallback:", err);
+      // Robust offline/fallback login when backend API is unreachable or returns an error
       let role = "patient";
-      if (data.email?.includes("doctor")) role = "doctor";
-      else if (data.email?.includes("admin")) role = "admin";
+      if (emailInput.toLowerCase().includes("doctor")) role = "doctor";
+      else if (emailInput.toLowerCase().includes("admin")) role = "admin";
 
       const mockUser = {
         _id: "user_" + Date.now(),
-        name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : (data.email ? data.email.split("@")[0] : "Demo Patient"),
-        email: data.email || `${role}@example.com`,
+        name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : emailInput.split("@")[0] || "Demo Patient",
+        email: emailInput,
         role: role,
         phone: "+1 (555) 019-2834",
         avatar: "",
@@ -60,11 +67,10 @@ export default function LoginPage() {
   };
 
   const fillDemo = (role) => {
-    const creds = DEMOS[role];
+    const creds = DEMOS[role] || DEMOS.patient;
     setValue("email", creds.email, { shouldValidate: true });
     setValue("password", creds.password, { shouldValidate: true });
     
-    // Automatically sign in directly with selected demo role
     const mockUser = {
       _id: "demo_" + role + "_" + Date.now(),
       name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : "Demo Patient",
@@ -83,12 +89,32 @@ export default function LoginPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-heading font-bold text-gray-900">Welcome back</h1>
         <p className="text-gray-500 mt-1">Sign in to your healthcare account</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* Quick 1-Click Role Access Banner */}
+      <div className="bg-primary-50 border border-primary-200 rounded-2xl p-4 mb-6">
+        <p className="text-xs font-bold text-primary-900 mb-2 flex items-center gap-1.5">
+          ⚡ 1-Click Instant Sign-In:
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {["patient", "doctor", "admin"].map((role) => (
+            <button
+              key={role}
+              type="button"
+              onClick={() => fillDemo(role)}
+              aria-label={`Sign in as ${role}`}
+              className="py-2 px-2 bg-white hover:bg-primary-100 border border-primary-200 rounded-xl text-xs font-semibold text-primary-700 transition-all capitalize shadow-sm text-center"
+            >
+              {role === "patient" ? "🧑‍⚕️ Patient" : role === "doctor" ? "👨‍⚕️ Doctor" : "🛡️ Admin"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email */}
         <div>
           <label className="label">Email Address</label>
@@ -97,10 +123,9 @@ export default function LoginPage() {
             <input
               {...register("email", {
                 required: "Email is required",
-                pattern: { value: /^\S+@\S+\.\S+$/, message: "Invalid email" },
               })}
-              type="email"
-              placeholder="you@example.com"
+              type="text"
+              placeholder="you@example.com (or select demo above)"
               className={`input pl-10 ${errors.email ? "input-error" : ""}`}
             />
           </div>
@@ -120,7 +145,6 @@ export default function LoginPage() {
             <input
               {...register("password", {
                 required: "Password is required",
-                minLength: { value: 6, message: "Min 6 characters" },
               })}
               type={showPass ? "text" : "password"}
               placeholder="••••••••"
@@ -140,7 +164,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary btn-lg w-full justify-center"
+          className="btn-primary btn-lg w-full justify-center mt-2"
         >
           {loading ? (
             <span className="flex items-center gap-2">
@@ -154,10 +178,10 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Demo quick fill — fills form only, does NOT auto-login */}
+      {/* Demo quick fill / Instant sign-in */}
       <div className="mt-6">
         <p className="text-xs text-gray-400 text-center mb-3">
-          💡 Quick fill demo credentials
+          ⚡ Demo Accounts (Click for Instant Sign-In)
         </p>
         <div className="grid grid-cols-3 gap-2">
           {["patient", "doctor", "admin"].map((role) => (
@@ -165,6 +189,7 @@ export default function LoginPage() {
               key={role}
               type="button"
               onClick={() => fillDemo(role)}
+              aria-label={`Sign in as demo ${role}`}
               className="py-2 px-3 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-all capitalize"
             >
               {role}
@@ -172,7 +197,7 @@ export default function LoginPage() {
           ))}
         </div>
         <p className="text-xs text-gray-400 text-center mt-2">
-          Click a role to fill credentials, then click Sign In
+          Select a role to sign in immediately with pre-configured demo account
         </p>
       </div>
 

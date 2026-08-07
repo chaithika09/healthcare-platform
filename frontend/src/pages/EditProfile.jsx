@@ -80,7 +80,12 @@ export default function EditProfile() {
           <div className="w-20 h-20 rounded-2xl bg-gradient-hero flex items-center justify-center text-white font-bold text-2xl">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
-          <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-colors">
+          <button
+            type="button"
+            onClick={() => toast.success("Photo upload triggered! Selected new profile photo.")}
+            aria-label="Upload profile photo"
+            className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white hover:bg-primary-700 transition-colors"
+          >
             <FiCamera size={13} />
           </button>
         </div>

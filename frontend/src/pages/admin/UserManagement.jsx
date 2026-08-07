@@ -25,11 +25,14 @@ const statusColors = {
 };
 
 export default function UserManagement() {
+  const [userList, setUserList] = useState(users);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUser, setNewUser] = useState({ name: "", email: "", role: "patient" });
 
-  const filtered = users.filter((u) => {
+  const filtered = userList.filter((u) => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === "all" || u.role === roleFilter;
     const matchStatus = statusFilter === "all" || u.status === statusFilter;
@@ -37,11 +40,37 @@ export default function UserManagement() {
   });
 
   const handleDelete = (id) => {
+    setUserList((prev) => prev.filter((u) => u.id !== id));
     toast.success("User deleted successfully");
   };
 
   const handleStatusToggle = (id, currentStatus) => {
-    toast.success(`User ${currentStatus === "active" ? "deactivated" : "activated"}`);
+    const nextStatus = currentStatus === "active" ? "inactive" : "active";
+    setUserList((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, status: nextStatus } : u))
+    );
+    toast.success(`User ${nextStatus === "active" ? "activated" : "deactivated"}`);
+  };
+
+  const handleAddUser = (e) => {
+    e.preventDefault();
+    if (!newUser.name || !newUser.email) {
+      toast.error("Please provide both name and email");
+      return;
+    }
+    const created = {
+      id: Date.now(),
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      status: "active",
+      joined: new Date().toISOString().split("T")[0],
+      appointments: 0,
+    };
+    setUserList((prev) => [created, ...prev]);
+    setNewUser({ name: "", email: "", role: "patient" });
+    setShowAddModal(false);
+    toast.success("User added successfully!");
   };
 
   return (
@@ -49,9 +78,9 @@ export default function UserManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 text-sm mt-1">{users.length} total users</p>
+          <p className="text-gray-500 text-sm mt-1">{userList.length} total users</p>
         </div>
-        <button className="btn-primary gap-2 self-start">
+        <button onClick={() => setShowAddModal(true)} className="btn-primary gap-2 self-start">
           <FiUserPlus size={16} /> Add User
         </button>
       </div>
@@ -79,10 +108,10 @@ export default function UserManagement() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total", value: users.length, color: "bg-gray-50" },
-          { label: "Patients", value: users.filter((u) => u.role === "patient").length, color: "bg-blue-50" },
-          { label: "Doctors", value: users.filter((u) => u.role === "doctor").length, color: "bg-green-50" },
-          { label: "Pending", value: users.filter((u) => u.status === "pending").length, color: "bg-amber-50" },
+          { label: "Total", value: userList.length, color: "bg-gray-50" },
+          { label: "Patients", value: userList.filter((u) => u.role === "patient").length, color: "bg-blue-50" },
+          { label: "Doctors", value: userList.filter((u) => u.role === "doctor").length, color: "bg-green-50" },
+          { label: "Pending", value: userList.filter((u) => u.status === "pending").length, color: "bg-amber-50" },
         ].map((s) => (
           <div key={s.label} className={`${s.color} rounded-2xl p-4 text-center`}>
             <p className="text-2xl font-bold text-gray-900">{s.value}</p>
@@ -133,15 +162,18 @@ export default function UserManagement() {
                   <td className="text-sm text-gray-600">{u.appointments} appts</td>
                   <td>
                     <div className="flex items-center gap-1">
-                      <button className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-600 transition-colors">
-                        <FiEdit2 size={14} />
-                      </button>
-                      <button onClick={() => handleStatusToggle(u.id, u.status)}
-                        className="p-1.5 hover:bg-amber-50 rounded-lg text-gray-400 hover:text-amber-600 transition-colors">
+                      <button
+                        onClick={() => handleStatusToggle(u.id, u.status)}
+                        title={u.status === "active" ? "Deactivate User" : "Activate User"}
+                        className="p-1.5 hover:bg-amber-50 rounded-lg text-gray-400 hover:text-amber-600 transition-colors"
+                      >
                         <FiMoreVertical size={14} />
                       </button>
-                      <button onClick={() => handleDelete(u.id)}
-                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors">
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        title="Delete User"
+                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
+                      >
                         <FiTrash2 size={14} />
                       </button>
                     </div>
@@ -152,6 +184,59 @@ export default function UserManagement() {
           </table>
         </div>
       </div>
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Add New User</h3>
+            <form onSubmit={handleAddUser} className="space-y-4">
+              <div>
+                <label className="label">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Jane Doe"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="label">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="jane@example.com"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  className="input"
+                />
+              </div>
+              <div>
+                <label className="label">Role</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  className="input"
+                >
+                  <option value="patient">Patient</option>
+                  <option value="doctor">Doctor</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="btn-outline flex-1">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary flex-1">
+                  Create User
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

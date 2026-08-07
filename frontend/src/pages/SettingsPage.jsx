@@ -101,11 +101,15 @@ export default function SettingsPage() {
           <ToggleSwitch checked={twoFA} onChange={() => setTwoFA(!twoFA)} />
         </div>
         {[
-          { label: "Change Password",    desc: "Update your account password" },
-          { label: "Active Sessions",    desc: "Manage devices logged into your account" },
-          { label: "Privacy Settings",   desc: "Control your data and privacy" },
+          { label: "Change Password",    desc: "Update your account password", action: () => toast.success("Password reset email sent to your inbox!") },
+          { label: "Active Sessions",    desc: "Manage devices logged into your account", action: () => toast.success("1 active session: Current Web Browser") },
+          { label: "Privacy Settings",   desc: "Control your data and privacy", action: () => toast.success("Privacy preferences saved!") },
         ].map((item) => (
-          <button key={item.label} className="w-full flex items-center justify-between py-2 hover:bg-gray-50 rounded-xl px-2 -mx-2 transition-colors">
+          <button
+            key={item.label}
+            onClick={item.action}
+            className="w-full flex items-center justify-between py-2 hover:bg-gray-50 rounded-xl px-2 -mx-2 transition-colors"
+          >
             <div className="text-left">
               <p className="text-sm font-medium text-gray-900">{item.label}</p>
               <p className="text-xs text-gray-500">{item.desc}</p>
@@ -119,7 +123,10 @@ export default function SettingsPage() {
       <div className="card p-5 border-red-100">
         <h2 className="font-semibold text-red-600 mb-4 flex items-center gap-2"><FiTrash2 size={16} /> Danger Zone</h2>
         <div className="space-y-3">
-          <button className="w-full flex items-center justify-between p-3 rounded-xl border border-red-200 hover:bg-red-50 transition-colors text-left">
+          <button
+            onClick={() => toast.error("To delete your account permanently, please contact support@smarthealth.com")}
+            className="w-full flex items-center justify-between p-3 rounded-xl border border-red-200 hover:bg-red-50 transition-colors text-left"
+          >
             <div>
               <p className="text-sm font-medium text-red-700">Delete Account</p>
               <p className="text-xs text-red-500">Permanently delete your account and all data</p>

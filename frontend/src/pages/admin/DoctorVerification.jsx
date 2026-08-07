@@ -106,7 +106,10 @@ export default function DoctorVerification() {
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <FiFileText size={14} className="text-primary-600" /> {doc}
                         </div>
-                        <button className="btn-ghost btn-sm gap-1 text-gray-500">
+                        <button
+                          onClick={() => toast.success(`Viewing document: ${doc}`)}
+                          className="btn-ghost btn-sm gap-1 text-gray-500 hover:text-primary-600"
+                        >
                           <FiEye size={12} /> View
                         </button>
                       </div>
