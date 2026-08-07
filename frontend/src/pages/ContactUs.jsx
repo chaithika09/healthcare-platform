@@ -6,10 +6,14 @@ import toast from "react-hot-toast";
 
 export default function ContactUs() {
   const [sent, setSent] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
   const onSubmit = async () => {
     await new Promise((r) => setTimeout(r, 1000));
+    // Opens Gmail with pre-filled message
+    const subject = encodeURIComponent(`[MedIQ+ Support] ${watch("subject") || "General Inquiry"}`);
+    const body = encodeURIComponent(`Name: ${watch("firstName")} ${watch("lastName")}\nEmail: ${watch("email")}\n\nMessage:\n${watch("message") || ""}`);
+    window.open(`https://mail.google.com/mail/?view=cm&to=lschaithika@gmail.com&su=${subject}&body=${body}`, "_blank");
     setSent(true);
     toast.success("Message sent! We'll get back to you within 24 hours.");
   };
