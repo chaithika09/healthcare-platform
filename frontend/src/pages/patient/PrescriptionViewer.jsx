@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FiDownload, FiSearch, FiCalendar, FiPackage, FiClock } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const prescriptions = [
   {
@@ -37,6 +38,43 @@ export default function PrescriptionViewer() {
     const matchFilter = filter === "all" || p.status === filter;
     return matchSearch && matchFilter;
   });
+
+  const handleDownloadPrescription = (p) => {
+    const text = `
+============================================================
+ SMART HEALTHCARE PORTAL — OFFICIAL PRESCRIPTION
+============================================================
+ Prescribing Doctor: ${p.doctor} (${p.specialty})
+ Date Issued       : ${p.date}
+ Prescription Status: ${p.status.toUpperCase()}
+============================================================
+
+ MEDICATIONS PRESCRIBED:
+ ------------------------------------------------------------
+${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
+    Dosage      : ${m.frequency}
+    Duration    : ${m.duration}
+    Instructions: ${m.instructions}`).join("\n\n")}
+
+------------------------------------------------------------
+ DOCTOR'S NOTES:
+ ${p.notes || "None"}
+============================================================
+ Verified electronically by MedIQ+ Certified Systems.
+ Rx Hash: SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}
+============================================================
+`;
+    const blob = new Blob([text.trim()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Prescription_${p.doctor.replace(/\s+/g, "_")}_${p.date}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded prescription from ${p.doctor}!`);
+  };
 
   return (
     <div className="space-y-6">
@@ -102,7 +140,7 @@ export default function PrescriptionViewer() {
                 <h3 className="font-heading font-semibold text-gray-900">Prescription Details</h3>
                 <p className="text-xs text-gray-500 mt-0.5">{selected.date}</p>
               </div>
-              <button className="btn-outline btn-sm gap-1.5">
+              <button onClick={() => handleDownloadPrescription(selected)} className="btn-outline btn-sm gap-1.5">
                 <FiDownload size={13} /> Download
               </button>
             </div>

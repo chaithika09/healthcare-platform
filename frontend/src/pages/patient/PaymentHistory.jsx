@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FiDownload, FiSearch, FiCreditCard, FiCheckCircle, FiXCircle, FiClock } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 const payments = [
   { id: "PAY-001", description: "Consultation - Dr. Sarah Johnson", date: "2024-06-15", amount: 150, status: "paid",    method: "Visa •••• 4242" },
@@ -18,6 +19,35 @@ const statusConfig = {
 };
 
 export default function PaymentHistory() {
+  const handleDownloadReceipt = (p) => {
+    const text = `
+============================================================
+ SMART HEALTHCARE PORTAL — PAYMENT RECEIPT
+============================================================
+ Transaction ID  : ${p.id}
+ Date & Time     : ${p.date}
+ Description     : ${p.description}
+ Payment Method  : ${p.method}
+ Total Amount    : $${p.amount}.00 USD
+ Payment Status  : ${p.status.toUpperCase()}
+============================================================
+
+ THANK YOU FOR YOUR PAYMENT.
+ For billing queries or support, contact billing@mediq.com.
+ SHA256 Verification Code: ${Math.random().toString(36).substring(2, 14).toUpperCase()}
+============================================================
+`;
+    const blob = new Blob([text.trim()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Receipt_${p.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded receipt for ${p.id}!`);
+  };
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
@@ -104,7 +134,7 @@ export default function PaymentHistory() {
                       </span>
                     </td>
                     <td>
-                      <button className="btn-ghost btn-sm gap-1 text-gray-500">
+                      <button onClick={() => handleDownloadReceipt(p)} className="btn-ghost btn-sm gap-1 text-gray-500 hover:text-primary-600">
                         <FiDownload size={13} /> Receipt
                       </button>
                     </td>

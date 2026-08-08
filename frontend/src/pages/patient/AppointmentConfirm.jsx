@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiCalendar, FiVideo, FiUser, FiDownload, FiHome, FiMessageSquare } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 export default function AppointmentConfirm() {
   const { state } = useLocation();
@@ -10,6 +11,40 @@ export default function AppointmentConfirm() {
   const slot = state?.slot || "3:00 PM";
   const type = state?.type || "video";
   const confirmId = "APT-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+
+  const handleDownloadReceipt = () => {
+    const text = `
+============================================================
+ SMART HEALTHCARE PORTAL — APPOINTMENT RECEIPT
+============================================================
+ Booking Reference : APT-${Math.floor(100000 + Math.random() * 900000)}
+ Doctor/Provider   : ${doctorName} (${specialty})
+ Appointment Date  : ${date}
+ Appointment Time  : ${time}
+ Consultation Type : ${type.toUpperCase()}
+ Consultation Fee  : $${fee}.00 USD
+ Payment Status    : PAID & CONFIRMED
+============================================================
+
+ APPOINTMENT INSTRUCTIONS:
+ • Please join the video room or arrive at the clinic 5 mins early.
+ • Bring any relevant previous medical history or lab reports.
+
+ Security Code: SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}
+ Verified by MedIQ+ Healthcare Portal
+============================================================
+`;
+    const blob = new Blob([text.trim()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Appointment_Receipt_${doctorName.replace(/\s+/g, "_")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Downloaded appointment receipt!");
+  };
 
   return (
     <div className="max-w-lg mx-auto">
@@ -89,7 +124,7 @@ export default function AppointmentConfirm() {
           <Link to="/patient/dashboard" className="btn-outline btn-lg w-full justify-center gap-2">
             <FiHome size={18} /> Back to Dashboard
           </Link>
-          <button className="btn-ghost btn-lg w-full justify-center gap-2 text-gray-600">
+          <button onClick={handleDownloadReceipt} className="btn-ghost btn-lg w-full justify-center gap-2 text-gray-600 dark:text-slate-300 hover:text-primary-600">
             <FiDownload size={18} /> Download Receipt
           </button>
         </div>
