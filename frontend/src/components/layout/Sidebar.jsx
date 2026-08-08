@@ -6,7 +6,7 @@ import {
   FiUsers, FiSettings, FiBell, FiLogOut, FiActivity,
   FiShield, FiBarChart2, FiClipboard, FiHeart, FiAlertCircle,
   FiBook, FiStar, FiHelpCircle, FiChevronLeft, FiChevronRight,
-  FiUser, FiCreditCard, FiDroplet, FiUpload, FiCpu
+  FiUser, FiCreditCard, FiDroplet, FiUpload
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useUIStore } from "../../store/uiStore";
@@ -26,7 +26,6 @@ const patientNav = [
   { to: "/chat",              icon: FiMessageSquare,label: "Messages" },
   { to: "/notifications",     icon: FiBell,         label: "Notifications" },
   { to: "/articles",          icon: FiBook,         label: "Health Articles" },
-  { to: "/ai-assistant",      icon: FiCpu,          label: "AI Health Bot" },
 ];
 
 const doctorNav = [
@@ -56,7 +55,7 @@ const bottomNav = [
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { sidebarOpen, setSidebarOpen, toggleSidebar } = useUIStore();
   const navigate = useNavigate();
 
   const navItems =
@@ -69,27 +68,33 @@ export default function Sidebar() {
     navigate("/login");
   };
 
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <>
       {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={toggleSidebar}
+            onClick={() => setSidebarOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      <motion.aside
-        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-100 shadow-lg z-50 flex flex-col transition-all duration-300 ${
-          sidebarOpen ? "w-64" : "w-16"
+      <aside
+        className={`fixed top-0 left-0 h-full bg-white border-r border-gray-100 shadow-xl z-50 flex flex-col transition-transform transition-all duration-300 ${
+          sidebarOpen
+            ? "translate-x-0 w-64"
+            : "-translate-x-full lg:translate-x-0 lg:w-16"
         } lg:relative lg:z-auto`}
-        animate={{ width: sidebarOpen ? 256 : 64 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 min-h-[64px]">
@@ -151,6 +156,7 @@ export default function Sidebar() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={handleNavClick}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                     isActive
@@ -184,6 +190,7 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive ? "bg-primary-50 text-primary-600" : "text-gray-600 hover:bg-gray-50"
@@ -217,7 +224,7 @@ export default function Sidebar() {
             </AnimatePresence>
           </button>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 }

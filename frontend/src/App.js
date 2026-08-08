@@ -55,7 +55,6 @@ const SettingsPage      = lazy(() => import("./pages/SettingsPage"));
 const HealthArticles    = lazy(() => import("./pages/HealthArticles"));
 const ArticleDetail     = lazy(() => import("./pages/ArticleDetail"));
 const FeedbackRatings   = lazy(() => import("./pages/FeedbackRatings"));
-const AIChatbot         = lazy(() => import("./pages/AIChatbot"));
 const ContactUs         = lazy(() => import("./pages/ContactUs"));
 const AboutUs           = lazy(() => import("./pages/AboutUs"));
 const FAQPage           = lazy(() => import("./pages/FAQPage"));
@@ -148,7 +147,6 @@ export default function App() {
             <Route path="/articles"             element={<HealthArticles />} />
             <Route path="/articles/:id"         element={<ArticleDetail />} />
             <Route path="/feedback"             element={<FeedbackRatings />} />
-            <Route path="/ai-assistant"          element={<AIChatbot />} />
             <Route path="/contact"              element={<ContactUs />} />
             <Route path="/about"                element={<AboutUs />} />
             <Route path="/faq"                  element={<FAQPage />} />
