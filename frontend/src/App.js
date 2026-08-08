@@ -90,6 +90,9 @@ export default function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
+        {/* ── Root redirect to Login ── */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         {/* ── Public splash / onboarding ── */}
         <Route path="/splash"      element={<SplashScreen />} />
         <Route path="/welcome"     element={<WelcomePage />} />
