@@ -98,8 +98,8 @@ export default function LoginPage() {
         <p className="text-xs font-bold text-primary-900 mb-2 flex items-center gap-1.5">
           💡 Quick Fill Demo Credentials:
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {["patient", "doctor", "admin"].map((role) => (
+        <div className="grid grid-cols-2 gap-2">
+          {["patient", "doctor"].map((role) => (
             <button
               key={role}
               type="button"
@@ -107,7 +107,7 @@ export default function LoginPage() {
               aria-label={`Fill ${role} credentials`}
               className="py-2 px-2 bg-white hover:bg-primary-100 border border-primary-200 rounded-xl text-xs font-semibold text-primary-700 transition-all capitalize shadow-sm text-center"
             >
-              {role === "patient" ? "🧑‍⚕️ Patient" : role === "doctor" ? "👨‍⚕️ Doctor" : "🛡️ Admin"}
+              {role === "patient" ? "🧑‍⚕️ Patient" : "👨‍⚕️ Doctor"}
             </button>
           ))}
         </div>
@@ -185,8 +185,8 @@ export default function LoginPage() {
         <p className="text-xs text-gray-400 text-center mb-3">
           ⚡ Demo Accounts (Click for Instant Sign-In)
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {["patient", "doctor", "admin"].map((role) => (
+        <div className="grid grid-cols-2 gap-2">
+          {["patient", "doctor"].map((role) => (
             <button
               key={role}
               type="button"
@@ -194,7 +194,7 @@ export default function LoginPage() {
               aria-label={`Sign in as demo ${role}`}
               className="py-2 px-3 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-all capitalize"
             >
-              {role}
+              {role === "patient" ? "🧑‍⚕️ Patient" : "👨‍⚕️ Doctor"}
             </button>
           ))}
         </div>
