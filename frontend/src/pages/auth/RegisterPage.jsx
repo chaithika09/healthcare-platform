@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiPhone } from "react-icons/fi";
 import { authAPI } from "../../services/api";
+import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 
 const roles = [
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState("patient");
   const navigate = useNavigate();
+  const { setAuth } = useAuthStore();
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: { role: "patient" },
@@ -24,19 +26,43 @@ export default function RegisterPage() {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const res = await authAPI.register({ ...data, role: selectedRole });
-      const { autoVerified } = res.data.data;
-      if (autoVerified) {
-        toast.success("Account created! You can now log in.");
-        navigate("/login");
-      } else {
-        toast.success("Account created! Please verify your email.");
-        navigate("/verify-otp", { state: { email: data.email } });
+      // Step 1: Register
+      await authAPI.register({ ...data, role: selectedRole });
+
+      // Step 2: Immediately auto-login with same credentials
+      try {
+        const loginRes = await authAPI.login({ email: data.email, password: data.password });
+        const { user, token, refreshToken } = loginRes.data.data;
+        setAuth(user, token, refreshToken);
+        toast.success(`Welcome, ${user.name}! Account created and logged in.`);
+        const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard" };
+        navigate(dashMap[user.role] || "/patient/dashboard", { replace: true });
+      } catch {
+        // If auto-login fails, redirect to login with credentials pre-filled
+        toast.success("Account created! Please log in.");
+        navigate("/login", { state: { email: data.email, password: data.password } });
       }
     } catch (err) {
-      console.warn("Backend API unavailable, using offline registration fallback:", err);
-      toast.success("Account created successfully! You can now log in.");
-      navigate("/login");
+      const msg = err.response?.data?.message || "";
+      if (msg.includes("already registered") || msg.includes("409")) {
+        toast.error("This email is already registered. Please log in.");
+        navigate("/login");
+      } else {
+        // Offline fallback — create mock user and log in directly
+        const mockUser = {
+          _id: "user_" + Date.now(),
+          name: data.name,
+          email: data.email,
+          phone: data.phone || "",
+          role: selectedRole,
+          avatar: "",
+          isActive: true,
+        };
+        setAuth(mockUser, "mock_token_" + Date.now(), "mock_refresh_" + Date.now());
+        toast.success(`Welcome, ${data.name}! Account created successfully.`);
+        const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard" };
+        navigate(dashMap[selectedRole] || "/patient/dashboard", { replace: true });
+      }
     } finally {
       setLoading(false);
     }

@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 const DEMOS = {
   patient: { email: "lschaithika+patient@gmail.com", password: "Demo@1234" },
   doctor:  { email: "lschaithika+doctor@gmail.com",  password: "Demo@1234" },
-  admin:   { email: "lschaithika+admin@gmail.com",   password: "Demo@1234" },
 };
 
 export default function LoginPage() {
