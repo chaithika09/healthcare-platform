@@ -1,24 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiSearch, FiFilter, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
+import { doctorAPI } from "../../services/api";
 
 const specialties = ["All", "Cardiologist", "Neurologist", "Dermatologist", "Pediatrician", "Orthopedic", "Gynecologist", "Psychiatrist", "Ophthalmologist"];
-
-const doctors = [
-  { id: 1, name: "Dr. Sarah Johnson",  specialty: "Cardiologist",   rating: 4.9, reviews: 312, experience: 12, location: "New York, NY",   fee: 150, available: true,  avatar: "SJ", tags: ["Video", "In-person"] },
-  { id: 2, name: "Dr. Michael Chen",   specialty: "Neurologist",    rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true,  avatar: "MC", tags: ["Video"] },
-  { id: 3, name: "Dr. Emily Davis",    specialty: "Dermatologist",  rating: 4.7, reviews: 189, experience: 8,  location: "Chicago, IL",    fee: 120, available: false, avatar: "ED", tags: ["In-person"] },
-  { id: 4, name: "Dr. James Wilson",   specialty: "Pediatrician",   rating: 4.9, reviews: 421, experience: 20, location: "Houston, TX",    fee: 100, available: true,  avatar: "JW", tags: ["Video", "In-person"] },
-  { id: 5, name: "Dr. Priya Sharma",   specialty: "Gynecologist",   rating: 4.8, reviews: 298, experience: 11, location: "Phoenix, AZ",    fee: 140, available: true,  avatar: "PS", tags: ["Video"] },
-  { id: 6, name: "Dr. Robert Brown",   specialty: "Orthopedic",     rating: 4.6, reviews: 167, experience: 18, location: "Philadelphia, PA",fee: 200, available: true,  avatar: "RB", tags: ["In-person"] },
-  { id: 7, name: "Dr. Lisa Martinez",  specialty: "Psychiatrist",   rating: 4.9, reviews: 356, experience: 14, location: "San Antonio, TX", fee: 160, available: false, avatar: "LM", tags: ["Video"] },
-  { id: 8, name: "Dr. David Kim",      specialty: "Ophthalmologist",rating: 4.7, reviews: 203, experience: 9,  location: "San Diego, CA",  fee: 130, available: true,  avatar: "DK", tags: ["In-person"] },
-];
 
 const gradients = [
   "from-blue-500 to-blue-700", "from-green-500 to-green-700", "from-purple-500 to-purple-700",
   "from-orange-500 to-orange-700", "from-pink-500 to-pink-700", "from-teal-500 to-teal-700",
+];
+
+const demoDoctors = [
+  { id: 1, name: "Dr. Sarah Johnson",  specialty: "Cardiologist",   rating: 4.9, reviews: 312, experience: 12, location: "New York, NY",   fee: 150, available: true,  avatar: "SJ", tags: ["Video", "In-person"] },
+  { id: 2, name: "Dr. Michael Chen",   specialty: "Neurologist",    rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true,  avatar: "MC", tags: ["Video"] },
 ];
 
 export default function DoctorListPage() {
@@ -29,16 +24,38 @@ export default function DoctorListPage() {
   const [sortBy, setSortBy] = useState("rating");
   const [showFilters, setShowFilters] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await doctorAPI.getAll();
+        setDoctors(res.data.data.doctors || []);
+      } catch (err) {
+        setDoctors(demoDoctors);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  const filtered = (doctors.length > 0 ? doctors : demoDoctors)
     .filter((d) => {
-      const matchSearch = d.name.toLowerCase().includes(search.toLowerCase()) ||
-        d.specialty.toLowerCase().includes(search.toLowerCase());
+      const docName = d.name || d.user?.name || "";
+      const matchSearch = docName.toLowerCase().includes(search.toLowerCase()) ||
+        d.specialty?.toLowerCase().includes(search.toLowerCase());
       const matchSpec = selectedSpec === "All" || d.specialty === selectedSpec;
-      const matchAvail = !availableOnly || d.available;
+      const matchAvail = !availableOnly || d.available !== false;
       return matchSearch && matchSpec && matchAvail;
     })
-    .sort((a, b) => sortBy === "rating" ? b.rating - a.rating : a.fee - b.fee);
+    .sort((a, b) => {
+      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+      const feeA = a.fee || a.consultationFee?.video || 0;
+      const feeB = b.fee || b.consultationFee?.video || 0;
+      return feeA - feeB;
+    });
 
   return (
     <div className="space-y-6">
@@ -127,34 +144,34 @@ export default function DoctorListPage() {
           >
             <div className="flex items-start gap-4">
               <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
-                {doc.avatar}
+                {doc.avatar || (doc.name || doc.user?.name || "DR")?.split(" ").map(n => n[0]).join("")}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm leading-tight">{doc.name}</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm leading-tight">{doc.name || doc.user?.name}</h3>
                     <p className="text-xs text-primary-600 font-medium mt-0.5">{doc.specialty}</p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
-                    doc.available ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                    doc.available !== false ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
                   }`}>
-                    {doc.available ? "Available" : "Busy"}
+                    {doc.available !== false ? "Available" : "Busy"}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 mt-2">
                   <FiStar size={12} className="text-amber-400 fill-amber-400" />
-                  <span className="text-xs font-semibold text-gray-900">{doc.rating}</span>
-                  <span className="text-xs text-gray-400">({doc.reviews} reviews)</span>
+                  <span className="text-xs font-semibold text-gray-900">{doc.rating || 4.5}</span>
+                  <span className="text-xs text-gray-400">({doc.reviews || 0} reviews)</span>
                 </div>
 
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center gap-1"><FiClock size={11} /> {doc.experience}y exp</span>
-                  <span className="flex items-center gap-1"><FiMapPin size={11} /> {doc.location.split(",")[0]}</span>
+                  <span className="flex items-center gap-1"><FiClock size={11} /> {doc.experience || 5}y exp</span>
+                  <span className="flex items-center gap-1"><FiMapPin size={11} /> {(doc.location || doc.hospital || "Remote").split(",")[0]}</span>
                 </div>
 
                 <div className="flex gap-1.5 mt-2">
-                  {doc.tags.map((t) => (
+                  {(doc.tags || ["Video"]).map((t) => (
                     <span key={t} className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       t === "Video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
                     }`}>
@@ -167,11 +184,11 @@ export default function DoctorListPage() {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
               <div>
-                <span className="text-lg font-bold text-gray-900">${doc.fee}</span>
+                <span className="text-lg font-bold text-gray-900">${doc.fee || doc.consultationFee?.video || 100}</span>
                 <span className="text-xs text-gray-400 ml-1">/ session</span>
               </div>
               <Link
-                to={`/doctors/${doc.id}`}
+                to={`/doctors/${doc.user?._id || doc.id}`}
                 className="btn-primary btn-sm"
               >
                 Book Now

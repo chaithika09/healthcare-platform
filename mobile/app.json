@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "MedIQ+",
+    "slug": "mediq-healthcare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0066CC"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mediq.healthcare",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Required for profile photo and video consultations",
+        "NSMicrophoneUsageDescription": "Required for video consultations",
+        "NSPhotoLibraryUsageDescription": "Required to upload medical records"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0066CC"
+      },
+      "package": "com.mediq.healthcare",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "plugins": [
+      "expo-notifications",
+      "expo-secure-store",
+      ["expo-image-picker", { "photosPermission": "Allow MedIQ+ to access your photos for uploading medical records." }]
+    ],
+    "extra": {
+      "API_URL": "https://mediq-backend-vcus.onrender.com/api/v1",
+      "SOCKET_URL": "https://mediq-backend-vcus.onrender.com"
+    }
+  }
+}

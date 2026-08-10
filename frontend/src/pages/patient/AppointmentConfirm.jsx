@@ -18,11 +18,11 @@ export default function AppointmentConfirm() {
  SMART HEALTHCARE PORTAL — APPOINTMENT RECEIPT
 ============================================================
  Booking Reference : APT-${Math.floor(100000 + Math.random() * 900000)}
- Doctor/Provider   : ${doctorName} (${specialty})
+ Doctor/Provider   : ${doctor.name} (${doctor.specialty})
  Appointment Date  : ${date}
- Appointment Time  : ${time}
+ Appointment Time  : ${slot}
  Consultation Type : ${type.toUpperCase()}
- Consultation Fee  : $${fee}.00 USD
+ Consultation Fee  : $${doctor.fee}.00 USD
  Payment Status    : PAID & CONFIRMED
 ============================================================
 
@@ -38,7 +38,7 @@ export default function AppointmentConfirm() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Appointment_Receipt_${doctorName.replace(/\s+/g, "_")}.txt`;
+    a.download = `Appointment_Receipt_${doctor.name.replace(/\s+/g, "_")}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

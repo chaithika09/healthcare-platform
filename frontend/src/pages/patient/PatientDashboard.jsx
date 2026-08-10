@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -10,7 +10,7 @@ import {
   FiArrowRight, FiClock, FiCheckCircle, FiUser, FiVideo
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
-import { useAppointmentStore } from "../../store/appointmentStore";
+import { appointmentAPI, recordAPI, prescriptionAPI } from "../../services/api";
 
 const healthData = [
   { month: "Jan", bp: 120, sugar: 95, weight: 72 },
@@ -23,7 +23,6 @@ const healthData = [
 
 const demoAppointments = [
   { id: 1, doctorName: "Dr. Sarah Johnson", specialty: "Cardiologist", date: "Today, 3:00 PM", type: "video", status: "upcoming", avatar: "SJ" },
-  { id: 2, doctorName: "Dr. Michael Chen",  specialty: "Neurologist",  date: "Jun 28, 10:00 AM", type: "in-person", status: "upcoming", avatar: "MC" },
 ];
 
 const quickActions = [
@@ -45,12 +44,36 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } 
 
 export default function PatientDashboard() {
   const { user } = useAuthStore();
-  const { getAppointmentsByUser } = useAppointmentStore();
+  const [appointments, setAppointments] = useState([]);
+  const [stats, setStats] = useState({ records: 0, prescriptions: 0, labTests: 0 });
+  const [loading, setLoading] = useState(true);
 
-  const userAppointments = getAppointmentsByUser(user?.email);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [aptRes, recRes, preRes] = await Promise.all([
+          appointmentAPI.getAll({ limit: 5 }),
+          recordAPI.getAll(),
+          prescriptionAPI.getAll()
+        ]);
+        setAppointments(aptRes.data.data.appointments);
+        setStats({
+          records: recRes.data.data.records?.length || 0,
+          prescriptions: preRes.data.data.prescriptions?.length || 0,
+          labTests: 0
+        });
+      } catch (err) {
+        console.error("Failed to fetch dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const isDemoAccount = user?.email?.includes("lschaithika+patient");
-  const displayAppointments = userAppointments.length > 0
-    ? userAppointments
+  const displayAppointments = appointments.length > 0
+    ? appointments
     : isDemoAccount ? demoAppointments : [];
 
   const totalApts = displayAppointments.length;
@@ -58,6 +81,13 @@ export default function PatientDashboard() {
     { name: "Completed", value: isDemoAccount ? 12 : 0, color: "#00A86B" },
     { name: "Upcoming",  value: totalApts,  color: "#0066CC" },
     { name: "Cancelled", value: 0,  color: "#EF4444" },
+  ];
+
+  const statItems = [
+    { label: "Total Appointments", value: totalApts.toString(), icon: FiCalendar, color: "bg-blue-50 text-blue-600",   change: totalApts > 0 ? "Active appointments" : "No active bookings" },
+    { label: "Medical Records",    value: stats.records || (isDemoAccount ? "8" : "0"),  icon: FiFileText, color: "bg-green-50 text-green-600", change: stats.records > 0 ? "Stored securely" : "No records uploaded" },
+    { label: "Prescriptions",      value: stats.prescriptions || (isDemoAccount ? "3" : "0"),  icon: FiActivity, color: "bg-purple-50 text-purple-600",change: stats.prescriptions > 0 ? "View latest" : "No active prescriptions" },
+    { label: "Lab Tests",          value: stats.labTests || (isDemoAccount ? "5" : "0"),  icon: FiHeart,    color: "bg-orange-50 text-orange-600",change: "Tracking health" },
   ];
 
   return (
@@ -77,12 +107,7 @@ export default function PatientDashboard() {
 
       {/* Stats row */}
       <motion.div variants={fadeUp} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Appointments", value: totalApts.toString(), icon: FiCalendar, color: "bg-blue-50 text-blue-600",   change: totalApts > 0 ? "Active appointments" : "No active bookings" },
-          { label: "Medical Records",    value: isDemoAccount ? "8" : "0",  icon: FiFileText, color: "bg-green-50 text-green-600", change: isDemoAccount ? "Last updated 2d ago" : "No records uploaded" },
-          { label: "Prescriptions",      value: isDemoAccount ? "3" : "0",  icon: FiActivity, color: "bg-purple-50 text-purple-600",change: isDemoAccount ? "2 active" : "No active prescriptions" },
-          { label: "Lab Tests",          value: isDemoAccount ? "5" : "0",  icon: FiHeart,    color: "bg-orange-50 text-orange-600",change: isDemoAccount ? "1 pending" : "No pending lab tests" },
-        ].map((s) => (
+        {statItems.map((s) => (
           <div key={s.label} className="card p-5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color} mb-3`}>
               <s.icon size={20} />
@@ -217,16 +242,16 @@ export default function PatientDashboard() {
         ) : (
           <div className="space-y-3">
             {displayAppointments.map((apt) => (
-              <div key={apt.id} className="card p-4 flex items-center gap-4">
+              <div key={apt._id || apt.id} className="card p-4 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-hero flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  {apt.avatar || apt.doctorName?.split(" ").map(n => n[0]).join("").slice(0, 2) || "DR"}
+                  {apt.avatar || (apt.doctorName || apt.doctor?.name)?.split(" ").map(n => n[0]).join("").slice(0, 2) || "DR"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm">{apt.doctorName || apt.doctor}</p>
-                  <p className="text-xs text-gray-500">{apt.specialty}</p>
+                  <p className="font-semibold text-gray-900 text-sm">{apt.doctorName || apt.doctor?.name || "Doctor"}</p>
+                  <p className="text-xs text-gray-500">{apt.specialty || apt.doctor?.specialty}</p>
                   <div className="flex items-center gap-3 mt-1.5">
                     <span className="flex items-center gap-1 text-xs text-gray-500">
-                      <FiClock size={11} /> {apt.date} {apt.time ? `at ${apt.time}` : ""}
+                      <FiClock size={11} /> {new Date(apt.date).toLocaleDateString()} {apt.timeSlot ? `at ${apt.timeSlot}` : ""}
                     </span>
                     <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
                       apt.type === "video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
@@ -237,9 +262,9 @@ export default function PatientDashboard() {
                   </div>
                 </div>
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
-                  apt.status === "upcoming" ? "bg-primary-100 text-primary-700" : "bg-green-100 text-green-700"
+                  apt.status === "upcoming" || apt.status === "confirmed" ? "bg-primary-100 text-primary-700" : "bg-green-100 text-green-700"
                 }`}>
-                  {apt.status === "upcoming" ? "Upcoming" : <span className="flex items-center gap-1"><FiCheckCircle size={11} /> Done</span>}
+                  {apt.status === "upcoming" || apt.status === "confirmed" ? "Upcoming" : <span className="flex items-center gap-1"><FiCheckCircle size={11} /> Done</span>}
                 </span>
               </div>
             ))}

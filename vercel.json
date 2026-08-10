@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "cd mobile && npm install --legacy-peer-deps && npx expo export --platform web",
+  "outputDirectory": "mobile/dist",
+  "routes": [
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

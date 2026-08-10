@@ -37,7 +37,7 @@ export default function PaymentPage() {
     <div className="max-w-lg mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-heading font-bold text-gray-900">Payment</h1>
-        <p className="text-gray-500 text-sm mt-1">Secure payment powered by Stripe</p>
+        <p className="text-gray-500 text-sm mt-1">Secure payment processing</p>
       </div>
 
       {/* Order summary */}

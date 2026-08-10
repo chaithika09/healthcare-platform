@@ -53,22 +53,8 @@ export default function LoginPage() {
       const { user, token, refreshToken } = res.data.data;
       handleLoginSuccess(user, token, refreshToken);
     } catch (err) {
-      // Robust offline/fallback login when backend API is unreachable or returns an error
-      let role = "patient";
-      if (emailInput.toLowerCase().includes("doctor")) role = "doctor";
-      else if (emailInput.toLowerCase().includes("admin")) role = "admin";
-
-      const mockUser = {
-        _id: "user_" + Date.now(),
-        name: role === "doctor" ? "Dr. Sarah Jenkins" : role === "admin" ? "System Admin" : emailInput.split("@")[0] || "Demo Patient",
-        email: emailInput,
-        role: role,
-        phone: "+1 (555) 019-2834",
-        avatar: "",
-        specialty: role === "doctor" ? "Cardiologist" : undefined,
-      };
-
-      handleLoginSuccess(mockUser);
+      const errorMsg = err.response?.data?.message || "Invalid email or password. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

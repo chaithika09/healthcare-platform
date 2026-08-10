@@ -43,25 +43,12 @@ export default function RegisterPage() {
         navigate("/login", { state: { email: data.email, password: data.password } });
       }
     } catch (err) {
-      const msg = err.response?.data?.message || "";
-      if (msg.includes("already registered") || msg.includes("409")) {
+      const msg = err.response?.data?.message || "Registration failed. Please try again.";
+      if (msg.toLowerCase().includes("already registered")) {
         toast.error("This email is already registered. Please log in.");
         navigate("/login");
       } else {
-        // Offline fallback — create mock user and log in directly
-        const mockUser = {
-          _id: "user_" + Date.now(),
-          name: data.name,
-          email: data.email,
-          phone: data.phone || "",
-          role: selectedRole,
-          avatar: "",
-          isActive: true,
-        };
-        setAuth(mockUser, "mock_token_" + Date.now(), "mock_refresh_" + Date.now());
-        toast.success(`Welcome, ${data.name}! Account created successfully.`);
-        const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard" };
-        navigate(dashMap[selectedRole] || "/patient/dashboard", { replace: true });
+        toast.error(msg);
       }
     } finally {
       setLoading(false);

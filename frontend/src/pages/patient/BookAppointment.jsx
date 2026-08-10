@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { FiArrowLeft, FiCalendar, FiVideo, FiUser, FiClock, FiFileText } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../store/authStore";
-import { useAppointmentStore } from "../../store/appointmentStore";
-
-const timeSlots = ["9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","2:00 PM","2:30 PM","3:00 PM","3:30 PM","4:00 PM","4:30 PM"];
+import { appointmentAPI, doctorAPI } from "../../services/api";
 
 const steps = ["Select Date & Time", "Consultation Type", "Symptoms", "Confirm"];
 
@@ -17,49 +15,79 @@ export default function BookAppointment() {
   const [step, setStep] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [consultType, setConsultType] = useState("video");
   const [loading, setLoading] = useState(false);
+  const [fetchingSlots, setFetchingSlots] = useState(false);
+  const [doctor, setDoctor] = useState(null);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
-
-  const doctorsList = [
-    { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ" },
-    { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC" },
-    { id: 3, name: "Dr. Emily Davis",   specialty: "Dermatologist",fee: 120, avatar: "ED" },
-    { id: 4, name: "Dr. James Wilson",  specialty: "Pediatrician",  fee: 100, avatar: "JW" },
-    { id: 5, name: "Dr. Priya Sharma",  specialty: "Gynecologist",  fee: 140, avatar: "PS" },
-    { id: 6, name: "Dr. Robert Brown",  specialty: "Orthopedic",    fee: 200, avatar: "RB" },
-    { id: 7, name: "Dr. Lisa Martinez", specialty: "Psychiatrist",  fee: 160, avatar: "LM" },
-    { id: 8, name: "Dr. David Kim",     specialty: "Ophthalmologist",fee: 130, avatar: "DK" },
-  ];
-
-  const doctor = doctorsList.find((d) => d.id === parseInt(id)) || doctorsList[0];
-
   const { user } = useAuthStore();
-  const { addAppointment } = useAppointmentStore();
+
+  // Fetch doctor details
+  useEffect(() => {
+    const fetchDoc = async () => {
+      try {
+        const res = await doctorAPI.getById(id);
+        setDoctor(res.data.data.doctor);
+      } catch (err) {
+        // Fallback for demo if API fails or not found
+        const demoDocs = [
+          { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ", user: id },
+          { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC", user: id },
+        ];
+        setDoctor(demoDocs.find(d => d.id === parseInt(id)) || demoDocs[0]);
+      }
+    };
+    fetchDoc();
+  }, [id]);
+
+  // Fetch available slots when date changes
+  useEffect(() => {
+    if (selectedDate && doctor) {
+      const getSlots = async () => {
+        setFetchingSlots(true);
+        try {
+          const res = await appointmentAPI.getSlots(doctor.user?._id || id, selectedDate);
+          setAvailableSlots(res.data.data.available);
+        } catch (err) {
+          setAvailableSlots(["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"]);
+        } finally {
+          setFetchingSlots(false);
+        }
+      };
+      getSlots();
+    }
+  }, [selectedDate, doctor, id]);
 
   const handleBook = async (data) => {
+    if (!selectedDate || !selectedSlot) return toast.error("Please select date and time");
+
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 600));
-      const booked = addAppointment({
-        doctorName: doctor.name,
-        specialty: doctor.specialty,
-        fee: doctor.fee,
-        avatar: doctor.avatar,
+      const res = await appointmentAPI.book({
+        doctorId: doctor.user?._id || id,
         date: selectedDate,
-        time: selectedSlot,
+        timeSlot: selectedSlot,
         type: consultType,
         symptoms: data.symptoms,
-        patientName: user?.name || "Patient",
-        patientEmail: user?.email || "patient@example.com",
+        conditions: data.conditions,
+        medications: data.medications
       });
+
       toast.success("Appointment booked successfully!");
       navigate("/appointment-confirm", {
-        state: { doctor, date: selectedDate, slot: selectedSlot, type: consultType, symptoms: data.symptoms, aptId: booked.id },
+        state: {
+          doctor: { ...doctor, name: doctor.name || doctor.user?.name },
+          date: selectedDate,
+          slot: selectedSlot,
+          type: consultType,
+          aptId: res.data.data.appointment._id
+        },
       });
-    } catch {
-      toast.error("Booking failed. Please try again.");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Booking failed. Please try again.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -70,6 +98,8 @@ export default function BookAppointment() {
     if (step === 1) return consultType;
     return true;
   };
+
+  if (!doctor) return <div className="p-10 text-center">Loading doctor profile...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -135,21 +165,28 @@ export default function BookAppointment() {
             {selectedDate && (
               <div>
                 <label className="label flex items-center gap-2"><FiClock size={14} /> Select Time Slot</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {timeSlots.map((slot) => (
-                    <button
-                      key={slot}
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`py-2 px-2 rounded-xl text-xs font-medium border-2 transition-all ${
-                        selectedSlot === slot
-                          ? "border-primary-500 bg-primary-50 text-primary-700"
-                          : "border-gray-200 text-gray-600 hover:border-primary-300"
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+                {fetchingSlots ? (
+                  <p className="text-xs text-gray-400">Loading slots...</p>
+                ) : availableSlots.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2">
+                    {availableSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`py-2 px-2 rounded-xl text-xs font-medium border-2 transition-all ${
+                          selectedSlot === slot
+                            ? "border-primary-500 bg-primary-50 text-primary-700"
+                            : "border-gray-200 text-gray-600 hover:border-primary-300"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-red-500">No slots available for this date.</p>
+                )}
               </div>
             )}
           </div>

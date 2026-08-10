@@ -1,40 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiStar, FiMapPin, FiClock, FiVideo, FiUser, FiAward, FiCalendar, FiMessageSquare, FiArrowLeft, FiCheckCircle } from "react-icons/fi";
+import { doctorAPI, appointmentAPI } from "../../services/api";
 
-const doctorsList = [
-  { id: 1, name: "Dr. Sarah Johnson",  specialty: "Cardiologist",   rating: 4.9, reviews: 312, experience: 12, location: "New York, NY",   fee: 150, available: true,  avatar: "SJ", about: "Board-certified cardiologist with 12+ years treating heart conditions and hypertension." },
-  { id: 2, name: "Dr. Michael Chen",   specialty: "Neurologist",    rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true,  avatar: "MC", about: "Leading neurologist specializing in brain health, migraines, and nerve treatment." },
-  { id: 3, name: "Dr. Emily Davis",    specialty: "Dermatologist",  rating: 4.7, reviews: 189, experience: 8,  location: "Chicago, IL",    fee: 120, available: false, avatar: "ED", about: "Clinical dermatologist expert in skin wellness and aesthetic procedures." },
-  { id: 4, name: "Dr. James Wilson",   specialty: "Pediatrician",   rating: 4.9, reviews: 421, experience: 20, location: "Houston, TX",    fee: 100, available: true,  avatar: "JW", about: "Trusted pediatrician providing comprehensive child health and wellness care." },
-  { id: 5, name: "Dr. Priya Sharma",   specialty: "Gynecologist",   rating: 4.8, reviews: 298, experience: 11, location: "Phoenix, AZ",    fee: 140, available: true,  avatar: "PS", about: "Expert gynecologist focused on reproductive health and maternal care." },
-  { id: 6, name: "Dr. Robert Brown",   specialty: "Orthopedic",     rating: 4.6, reviews: 167, experience: 18, location: "Philadelphia, PA",fee: 200, available: true,  avatar: "RB", about: "Orthopedic surgeon specializing in joint replacement and sports injuries." },
-  { id: 7, name: "Dr. Lisa Martinez",  specialty: "Psychiatrist",   rating: 4.9, reviews: 356, experience: 14, location: "San Antonio, TX", fee: 160, available: false, avatar: "LM", about: "Compassionate psychiatrist offering therapy and behavioral healthcare." },
-  { id: 8, name: "Dr. David Kim",      specialty: "Ophthalmologist",rating: 4.7, reviews: 203, experience: 9,  location: "San Diego, CA",  fee: 130, available: true,  avatar: "DK", about: "Eye care specialist skilled in vision correction and eye surgery." },
-];
+const demoDoc = {
+  name: "Dr. Sarah Johnson", specialty: "Cardiologist", rating: 4.9, reviews: 312, experience: 12, location: "New York, NY", fee: 150, available: true, avatar: "SJ", about: "Board-certified cardiologist with 12+ years treating heart conditions and hypertension.",
+  education: ["MD - Harvard Medical School", "Residency - Johns Hopkins Hospital"],
+  specializations: ["Cardiologist", "Preventive Care"],
+  languages: ["English", "Spanish"],
+  hospital: "City General Hospital",
+  consultationTypes: ["Video Call", "In-Person"],
+};
 
 const reviews = [
   { id: 1, name: "John M.", rating: 5, date: "2 days ago", comment: "Incredibly thorough and caring. Took time to explain everything clearly." },
   { id: 2, name: "Maria S.", rating: 5, date: "1 week ago", comment: "Best specialist I've ever seen. Very professional and knowledgeable." },
-  { id: 3, name: "Robert K.", rating: 4, date: "2 weeks ago", comment: "Great doctor, very attentive and patient." },
 ];
 
 export default function DoctorProfilePage() {
   const { id } = useParams();
-  const selectedDoc = doctorsList.find((d) => d.id === parseInt(id)) || doctorsList[0];
-
-  const doctor = {
-    ...selectedDoc,
-    education: ["MD - Harvard Medical School", "Residency - Johns Hopkins Hospital", "Fellowship - Medical Center"],
-    specializations: [selectedDoc.specialty, "Preventive Care", "Clinical Management", "Health Diagnostics"],
-    languages: ["English", "Spanish"],
-    hospital: "City General Hospital",
-    consultationTypes: ["Video Call", "In-Person"],
-    availableSlots: ["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"],
-  };
+  const [doctor, setDoctor] = useState(null);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoc = async () => {
+      try {
+        const res = await doctorAPI.getById(id);
+        const data = res.data.data.doctor;
+        setDoctor({
+          ...demoDoc,
+          ...data,
+          name: data.user?.name || data.name,
+          fee: data.consultationFee?.video || 150,
+        });
+      } catch (err) {
+        setDoctor(demoDoc);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoc();
+  }, [id]);
+
+  useEffect(() => {
+    if (activeTab === "slots" && doctor) {
+      const fetchSlots = async () => {
+        try {
+          const res = await appointmentAPI.getSlots(doctor.user?._id || id, selectedDate);
+          setAvailableSlots(res.data.data.available);
+        } catch (err) {
+          setAvailableSlots(["9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"]);
+        }
+      };
+      fetchSlots();
+    }
+  }, [activeTab, doctor, selectedDate, id]);
+
+  if (loading) return <div className="p-10 text-center">Loading profile...</div>;
+  if (!doctor) return <div className="p-10 text-center">Doctor not found</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -180,12 +208,18 @@ export default function DoctorProfilePage() {
           <div className="card p-5 space-y-5">
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Select Date</h3>
-              <input type="date" className="input" defaultValue={new Date().toISOString().split("T")[0]} />
+              <input
+                type="date"
+                className="input"
+                value={selectedDate}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Available Slots</h3>
               <div className="grid grid-cols-3 gap-2">
-                {doctor.availableSlots.map((slot) => (
+                {availableSlots.length > 0 ? availableSlots.map((slot) => (
                   <button
                     key={slot}
                     onClick={() => setSelectedSlot(slot)}
@@ -197,13 +231,13 @@ export default function DoctorProfilePage() {
                   >
                     {slot}
                   </button>
-                ))}
+                )) : <p className="text-sm text-gray-400">No slots available for this date.</p>}
               </div>
             </div>
             {selectedSlot && (
               <Link
                 to={`/book-appointment/${id}`}
-                state={{ slot: selectedSlot }}
+                state={{ slot: selectedSlot, date: selectedDate }}
                 className="btn-primary btn-lg w-full justify-center"
               >
                 <FiCalendar size={16} /> Confirm Booking — {selectedSlot}

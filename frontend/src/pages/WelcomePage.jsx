@@ -1,143 +1,206 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiShield, FiVideo, FiFileText, FiCpu, FiAlertCircle, FiCheckCircle } from "react-icons/fi";
+import { FiArrowRight, FiShield, FiVideo, FiFileText, FiCpu, FiAlertCircle, FiCheckCircle, FiStar, FiActivity } from "react-icons/fi";
 import Logo from "../components/common/Logo";
 import { useAuthStore } from "../store/authStore";
-import toast from "react-hot-toast";
 
 const features = [
-  { icon: FiCpu,       color: "bg-blue-50 text-blue-600",    title: "AI Health Assistant",  desc: "24/7 symptom checker & instant guidance" },
-  { icon: FiVideo,     color: "bg-green-50 text-green-600",  title: "HD Video Consult",     desc: "Connect with verified doctors remotely" },
-  { icon: FiFileText,  color: "bg-purple-50 text-purple-600", title: "Digital EHR Records",   desc: "Secure lab reports & prescriptions" },
-  { icon: FiAlertCircle,color:"bg-red-50 text-red-600",     title: "24/7 Emergency Support",desc: "Instant urgent care & ambulance booking" },
+  { icon: FiCpu,       color: "bg-blue-50 text-blue-600",    title: "AI Health Insights",  desc: "Smart diagnostics and personalized health monitoring" },
+  { icon: FiVideo,     color: "bg-indigo-50 text-indigo-600",title: "HD Consultations",   desc: "Face-to-face virtual visits with top specialists" },
+  { icon: FiFileText,  color: "bg-emerald-50 text-emerald-600", title: "Digital Records", desc: "Your entire medical history, secured in one place" },
+  { icon: FiActivity,  color: "bg-rose-50 text-rose-600",    title: "Vital Tracking",      desc: "Real-time tracking of BP, sugar, and heart rate" },
 ];
 
 export default function WelcomePage() {
-  const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthStore();
 
-  const launchDemo = (role) => {
-    navigate("/login", { state: { demoRole: role } });
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard", admin: "/admin/dashboard" };
+      navigate(dashMap[user?.role] || "/patient/dashboard");
+    } else {
+      navigate("/register");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-between relative overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-blue-600/20 via-teal-500/10 to-transparent blur-3xl pointer-events-none" />
-
-      {/* Top Header */}
-      <header className="relative z-10 px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <Logo size={42} showText={true} />
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-medium text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Portal Active
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-primary-100 selection:text-primary-700">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <Logo size={40} showText={true} />
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 transition-colors">Features</a>
+            <a href="#specialists" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 transition-colors">Specialists</a>
+            <a href="#security" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary-600 transition-colors">Security</a>
           </div>
-          <Link
-            to="/login"
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl text-xs font-semibold text-white transition-all"
-          >
-            Sign In
-          </Link>
-        </div>
-      </header>
-
-      {/* Main Hero */}
-      <main className="relative z-10 px-6 py-8 max-w-5xl mx-auto w-full flex-1 flex flex-col justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-2xl mx-auto space-y-4"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-xs font-semibold text-blue-300">
-            ✨ Next-Generation Smart Healthcare Platform
+          <div className="flex items-center gap-4">
+            <Link to="/login" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-primary-600 transition-colors">Sign In</Link>
+            <button
+              onClick={handleGetStarted}
+              className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-full transition-all shadow-lg shadow-primary-500/25 active:scale-95"
+            >
+              Get Started
+            </button>
           </div>
+        </div>
+      </nav>
 
-          <h1 className="text-3xl sm:text-5xl font-heading font-extrabold tracking-tight leading-tight">
-            Your Complete Digital <br />
-            <span className="bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-              Health & Doctor Portal
-            </span>
-          </h1>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* Abstract Background Shapes */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none -z-10">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-400/10 blur-[120px] rounded-full" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-400/10 blur-[100px] rounded-full" />
+        </div>
 
-          <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Experience modern healthcare. Book virtual appointments, access digital medical records, and consult AI health assistants in one secure portal.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-50 dark:bg-primary-500/10 border border-primary-100 dark:border-primary-500/20 text-xs font-bold text-primary-700 dark:text-primary-400 uppercase tracking-wider"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-primary-500 animate-ping" />
+              Trusted by 10,000+ Patients
+            </motion.div>
 
-          {/* Quick Portal Access */}
-          <div className="pt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-              ⚡ Open App as Role:
-            </p>
-            <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
-              {[
-                { role: "patient", icon: "🧑‍⚕️", label: "Patient" },
-                { role: "doctor",  icon: "👨‍⚕️", label: "Doctor" },
-              ].map((item) => (
-                <button
-                  key={item.role}
-                  onClick={() => launchDemo(item.role)}
-                  className="p-3 bg-white/10 hover:bg-white/20 border border-white/15 rounded-2xl flex flex-col items-center gap-1 text-center transition-all hover:scale-105"
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  <span className="text-xs font-bold text-white">{item.label}</span>
-                </button>
-              ))}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="text-4xl sm:text-6xl lg:text-7xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1]"
+            >
+              Modern Healthcare <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-emerald-500">
+                Redefined for You.
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed"
+            >
+              Access top-tier doctors, manage digital health records, and track your vitals seamlessly in our HIPAA-compliant smart portal.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+            >
+              <button
+                onClick={handleGetStarted}
+                className="w-full sm:w-auto px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-xl shadow-primary-500/25 flex items-center justify-center gap-2 transition-all group"
+              >
+                Join MedIQ+ Now <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+              </button>
+              <Link
+                to="/login"
+                className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 font-bold rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all text-center"
+              >
+                Provider Login
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section id="features" className="py-20 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-heading font-bold text-slate-900 dark:text-white">Built for Better Care</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">Everything you need to manage your family's health</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="p-8 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-primary-500/30 hover:shadow-2xl hover:shadow-primary-500/5 transition-all"
+              >
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${f.color}`}>
+                  <f.icon size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{f.title}</h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Stats */}
+      <section id="security" className="py-24 bg-primary-600 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-widest">
+                Bank-Level Security
+              </div>
+              <h2 className="text-4xl font-heading font-bold leading-tight">Your Health Privacy is <br /> Our Top Priority</h2>
+              <p className="text-primary-100 text-lg leading-relaxed">
+                We use end-to-end 256-bit encryption and HIPAA-compliant data centers to ensure your medical records remain yours alone.
+              </p>
+              <div className="grid grid-cols-2 gap-6 pt-4">
+                {[
+                  { label: "Active Users", value: "10k+" },
+                  { label: "Verified Doctors", value: "450+" },
+                  { label: "Uptime", value: "99.9%" },
+                  { label: "Data Safety", value: "AES-256" },
+                ].map(s => (
+                  <div key={s.label}>
+                    <p className="text-3xl font-bold">{s.value}</p>
+                    <p className="text-primary-200 text-sm mt-1">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-[40px] space-y-6">
+              <div className="flex gap-1 text-amber-400">
+                {[1,2,3,4,5].map(i => <FiStar key={i} fill="currentColor" size={20} />)}
+              </div>
+              <p className="text-xl font-medium leading-relaxed italic">
+                "The most seamless healthcare experience I've had. Being able to access my lab reports on my phone and talk to my cardiologist instantly is a game changer."
+              </p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary-400 flex items-center justify-center font-bold">JD</div>
+                <div>
+                  <p className="font-bold">Jonathan Doe</p>
+                  <p className="text-primary-200 text-sm">Patient since 2023</p>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Standard Auth CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-            <Link
-              to="/register"
-              className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-blue-600 to-teal-500 hover:from-blue-500 hover:to-teal-400 font-bold rounded-2xl text-sm text-white shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all"
-            >
-              Create Account <FiArrowRight size={16} />
-            </Link>
-            <Link
-              to="/login"
-              className="w-full sm:w-auto px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold rounded-2xl text-sm text-slate-200 flex items-center justify-center transition-all"
-            >
-              Log In to Portal
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Feature Cards Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12"
-        >
-          {features.map((f) => (
-            <div key={f.title} className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60 backdrop-blur-md flex items-start gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${f.color}`}>
-                <f.icon size={20} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white text-sm">{f.title}</h3>
-                <p className="text-slate-400 text-xs mt-0.5 leading-snug">{f.desc}</p>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Trust Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-xs text-slate-400">
-          <span className="flex items-center gap-1.5"><FiShield className="text-teal-400" size={14} /> HIPAA Compliant</span>
-          <span className="flex items-center gap-1.5"><FiCheckCircle className="text-blue-400" size={14} /> 256-Bit SSL Encryption</span>
-          <span className="flex items-center gap-1.5"><FiCheckCircle className="text-emerald-400" size={14} /> Verified Specialists</span>
         </div>
-      </main>
+      </section>
 
       {/* Footer */}
-      <footer className="relative z-10 px-6 py-4 text-center text-xs text-slate-500 border-t border-slate-800">
-        Smart Healthcare Portal · Version 1.0.0 · All Rights Reserved
+      <footer className="py-12 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <Logo size={32} showText={true} />
+            <div className="flex gap-8 text-sm text-slate-500 dark:text-slate-400">
+              <Link to="/privacy" className="hover:text-primary-600">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-primary-600">Terms of Service</Link>
+              <Link to="/contact" className="hover:text-primary-600">Contact Us</Link>
+            </div>
+            <p className="text-sm text-slate-400">
+              © {new Date().getFullYear()} MedIQ+ Healthcare. Built for a healthier future.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

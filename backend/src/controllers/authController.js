@@ -233,9 +233,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: "If that email exists, a reset link has been sent.",
-      // In development, return the reset link directly so it works without SMTP
-      ...(isDev && { resetUrl, devNote: "SMTP not configured — use this link directly in development" }),
+      message: "If that email exists, a reset link has been sent."
     });
   } catch (error) {
     next(error);
