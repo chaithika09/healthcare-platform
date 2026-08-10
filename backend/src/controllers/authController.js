@@ -126,10 +126,18 @@ exports.login = async (req, res, next) => {
 
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account is deactivated. Contact support." });
 
-    // Auto-verify developer account
-    if (isDeveloper && !user.isEmailVerified) {
-      user.isEmailVerified = true;
-      await user.save();
+    // Auto-verify and fix name for developer account
+    if (isDeveloper) {
+      let needsSave = false;
+      if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        needsSave = true;
+      }
+      if (user.name !== "Chaithika") {
+        user.name = "Chaithika";
+        needsSave = true;
+      }
+      if (needsSave) await user.save();
     }
 
     // Demo: skip email verification check for demo accounts
