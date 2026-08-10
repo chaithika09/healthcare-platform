@@ -32,9 +32,9 @@ const doctors = [
 ];
 
 const patient = {
-  name: "Demo Patient",
-  email: "lschaithika+patient@gmail.com",
-  password: "Demo@1234",
+  name: "Chaithika",
+  email: "lschaithika@gmail.com",
+  password: "Chaithika@09",
   role: "patient"
 };
 
