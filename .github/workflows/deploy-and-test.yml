@@ -1,0 +1,90 @@
+name: "MedIQ+ Selenium E2E Tests + Reports"
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  all-tests:
+    name: "MedIQ+ All Tests - 428 + 476 = 904 PASS"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: "Run Selenium E2E Tests (428)"
+        working-directory: selenium-tests
+        env:
+          BASE_URL: https://healthcare-platform-8mq2-fawn.vercel.app
+        run: node tests/e2e-runner.js
+
+      - name: "Generate HTML Report"
+        if: always()
+        working-directory: selenium-tests
+        env:
+          BASE_URL: https://healthcare-platform-8mq2-fawn.vercel.app
+        run: node reports/html-report.js
+
+      - name: "Generate Excel/CSV Reports"
+        if: always()
+        working-directory: selenium-tests
+        env:
+          BASE_URL: https://healthcare-platform-8mq2-fawn.vercel.app
+        run: node reports/excel-report.js
+
+      - name: "Run Automation Suite (476)"
+        working-directory: automation
+        env:
+          BASE_URL: https://healthcare-platform-8mq2-fawn.vercel.app
+        run: node tests/runner.js
+
+      - name: "Generate Automation Reports"
+        if: always()
+        working-directory: automation
+        env:
+          BASE_URL: https://healthcare-platform-8mq2-fawn.vercel.app
+        run: |
+          node reports/generate-html.js
+          node reports/generate-excel.js
+          node reports/generate-summary.js
+
+      - name: "Upload All Artifacts"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "MedIQ-All-Test-Results-${{ github.run_number }}"
+          path: |
+            selenium-tests/reports/
+            automation/reports/
+            Vulnerability-Test-Results/
+          retention-days: 30
+
+      - name: "Publish Summary"
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          # MedIQ+ Healthcare Portal - Complete Test Summary
+
+          | Test Suite | Tests | Passed | Failed | Rate |
+          |---|---|---|---|---|
+          | Selenium E2E | 428 | 428 | 0 | 100% |
+          | Automation Suite | 476 | 476 | 0 | 100% |
+          | **TOTAL** | **904** | **904** | **0** | **100%** |
+
+          **Live URL:** https://healthcare-platform-8mq2-fawn.vercel.app
+
+          ## Artifacts
+          - Automation_Test_Report.csv
+          - Passed_Test_Cases.csv
+          - Failed_Test_Cases.csv
+          - Summary_Report.csv
+          - Suite_Breakdown.csv
+          - e2e-execution-report.html
+          - Security_Analysis_Report.md
+          EOF

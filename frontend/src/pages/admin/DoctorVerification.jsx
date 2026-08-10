@@ -1,36 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiCheckCircle, FiXCircle, FiEye, FiShield, FiFileText, FiUser } from "react-icons/fi";
+import { adminAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
-const pendingDoctors = [
-  { id: 1, name: "Dr. Michael Kim",   specialty: "Neurologist",   experience: 8,  license: "MED-2024-001", submitted: "2024-06-20", docs: ["Medical License", "Degree Certificate", "ID Proof"] },
-  { id: 2, name: "Dr. Priya Patel",   specialty: "Gynecologist",  experience: 12, license: "MED-2024-002", submitted: "2024-06-19", docs: ["Medical License", "Degree Certificate", "ID Proof", "Specialization Certificate"] },
-  { id: 3, name: "Dr. James Carter",  specialty: "Orthopedic",    experience: 6,  license: "MED-2024-003", submitted: "2024-06-18", docs: ["Medical License", "Degree Certificate"] },
-  { id: 4, name: "Dr. Lisa Thompson", specialty: "Dermatologist", experience: 9,  license: "MED-2024-004", submitted: "2024-06-17", docs: ["Medical License", "Degree Certificate", "ID Proof"] },
-  { id: 5, name: "Dr. Ahmed Hassan",  specialty: "Cardiologist",  experience: 15, license: "MED-2024-005", submitted: "2024-06-16", docs: ["Medical License", "Degree Certificate", "ID Proof", "Fellowship Certificate"] },
-];
-
 export default function DoctorVerification() {
-  const [doctors, setDoctors] = useState(pendingDoctors);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [showReject, setShowReject] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
-  const approve = (id) => {
-    setDoctors((prev) => prev.filter((d) => d.id !== id));
-    setSelected(null);
-    toast.success("Doctor approved and notified!");
+  const fetchPending = async () => {
+    setLoading(true);
+    try {
+      const res = await adminAPI.getPendingDoctors();
+      setDoctors(res.data.data.doctors || []);
+    } catch {
+      setDoctors([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const reject = (id) => {
-    if (!rejectReason) { toast.error("Please provide a rejection reason"); return; }
-    setDoctors((prev) => prev.filter((d) => d.id !== id));
-    setSelected(null);
-    setShowReject(false);
-    setRejectReason("");
-    toast.success("Doctor rejected and notified.");
+  useEffect(() => { fetchPending(); }, []);
+
+  const handleAction = async (id, action) => {
+    if (action === "reject" && !rejectReason) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    setProcessing(true);
+    try {
+      await adminAPI.verifyDoctor(id, { action, reason: rejectReason });
+      toast.success(`Doctor ${action}ed successfully`);
+      setDoctors((prev) => prev.filter((d) => d.user?._id !== id));
+      setSelected(null);
+      setShowReject(false);
+      setRejectReason("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Action failed");
+    } finally {
+      setProcessing(false);
+    }
   };
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading applications...</div>;
 
   return (
     <div className="space-y-6">
@@ -52,34 +68,34 @@ export default function DoctorVerification() {
           {/* List */}
           <div className="lg:col-span-2 space-y-3">
             {doctors.map((doc, i) => (
-              <motion.div key={doc.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              <motion.div key={doc._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 onClick={() => setSelected(doc)}
-                className={`card p-4 cursor-pointer transition-all ${selected?.id === doc.id ? "ring-2 ring-primary-500" : "hover:shadow-card-hover"}`}>
+                className={`card p-4 cursor-pointer transition-all ${selected?._id === doc._id ? "ring-2 ring-primary-500" : "hover:shadow-card-hover"}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {doc.name.split(" ").map((n) => n[0]).join("").slice(1, 3)}
+                    {(doc.user?.name || "DR").split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm">{doc.name}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{doc.user?.name}</p>
                     <p className="text-xs text-gray-500">{doc.specialty} · {doc.experience}y exp</p>
                   </div>
                   <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">Pending</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">Submitted: {doc.submitted}</p>
+                <p className="text-xs text-gray-400 mt-2">Submitted: {new Date(doc.createdAt).toLocaleDateString()}</p>
               </motion.div>
             ))}
           </div>
 
           {/* Detail */}
           {selected ? (
-            <motion.div key={selected.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-3 space-y-4">
+            <motion.div key={selected._id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-3 space-y-4">
               <div className="card p-6">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-hero flex items-center justify-center text-white font-bold text-xl">
-                    {selected.name.split(" ").map((n) => n[0]).join("").slice(1, 3)}
+                    {(selected.user?.name || "DR").split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-gray-900 text-lg">{selected.name}</h3>
+                    <h3 className="font-heading font-bold text-gray-900 text-lg">{selected.user?.name}</h3>
                     <p className="text-primary-600 font-medium text-sm">{selected.specialty}</p>
                   </div>
                 </div>
@@ -87,9 +103,9 @@ export default function DoctorVerification() {
                 <div className="grid grid-cols-2 gap-4 text-sm mb-5">
                   {[
                     { label: "Experience", value: `${selected.experience} years` },
-                    { label: "License No.", value: selected.license },
-                    { label: "Submitted",   value: selected.submitted },
-                    { label: "Documents",   value: `${selected.docs.length} files` },
+                    { label: "License No.", value: selected.licenseNumber },
+                    { label: "Submitted",   value: new Date(selected.createdAt).toLocaleDateString() },
+                    { label: "Documents",   value: `${(selected.verificationDocuments || []).length} files` },
                   ].map((item) => (
                     <div key={item.label} className="bg-gray-50 rounded-xl p-3">
                       <p className="text-xs text-gray-500">{item.label}</p>
@@ -101,29 +117,29 @@ export default function DoctorVerification() {
                 <div className="mb-5">
                   <h4 className="font-semibold text-gray-900 text-sm mb-3">Submitted Documents</h4>
                   <div className="space-y-2">
-                    {selected.docs.map((doc) => (
-                      <div key={doc} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    {(selected.verificationDocuments || []).length > 0 ? selected.verificationDocuments.map((doc, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <FiFileText size={14} className="text-primary-600" /> {doc}
+                          <FiFileText size={14} className="text-primary-600" /> Document #{idx+1}
                         </div>
                         <button
-                          onClick={() => toast.success(`Viewing document: ${doc}`)}
+                          onClick={() => window.open(doc, '_blank')}
                           className="btn-ghost btn-sm gap-1 text-gray-500 hover:text-primary-600"
                         >
                           <FiEye size={12} /> View
                         </button>
                       </div>
-                    ))}
+                    )) : <p className="text-xs text-gray-400">No documents uploaded.</p>}
                   </div>
                 </div>
 
                 {!showReject ? (
                   <div className="flex gap-3">
-                    <button onClick={() => setShowReject(true)} className="btn-danger flex-1 justify-center gap-2">
+                    <button onClick={() => setShowReject(true)} disabled={processing} className="btn-danger flex-1 justify-center gap-2">
                       <FiXCircle size={16} /> Reject
                     </button>
-                    <button onClick={() => approve(selected.id)} className="btn-secondary flex-1 justify-center gap-2">
-                      <FiCheckCircle size={16} /> Approve
+                    <button onClick={() => handleAction(selected.user?._id, 'approve')} disabled={processing} className="btn-secondary flex-1 justify-center gap-2">
+                      <FiCheckCircle size={16} /> {processing ? 'Approving...' : 'Approve'}
                     </button>
                   </div>
                 ) : (
@@ -140,7 +156,9 @@ export default function DoctorVerification() {
                     </div>
                     <div className="flex gap-3">
                       <button onClick={() => setShowReject(false)} className="btn-outline flex-1">Cancel</button>
-                      <button onClick={() => reject(selected.id)} className="btn-danger flex-1 justify-center">Confirm Rejection</button>
+                      <button onClick={() => handleAction(selected.user?._id, 'reject')} disabled={processing} className="btn-danger flex-1 justify-center">
+                        {processing ? 'Rejecting...' : 'Confirm Rejection'}
+                      </button>
                     </div>
                   </div>
                 )}

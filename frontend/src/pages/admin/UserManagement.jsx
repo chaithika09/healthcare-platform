@@ -1,16 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiSearch, FiEdit2, FiTrash2, FiUserPlus, FiFilter, FiMoreVertical } from "react-icons/fi";
+import { adminAPI, authAPI } from "../../services/api";
 import toast from "react-hot-toast";
-
-const users = [
-  { id: 1, name: "John Smith",    email: "john@email.com",   role: "patient", status: "active",   joined: "2024-01-15", appointments: 8 },
-  { id: 2, name: "Dr. Sarah J.",  email: "sarah@email.com",  role: "doctor",  status: "active",   joined: "2023-11-20", appointments: 312 },
-  { id: 3, name: "Maria Garcia",  email: "maria@email.com",  role: "patient", status: "active",   joined: "2024-02-10", appointments: 3 },
-  { id: 4, name: "Dr. Mike Chen", email: "mike@email.com",   role: "doctor",  status: "pending",  joined: "2024-06-01", appointments: 0 },
-  { id: 5, name: "Emma Wilson",   email: "emma@email.com",   role: "patient", status: "inactive", joined: "2024-03-05", appointments: 2 },
-  { id: 6, name: "Admin User",    email: "admin@email.com",  role: "admin",   status: "active",   joined: "2023-01-01", appointments: 0 },
-];
 
 const roleColors = {
   patient: "bg-blue-100 text-blue-700",
@@ -18,60 +10,75 @@ const roleColors = {
   admin:   "bg-purple-100 text-purple-700",
 };
 
-const statusColors = {
-  active:   "bg-green-100 text-green-700",
-  inactive: "bg-gray-100 text-gray-600",
-  pending:  "bg-amber-100 text-amber-700",
-};
-
 export default function UserManagement() {
-  const [userList, setUserList] = useState(users);
+  const [userList, setUserList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "patient" });
+  const [newUser, setNewUser] = useState({ name: "", email: "", role: "patient", password: "User@1234" });
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await adminAPI.getUsers({
+        role: roleFilter === 'all' ? undefined : roleFilter,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        search
+      });
+      setUserList(res.data.data.users || []);
+    } catch {
+      setUserList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, [roleFilter, statusFilter]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await adminAPI.deleteUser(id);
+      setUserList((prev) => prev.filter((u) => u._id !== id));
+      toast.success("User deleted successfully");
+    } catch {
+      toast.error("Failed to delete user");
+    }
+  };
+
+  const handleStatusToggle = async (id, currentStatus) => {
+    try {
+      const nextStatus = !currentStatus;
+      await adminAPI.updateUser(id, { isActive: nextStatus });
+      setUserList((prev) =>
+        prev.map((u) => (u._id === id ? { ...u, isActive: nextStatus } : u))
+      );
+      toast.success(`User ${nextStatus ? "activated" : "deactivated"}`);
+    } catch {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      await authAPI.register(newUser);
+      toast.success("User added successfully!");
+      setShowAddModal(false);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add user");
+    }
+  };
 
   const filtered = userList.filter((u) => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === "all" || u.role === roleFilter;
-    const matchStatus = statusFilter === "all" || u.status === statusFilter;
-    return matchSearch && matchRole && matchStatus;
+    return matchSearch;
   });
 
-  const handleDelete = (id) => {
-    setUserList((prev) => prev.filter((u) => u.id !== id));
-    toast.success("User deleted successfully");
-  };
-
-  const handleStatusToggle = (id, currentStatus) => {
-    const nextStatus = currentStatus === "active" ? "inactive" : "active";
-    setUserList((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, status: nextStatus } : u))
-    );
-    toast.success(`User ${nextStatus === "active" ? "activated" : "deactivated"}`);
-  };
-
-  const handleAddUser = (e) => {
-    e.preventDefault();
-    if (!newUser.name || !newUser.email) {
-      toast.error("Please provide both name and email");
-      return;
-    }
-    const created = {
-      id: Date.now(),
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      status: "active",
-      joined: new Date().toISOString().split("T")[0],
-      appointments: 0,
-    };
-    setUserList((prev) => [created, ...prev]);
-    setNewUser({ name: "", email: "", role: "patient" });
-    setShowAddModal(false);
-    toast.success("User added successfully!");
-  };
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading users...</div>;
 
   return (
     <div className="space-y-6">
@@ -130,17 +137,16 @@ export default function UserManagement() {
                 <th>Role</th>
                 <th>Status</th>
                 <th>Joined</th>
-                <th>Activity</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((u, i) => (
-                <motion.tr key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
+                <motion.tr key={u._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-gradient-hero flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {u.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        {(u.name || "U").split(" ").map((n) => n[0]).join("").slice(0, 2)}
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 text-sm">{u.name}</p>
@@ -154,23 +160,22 @@ export default function UserManagement() {
                     </span>
                   </td>
                   <td>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${statusColors[u.status]}`}>
-                      {u.status}
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${u.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      {u.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="text-sm text-gray-600">{u.joined}</td>
-                  <td className="text-sm text-gray-600">{u.appointments} appts</td>
+                  <td className="text-sm text-gray-600">{new Date(u.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => handleStatusToggle(u.id, u.status)}
-                        title={u.status === "active" ? "Deactivate User" : "Activate User"}
+                        onClick={() => handleStatusToggle(u._id, u.isActive)}
+                        title={u.isActive ? "Deactivate User" : "Activate User"}
                         className="p-1.5 hover:bg-amber-50 rounded-lg text-gray-400 hover:text-amber-600 transition-colors"
                       >
                         <FiMoreVertical size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(u.id)}
+                        onClick={() => handleDelete(u._id)}
                         title="Delete User"
                         className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
                       >

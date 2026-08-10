@@ -1,43 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiDownload, FiSearch, FiCalendar, FiPackage, FiClock } from "react-icons/fi";
+import { prescriptionAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
-const prescriptions = [
-  {
-    id: 1, doctor: "Dr. Sarah Johnson", specialty: "Cardiologist", date: "2024-06-15",
-    status: "active", medicines: [
-      { name: "Amlodipine", dose: "5mg", frequency: "Once daily", duration: "30 days", instructions: "Take with food" },
-      { name: "Lisinopril",  dose: "10mg", frequency: "Once daily", duration: "30 days", instructions: "Take in the morning" },
-    ],
-    notes: "Monitor blood pressure daily. Return for follow-up in 4 weeks.",
-  },
-  {
-    id: 2, doctor: "Dr. Emily Davis", specialty: "Dermatologist", date: "2024-06-01",
-    status: "active", medicines: [
-      { name: "Clindamycin Gel", dose: "1%", frequency: "Twice daily", duration: "60 days", instructions: "Apply to affected area" },
-    ],
-    notes: "Avoid sun exposure. Use sunscreen SPF 50+.",
-  },
-  {
-    id: 3, doctor: "Dr. James Wilson", specialty: "Pediatrician", date: "2024-05-10",
-    status: "expired", medicines: [
-      { name: "Amoxicillin", dose: "500mg", frequency: "Three times daily", duration: "7 days", instructions: "Complete full course" },
-    ],
-    notes: "Complete the full antibiotic course even if feeling better.",
-  },
-];
-
 export default function PrescriptionViewer() {
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState("all");
 
+  useEffect(() => {
+    const fetchPrescriptions = async () => {
+      try {
+        const res = await prescriptionAPI.getAll();
+        setPrescriptions(res.data.data.prescriptions || []);
+      } catch (err) {
+        console.error("Failed to fetch prescriptions", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrescriptions();
+  }, []);
+
   const filtered = prescriptions.filter((p) => {
-    const matchSearch = p.doctor.toLowerCase().includes(search.toLowerCase());
+    const docName = p.doctorName || p.doctor?.name || "Doctor";
+    const matchSearch = docName.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || p.status === filter;
     return matchSearch && matchFilter;
   });
+
+  const handleDownloadPrescription = (p) => {
+    const docName = p.doctorName || p.doctor?.name || "Doctor";
+    const specialty = p.specialty || p.doctor?.specialty || "Specialist";
+    const medicines = p.medicines || [];
+
+    const text = `
+============================================================
+ SMART HEALTHCARE PORTAL — OFFICIAL PRESCRIPTION
+============================================================
+ Prescribing Doctor: ${docName} (${specialty})
+ Date Issued       : ${new Date(p.date).toLocaleDateString()}
+ Prescription Status: ${p.status.toUpperCase()}
+============================================================
+
+ MEDICATIONS PRESCRIBED:
+ ------------------------------------------------------------
+${medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dosage})
+    Frequency   : ${m.frequency}
+    Duration    : ${m.duration}
+    Instructions: ${m.instructions}`).join("\n\n")}
+
+------------------------------------------------------------
+ DOCTOR'S NOTES:
+ ${p.notes || "None"}
+============================================================
+ Verified electronically by MedIQ+ Certified Systems.
+============================================================
+`;
+    const blob = new Blob([text.trim()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Prescription_${docName.replace(/\s+/g, "_")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded prescription!`);
+  };
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading prescriptions...</div>;
 
   const handleDownloadPrescription = (p) => {
     const text = `
@@ -102,13 +137,8 @@ ${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
         {/* List */}
         <div className="space-y-3">
           {filtered.map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+            <div className={`card p-4 cursor-pointer transition-all ${selected?._id === p._id ? "ring-2 ring-primary-500" : "hover:shadow-card-hover"}`}
               onClick={() => setSelected(p)}
-              className={`card p-4 cursor-pointer transition-all ${selected?.id === p.id ? "ring-2 ring-primary-500" : "hover:shadow-card-hover"}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -116,8 +146,8 @@ ${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
                     <FiPackage size={18} className="text-primary-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{p.doctor}</p>
-                    <p className="text-xs text-gray-500">{p.specialty}</p>
+                    <p className="font-semibold text-gray-900 text-sm">{p.doctorName || p.doctor?.name || "Doctor"}</p>
+                    <p className="text-xs text-gray-500">{p.specialty || p.doctor?.specialty || "Specialist"}</p>
                   </div>
                 </div>
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${p.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
@@ -125,20 +155,20 @@ ${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
                 </span>
               </div>
               <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1"><FiCalendar size={11} /> {p.date}</span>
-                <span className="flex items-center gap-1"><FiPackage size={11} /> {p.medicines.length} medicine(s)</span>
+                <span className="flex items-center gap-1"><FiCalendar size={11} /> {new Date(p.date).toLocaleDateString()}</span>
+                <span className="flex items-center gap-1"><FiPackage size={11} /> {(p.medicines || []).length} medicine(s)</span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Detail */}
         {selected ? (
-          <motion.div key={selected.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card p-6">
+          <motion.div key={selected._id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="font-heading font-semibold text-gray-900">Prescription Details</h3>
-                <p className="text-xs text-gray-500 mt-0.5">{selected.date}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{new Date(selected.date).toLocaleDateString()}</p>
               </div>
               <button onClick={() => handleDownloadPrescription(selected)} className="btn-outline btn-sm gap-1.5">
                 <FiDownload size={13} /> Download
@@ -147,21 +177,21 @@ ${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
 
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-5">
               <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center text-white font-bold text-sm">
-                {selected.doctor.split(" ").map((n) => n[0]).join("").slice(1, 3)}
+                {(selected.doctorName || selected.doctor?.name || "DR").split(" ").map((n) => n[0]).join("").slice(0, 2)}
               </div>
               <div>
-                <p className="font-semibold text-sm text-gray-900">{selected.doctor}</p>
-                <p className="text-xs text-gray-500">{selected.specialty}</p>
+                <p className="font-semibold text-sm text-gray-900">{selected.doctorName || selected.doctor?.name}</p>
+                <p className="text-xs text-gray-500">{selected.specialty || selected.doctor?.specialty}</p>
               </div>
             </div>
 
             <h4 className="font-semibold text-gray-900 text-sm mb-3">Medications</h4>
             <div className="space-y-3 mb-5">
-              {selected.medicines.map((med, i) => (
+              {(selected.medicines || []).map((med, i) => (
                 <div key={i} className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-semibold text-gray-900 text-sm">{med.name}</p>
-                    <span className="text-xs font-bold text-primary-600 bg-primary-100 px-2 py-0.5 rounded-full">{med.dose}</span>
+                    <span className="text-xs font-bold text-primary-600 bg-primary-100 px-2 py-0.5 rounded-full">{med.dosage}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
                     <span className="flex items-center gap-1"><FiClock size={10} /> {med.frequency}</span>

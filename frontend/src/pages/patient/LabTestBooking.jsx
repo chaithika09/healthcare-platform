@@ -1,22 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiSearch, FiCheckCircle, FiCalendar, FiActivity } from "react-icons/fi";
+import { labAPI } from "../../services/api";
 import toast from "react-hot-toast";
-
-const tests = [
-  { id: 1, name: "Complete Blood Count (CBC)", category: "Hematology", price: 25, duration: "Same day", fasting: false, description: "Measures different components of blood" },
-  { id: 2, name: "Lipid Profile",              category: "Biochemistry", price: 35, duration: "Same day", fasting: true,  description: "Cholesterol and triglycerides" },
-  { id: 3, name: "HbA1c (Diabetes)",           category: "Endocrinology",price: 30, duration: "Same day", fasting: false, description: "3-month blood sugar average" },
-  { id: 4, name: "Thyroid Function (TSH)",     category: "Endocrinology",price: 40, duration: "Same day", fasting: false, description: "Thyroid hormone levels" },
-  { id: 5, name: "Liver Function Test (LFT)",  category: "Biochemistry", price: 45, duration: "Same day", fasting: true,  description: "Liver enzyme and protein levels" },
-  { id: 6, name: "Kidney Function Test",       category: "Nephrology",   price: 40, duration: "Same day", fasting: false, description: "Creatinine, urea, electrolytes" },
-  { id: 7, name: "Urine Routine Analysis",     category: "Pathology",    price: 15, duration: "2 hours",  fasting: false, description: "Physical and chemical urine analysis" },
-  { id: 8, name: "COVID-19 RT-PCR",            category: "Virology",     price: 50, duration: "24 hours", fasting: false, description: "Molecular test for COVID-19" },
-];
 
 const categories = ["All", "Hematology", "Biochemistry", "Endocrinology", "Nephrology", "Pathology", "Virology"];
 
 export default function LabTestBooking() {
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [cart, setCart] = useState([]);
@@ -24,6 +16,21 @@ export default function LabTestBooking() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [homeCollection, setHomeCollection] = useState(false);
+  const [booking, setBooking] = useState(false);
+
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const res = await labAPI.getTests();
+        setTests(res.data.data.tests || []);
+      } catch (err) {
+        console.error("Failed to fetch lab tests", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTests();
+  }, []);
 
   const filtered = tests.filter((t) => {
     const matchSearch = t.name.toLowerCase().includes(search.toLowerCase());
@@ -41,10 +48,25 @@ export default function LabTestBooking() {
 
   const handleBook = async () => {
     if (!date || !time) { toast.error("Please select date and time"); return; }
-    await new Promise((r) => setTimeout(r, 1500));
-    toast.success("Lab tests booked successfully!");
-    setStep(3);
+    setBooking(true);
+    try {
+      await labAPI.book({
+        tests: cart,
+        date,
+        timeSlot: time,
+        homeCollection,
+        address: "Default Address" // Can be expanded to ask user
+      });
+      toast.success("Lab tests booked successfully!");
+      setStep(3);
+    } catch (err) {
+      toast.error("Booking failed. Please try again.");
+    } finally {
+      setBooking(false);
+    }
   };
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading available tests...</div>;
 
   return (
     <div className="space-y-6">

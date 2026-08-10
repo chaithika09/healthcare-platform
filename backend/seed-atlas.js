@@ -12,22 +12,38 @@ const doctors = [
   {
     name: "Dr. Sarah Johnson",
     email: "lschaithika+doctor@gmail.com",
-    password: "Demo@1234",
+    password: "Chaithika@09",
     role: "doctor",
     specialty: "Cardiologist",
     experience: 12,
     hospital: "City Medical Center",
-    consultationFee: { video: 150, inPerson: 200 }
+    consultationFee: { video: 150, inPerson: 200 },
+    bio: "Expert in heart health and prevention.",
+    languages: ["English", "Telugu"]
   },
   {
     name: "Dr. Michael Chen",
     email: "lschaithika+doctor2@gmail.com",
-    password: "Demo@1234",
+    password: "Chaithika@09",
     role: "doctor",
     specialty: "Neurologist",
     experience: 15,
     hospital: "Green Valley Hospital",
-    consultationFee: { video: 180, inPerson: 220 }
+    consultationFee: { video: 180, inPerson: 220 },
+    bio: "Specialist in brain and nerve disorders.",
+    languages: ["English", "Hindi"]
+  },
+  {
+    name: "Dr. Emily Davis",
+    email: "lschaithika+doctor3@gmail.com",
+    password: "Chaithika@09",
+    role: "doctor",
+    specialty: "Dermatologist",
+    experience: 8,
+    hospital: "Skin & Care Clinic",
+    consultationFee: { video: 120, inPerson: 150 },
+    bio: "Skincare and aesthetic expert.",
+    languages: ["English"]
   }
 ];
 
@@ -62,27 +78,35 @@ const seed = async () => {
       console.log(`✅ Created patient: ${patient.email}`);
     }
 
-    // Create Doctors
+    // Create/Update Doctors
     for (const d of doctors) {
-      const existingDoc = await User.findOne({ email: d.email });
-      if (!existingDoc) {
-        const u = await User.create({
+      let existingDocUser = await User.findOne({ email: d.email });
+      if (!existingDocUser) {
+        existingDocUser = await User.create({
           name: d.name,
           email: d.email,
           password: d.password,
           role: "doctor",
           isEmailVerified: true
         });
-        await Doctor.create({
-          user: u._id,
+        console.log(`✅ Created doctor user: ${d.email}`);
+      }
+
+      await Doctor.findOneAndUpdate(
+        { user: existingDocUser._id },
+        {
           specialty: d.specialty,
           experience: d.experience,
           hospital: d.hospital,
           consultationFee: d.consultationFee,
-          verificationStatus: "approved"
-        });
-        console.log(`✅ Created doctor: ${d.email}`);
-      }
+          bio: d.bio,
+          languages: d.languages,
+          verificationStatus: "approved",
+          verifiedAt: new Date()
+        },
+        { upsert: true, new: true }
+      );
+      console.log(`✅ Approved doctor profile: ${d.email}`);
     }
 
     console.log("✨ Seeding complete!");

@@ -1,41 +1,81 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiFileText, FiDownload, FiEye, FiUpload, FiSearch, FiCalendar, FiUser, FiX, FiCheckCircle } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
+import { recordAPI } from "../../services/api";
 import toast from "react-hot-toast";
-
-const sampleRecords = [
-  { id: 1, title: "Blood Test Report",       type: "Lab Report",    doctor: "Dr. Sarah Johnson", date: "2024-06-15", size: "2.4 MB", format: "PDF", category: "lab" },
-  { id: 2, title: "Chest X-Ray",             type: "Radiology",     doctor: "Dr. Michael Chen",  date: "2024-06-10", size: "8.1 MB", format: "DICOM", category: "imaging" },
-  { id: 3, title: "ECG Report",              type: "Cardiology",    doctor: "Dr. Sarah Johnson", date: "2024-05-28", size: "1.2 MB", format: "PDF", category: "lab" },
-  { id: 4, title: "Prescription - June",     type: "Prescription",  doctor: "Dr. Emily Davis",   date: "2024-06-01", size: "0.5 MB", format: "PDF", category: "prescription" },
-  { id: 5, title: "MRI Brain Scan",          type: "Radiology",     doctor: "Dr. Michael Chen",  date: "2024-05-15", size: "45 MB",  format: "DICOM", category: "imaging" },
-  { id: 6, title: "Diabetes Panel",          type: "Lab Report",    doctor: "Dr. James Wilson",  date: "2024-04-20", size: "1.8 MB", format: "PDF", category: "lab" },
-];
 
 const categories = ["all", "lab", "imaging", "prescription"];
 const typeColors = {
-  "Lab Report":   "bg-blue-100 text-blue-700",
-  "Radiology":    "bg-purple-100 text-purple-700",
-  "Cardiology":   "bg-red-100 text-red-700",
-  "Prescription": "bg-green-100 text-green-700",
+  "lab":   "bg-blue-100 text-blue-700",
+  "imaging":    "bg-purple-100 text-purple-700",
+  "prescription": "bg-green-100 text-green-700",
 };
 
 export default function MedicalRecords() {
   const { user } = useAuthStore();
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [viewRecord, setViewRecord] = useState(null);
 
-  const records = sampleRecords;
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const res = await recordAPI.getAll();
+        setRecords(res.data.data.records || []);
+      } catch (err) {
+        console.error("Failed to fetch records", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecords();
+  }, []);
 
   const filtered = records.filter((r) => {
-    const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||
-      r.doctor.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category === "all" || r.category === category;
+    const title = r.title || "Untitled Record";
+    const doctor = r.doctorName || "Unknown Doctor";
+    const matchSearch = title.toLowerCase().includes(search.toLowerCase()) ||
+      doctor.toLowerCase().includes(search.toLowerCase());
+    const matchCat = category === "all" || r.type === category;
     return matchSearch && matchCat;
   });
+
+  const handleDownload = (rec) => {
+    if (rec.fileUrl) {
+      window.open(rec.fileUrl, '_blank');
+      return;
+    }
+    const reportText = `
+============================================================
+ SMART HEALTHCARE PORTAL — OFFICIAL MEDICAL RECORD REPORT
+============================================================
+ Record Name   : ${rec.title}
+ Record Type   : ${rec.type}
+ Attending Doc : ${rec.doctorName || 'N/A'}
+ Issue Date    : ${new Date(rec.date).toLocaleDateString()}
+ Patient Name  : ${user?.name || "Patient"}
+ Record Status : Verified & Authenticated
+============================================================
+ Verified by MedIQ+ Healthcare Diagnostic Systems
+============================================================
+`;
+    const blob = new Blob([reportText.trim()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${rec.title.replace(/\s+/g, "_")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${rec.title}!`);
+  };
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading your medical records...</div>;
 
   const handleDownload = (rec) => {
     const reportText = `
@@ -138,13 +178,13 @@ export default function MedicalRecords() {
 
             <div className="space-y-1.5 text-xs text-gray-500 dark:text-slate-400">
               <div className="flex items-center gap-1.5">
-                <FiUser size={11} /> {rec.doctor}
+                <FiUser size={11} /> {rec.doctorName || "N/A"}
               </div>
               <div className="flex items-center gap-1.5">
-                <FiCalendar size={11} /> {rec.date}
+                <FiCalendar size={11} /> {new Date(rec.date).toLocaleDateString()}
               </div>
               <div className="flex items-center justify-between">
-                <span>{rec.size} · {rec.format}</span>
+                <span>{rec.fileSize || "1.2 MB"} · {rec.fileFormat || "PDF"}</span>
               </div>
             </div>
 

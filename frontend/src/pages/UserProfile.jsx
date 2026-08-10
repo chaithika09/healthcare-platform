@@ -9,12 +9,12 @@ import { useAuthStore } from "../store/authStore";
 export default function UserProfile() {
   const { user } = useAuthStore();
 
-  // Only show what the user has actually filled in
   const profileData = user?.profile || {};
+  const medHistory = profileData.medicalHistory || {};
 
   const personalFields = [
     { label: "Full Name",     value: user?.name },
-    { label: "Date of Birth", value: profileData.dateOfBirth },
+    { label: "Date of Birth", value: profileData.dateOfBirth ? new Date(profileData.dateOfBirth).toLocaleDateString() : null },
     { label: "Gender",        value: profileData.gender },
     { label: "Blood Group",   value: profileData.bloodGroup },
     { label: "Height",        value: profileData.height ? `${profileData.height} cm` : null },
@@ -22,9 +22,9 @@ export default function UserProfile() {
   ];
 
   const hasPersonalData = personalFields.some(f => f.value);
-  const hasAllergies   = profileData.allergies?.length > 0;
-  const hasConditions  = profileData.conditions?.length > 0;
-  const hasMedications = profileData.medications?.length > 0;
+  const hasAllergies   = medHistory.allergies?.length > 0;
+  const hasConditions  = medHistory.conditions?.length > 0;
+  const hasMedications = medHistory.medications?.length > 0;
   const hasMedicalData = hasAllergies || hasConditions || hasMedications;
 
   return (
@@ -106,7 +106,7 @@ export default function UserProfile() {
               <div>
                 <p className="text-gray-500 text-xs mb-1">Allergies</p>
                 <div className="flex flex-wrap gap-2">
-                  {profileData.allergies.map((a) => (
+                  {medHistory.allergies.map((a) => (
                     <span key={a} className="badge-error">{a}</span>
                   ))}
                 </div>
@@ -116,7 +116,7 @@ export default function UserProfile() {
               <div>
                 <p className="text-gray-500 text-xs mb-1">Chronic Conditions</p>
                 <div className="flex flex-wrap gap-2">
-                  {profileData.conditions.map((c) => (
+                  {medHistory.conditions.map((c) => (
                     <span key={c} className="badge-warning">{c}</span>
                   ))}
                 </div>
@@ -126,7 +126,7 @@ export default function UserProfile() {
               <div>
                 <p className="text-gray-500 text-xs mb-1">Current Medications</p>
                 <div className="flex flex-wrap gap-2">
-                  {profileData.medications.map((m) => (
+                  {medHistory.medications.map((m) => (
                     <span key={m} className="badge-primary">{m}</span>
                   ))}
                 </div>

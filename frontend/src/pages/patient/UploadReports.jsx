@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiUpload, FiFile, FiX, FiCheckCircle, FiArrowLeft } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { recordAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
 export default function UploadReports() {
@@ -32,12 +33,22 @@ export default function UploadReports() {
   const onSubmit = async (data) => {
     if (!files.length) { toast.error("Please select at least one file."); return; }
     setUploading(true);
+
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("type", data.type);
+    formData.append("date", data.date);
+    formData.append("doctorName", data.doctor);
+    formData.append("notes", data.notes);
+    formData.append("file", files[0].file); // API usually expects 'file' or 'document'
+
     try {
-      await new Promise((r) => setTimeout(r, 2000));
+      await recordAPI.upload(formData);
       setUploaded(true);
       toast.success("Reports uploaded successfully!");
-    } catch {
-      toast.error("Upload failed. Please try again.");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Upload failed. Please try again.";
+      toast.error(msg);
     } finally {
       setUploading(false);
     }

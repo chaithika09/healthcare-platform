@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { FiArrowLeft, FiCamera, FiSave } from "react-icons/fi";
 import { useAuthStore } from "../store/authStore";
+import { patientAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 export default function EditProfile() {
@@ -11,53 +12,58 @@ export default function EditProfile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Pre-fill ONLY with what user has already saved — nothing hardcoded
   const existingProfile = user?.profile || {};
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       name:        user?.name        || "",
       email:       user?.email       || "",
       phone:       user?.phone       || "",
-      dob:         existingProfile.dateOfBirth  || "",
+      dob:         existingProfile.dateOfBirth?.split('T')[0] || "",
       gender:      existingProfile.gender       || "",
       bloodGroup:  existingProfile.bloodGroup   || "",
       height:      existingProfile.height       || "",
       weight:      existingProfile.weight       || "",
       address:     existingProfile.address      || "",
-      allergies:   existingProfile.allergies?.join(", ")  || "",
-      conditions:  existingProfile.conditions?.join(", ") || "",
-      medications: existingProfile.medications?.join(", ")|| "",
+      allergies:   existingProfile.medicalHistory?.allergies?.join(", ")  || "",
+      conditions:  existingProfile.medicalHistory?.conditions?.join(", ") || "",
+      medications: existingProfile.medicalHistory?.medications?.join(", ")|| "",
     },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      const updateData = {
+        name: data.name,
+        phone: data.phone,
+        dateOfBirth: data.dob,
+        gender: data.gender,
+        bloodGroup: data.bloodGroup,
+        height: data.height,
+        weight: data.weight,
+        address: data.address,
+        medicalHistory: {
+          allergies: data.allergies ? data.allergies.split(",").map(s => s.trim()).filter(Boolean) : [],
+          conditions: data.conditions ? data.conditions.split(",").map(s => s.trim()).filter(Boolean) : [],
+          medications: data.medications ? data.medications.split(",").map(s => s.trim()).filter(Boolean) : [],
+        }
+      };
 
-      // Save into auth store — profile sub-object
+      const res = await patientAPI.updateProfile(updateData);
+      const updatedPatient = res.data.data.patient;
+
       setUser({
         ...user,
-        name:  data.name,
-        phone: data.phone,
-        profile: {
-          dateOfBirth: data.dob,
-          gender:      data.gender,
-          bloodGroup:  data.bloodGroup,
-          height:      data.height,
-          weight:      data.weight,
-          address:     data.address,
-          allergies:   data.allergies  ? data.allergies.split(",").map(s => s.trim()).filter(Boolean)  : [],
-          conditions:  data.conditions ? data.conditions.split(",").map(s => s.trim()).filter(Boolean) : [],
-          medications: data.medications? data.medications.split(",").map(s => s.trim()).filter(Boolean): [],
-        },
+        name: updatedPatient.user.name,
+        phone: updatedPatient.user.phone,
+        profile: updatedPatient
       });
 
       toast.success("Profile updated successfully!");
       navigate("/profile");
-    } catch {
-      toast.error("Update failed. Please try again.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Update failed. Please try again.");
     } finally {
       setLoading(false);
     }

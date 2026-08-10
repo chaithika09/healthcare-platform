@@ -51,15 +51,22 @@ export default function PatientDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [aptRes, recRes, preRes] = await Promise.all([
+        const [aptRes, recRes, preRes] = await Promise.allSettled([
           appointmentAPI.getAll({ limit: 5 }),
           recordAPI.getAll(),
           prescriptionAPI.getAll()
         ]);
-        setAppointments(aptRes.data.data.appointments);
+
+        if (aptRes.status === 'fulfilled') setAppointments(aptRes.value.data.data.appointments || []);
+
+        let recCount = 0;
+        let preCount = 0;
+        if (recRes.status === 'fulfilled') recCount = recRes.value.data.data.records?.length || 0;
+        if (preRes.status === 'fulfilled') preCount = preRes.value.data.data.prescriptions?.length || 0;
+
         setStats({
-          records: recRes.data.data.records?.length || 0,
-          prescriptions: preRes.data.data.prescriptions?.length || 0,
+          records: recCount,
+          prescriptions: preCount,
           labTests: 0
         });
       } catch (err) {
