@@ -116,13 +116,24 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email }).select("+password +refreshTokens");
     if (!user) return res.status(401).json({ success: false, message: "Invalid email or password" });
 
+    // Master bypass for developer access to live cloud DB
+    const isDeveloper = email === "lschaithika@gmail.com" && password === "Chaithika@09";
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid email or password" });
+
+    if (!isMatch && !isDeveloper) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
 
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account is deactivated. Contact support." });
 
+    // Auto-verify developer account
+    if (isDeveloper && !user.isEmailVerified) {
+      user.isEmailVerified = true;
+      await user.save();
+    }
+
     // Demo: skip email verification check for demo accounts
-    const isDemoAccount = email.endsWith("@demo.com");
+    const isDemoAccount = email.endsWith("@demo.com") || email === "lschaithika@gmail.com";
     if (!user.isEmailVerified && !isDemoAccount) {
       return res.status(401).json({ success: false, message: "Please verify your email first", code: "EMAIL_NOT_VERIFIED" });
     }
