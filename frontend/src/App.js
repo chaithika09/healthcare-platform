@@ -27,8 +27,7 @@ const MedicalRecords    = lazy(() => import("./pages/patient/MedicalRecords"));
 const UploadReports     = lazy(() => import("./pages/patient/UploadReports"));
 const PrescriptionViewer= lazy(() => import("./pages/patient/PrescriptionViewer"));
 const LabTestBooking    = lazy(() => import("./pages/patient/LabTestBooking"));
-const PaymentPage       = lazy(() => import("./pages/patient/PaymentPage"));
-const PaymentHistory    = lazy(() => import("./pages/patient/PaymentHistory"));
+const AppointmentHistory= lazy(() => import("./pages/patient/AppointmentHistory"));
 const EmergencySupport  = lazy(() => import("./pages/patient/EmergencySupport"));
 const MedicineReminder  = lazy(() => import("./pages/patient/MedicineReminder"));
 
@@ -118,8 +117,7 @@ export default function App() {
             <Route path="/upload-reports"       element={<UploadReports />} />
             <Route path="/prescriptions"        element={<PrescriptionViewer />} />
             <Route path="/lab-tests"            element={<LabTestBooking />} />
-            <Route path="/payment"              element={<PaymentPage />} />
-            <Route path="/payment-history"      element={<PaymentHistory />} />
+            <Route path="/appointments"         element={<AppointmentHistory />} />
             <Route path="/emergency"            element={<EmergencySupport />} />
             <Route path="/medicine-reminder"    element={<MedicineReminder />} />
 

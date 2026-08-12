@@ -6,7 +6,7 @@ import {
   FiUsers, FiSettings, FiBell, FiLogOut, FiActivity,
   FiShield, FiBarChart2, FiClipboard, FiHeart, FiAlertCircle,
   FiBook, FiStar, FiHelpCircle, FiChevronLeft, FiChevronRight,
-  FiUser, FiCreditCard, FiDroplet, FiUpload
+  FiUser, FiDroplet, FiUpload
 } from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useUIStore } from "../../store/uiStore";
@@ -21,7 +21,7 @@ const patientNav = [
   { to: "/lab-tests",         icon: FiDroplet,      label: "Lab Tests" },
   { to: "/upload-reports",    icon: FiUpload,       label: "Upload Reports" },
   { to: "/medicine-reminder", icon: FiHeart,        label: "Medicine Reminder" },
-  { to: "/payment-history",   icon: FiCreditCard,   label: "Payments" },
+  { to: "/appointments",       icon: FiCalendar,     label: "My Appointments" },
   { to: "/emergency",         icon: FiAlertCircle,  label: "Emergency" },
   { to: "/chat",              icon: FiMessageSquare,label: "Messages" },
   { to: "/notifications",     icon: FiBell,         label: "Notifications" },
