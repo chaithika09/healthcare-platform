@@ -82,16 +82,14 @@ export default function BookAppointment() {
         medications: data.medications
       });
 
-      toast.success("Appointment slot reserved! Proceed to payment.");
-      navigate("/payment", {
+      toast.success("Appointment booked successfully!");
+      navigate("/appointment-confirm", {
         state: {
           doctor: { ...doctor, name: doctor.name || doctor.user?.name },
           date: selectedDate,
           slot: selectedSlot,
           type: consultType,
-          amount: doctor.fee || doctor.consultationFee?.video || 150,
-          appointmentId: res.data.data.appointment._id,
-          paymentQRCode: doctor.paymentQRCode
+          aptId: res.data.data.appointment._id
         },
       });
     } catch (err) {
@@ -293,7 +291,7 @@ export default function BookAppointment() {
             disabled={loading}
             className="btn-primary flex-1 justify-center"
           >
-            {loading ? "Booking..." : "Confirm & Pay $" + (doctor?.fee || 150)}
+            {loading ? "Booking..." : "Confirm Appointment"}
           </button>
         )}
       </div>
