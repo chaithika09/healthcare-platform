@@ -12,7 +12,7 @@ router.get("/slots/:doctorId", appointmentController.getSlots);
 router.post("/",
   [
     body("doctorId").notEmpty().withMessage("Doctor ID required"),
-    body("date").isISO8601().withMessage("Valid date required"),
+    body("date").notEmpty().withMessage("Date required"),
     body("timeSlot").notEmpty().withMessage("Time slot required"),
     body("type").isIn(["video", "in-person"]).withMessage("Type must be video or in-person"),
   ],

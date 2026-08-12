@@ -107,7 +107,7 @@ export default function BookAppointment() {
     return true;
   };
 
-  if (!doctor) return <div className="p-10 text-center">Loading doctor profile...</div>;
+  if (!doctor) return <div className="p-10 text-center text-gray-500">Loading doctor profile...</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
