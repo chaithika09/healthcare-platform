@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { FiSearch, FiFilter, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
 import { doctorAPI } from "../../services/api";
 
-const specialties = ["All", "Cardiologist", "Neurologist", "Dermatologist", "Pediatrician", "Orthopedic", "Gynecologist", "Psychiatrist", "Ophthalmologist"];
+const specialties = ["All", "General", "Cardiologist", "Neurologist", "Dermatologist", "Pediatrician", "Orthopedic", "Gynecologist", "Psychiatrist", "Ophthalmologist"];
 
 const gradients = [
   "from-blue-500 to-blue-700", "from-green-500 to-green-700", "from-purple-500 to-purple-700",
@@ -41,7 +41,16 @@ export default function DoctorListPage() {
     fetchDoctors();
   }, []);
 
-  const filtered = (doctors.length > 0 ? doctors : demoDoctors)
+  const combinedDoctors = [...doctors];
+
+  // Only add demo doctors if they aren't already represented by real ones
+  demoDoctors.forEach(demo => {
+    if (!doctors.find(d => (d.name || d.user?.name) === demo.name)) {
+      combinedDoctors.push(demo);
+    }
+  });
+
+  const filtered = combinedDoctors
     .filter((d) => {
       const docName = d.name || d.user?.name || "";
       const matchSearch = docName.toLowerCase().includes(search.toLowerCase()) ||

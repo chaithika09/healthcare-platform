@@ -4,18 +4,9 @@ import { motion } from "framer-motion";
 import { FiStar, FiMapPin, FiClock, FiVideo, FiUser, FiAward, FiCalendar, FiMessageSquare, FiArrowLeft, FiCheckCircle } from "react-icons/fi";
 import { doctorAPI, appointmentAPI } from "../../services/api";
 
-const demoDoc = {
-  name: "Dr. Sarah Johnson", specialty: "Cardiologist", rating: 4.9, reviews: 312, experience: 12, location: "New York, NY", fee: 150, available: true, avatar: "SJ", about: "Board-certified cardiologist with 12+ years treating heart conditions and hypertension.",
-  education: ["MD - Harvard Medical School", "Residency - Johns Hopkins Hospital"],
-  specializations: ["Cardiologist", "Preventive Care"],
-  languages: ["English", "Spanish"],
-  hospital: "City General Hospital",
-  consultationTypes: ["Video Call", "In-Person"],
-};
-
-const reviews = [
-  { id: 1, name: "John M.", rating: 5, date: "2 days ago", comment: "Incredibly thorough and caring. Took time to explain everything clearly." },
-  { id: 2, name: "Maria S.", rating: 5, date: "1 week ago", comment: "Best specialist I've ever seen. Very professional and knowledgeable." },
+const demoDoctors = [
+  { id: "1", name: "Dr. Sarah Johnson", specialty: "Cardiologist", rating: 4.9, reviews: 312, experience: 12, location: "New York, NY", fee: 150, available: true, avatar: "SJ", about: "Board-certified cardiologist with 12+ years treating heart conditions and hypertension.", education: ["MD - Harvard Medical School", "Residency - Johns Hopkins Hospital"], specializations: ["Cardiologist", "Preventive Care"], languages: ["English", "Spanish"], hospital: "City General Hospital", consultationTypes: ["Video Call", "In-Person"] },
+  { id: "2", name: "Dr. Michael Chen",  specialty: "Neurologist",  rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true, avatar: "MC", about: "Leading neurologist specializing in brain health, migraines, and nerve treatment.", education: ["MD - Stanford Medicine"], specializations: ["Neurology", "Nerve Care"], languages: ["English", "Mandarin"], hospital: "Green Valley Medical", consultationTypes: ["Video Call"] },
 ];
 
 export default function DoctorProfilePage() {
@@ -33,13 +24,23 @@ export default function DoctorProfilePage() {
         const res = await doctorAPI.getById(id);
         const data = res.data.data.doctor;
         setDoctor({
-          ...demoDoc,
           ...data,
           name: data.user?.name || data.name,
           fee: data.consultationFee?.video || 150,
+          avatar: (data.user?.name || data.name || "DR").split(" ").map(n => n[0]).join("").slice(0, 2),
+          about: data.bio || "No biography provided.",
+          education: data.education?.map(e => `${e.degree} - ${e.institution}`) || ["General Medical Degree"],
+          specializations: [data.specialty, ...(data.subSpecialties || [])],
+          languages: data.languages?.length > 0 ? data.languages : ["English"],
+          hospital: data.hospital || "General Hospital",
+          consultationTypes: [
+            data.consultationTypes?.video && "Video Call",
+            data.consultationTypes?.inPerson && "In-Person"
+          ].filter(Boolean)
         });
       } catch (err) {
-        setDoctor(demoDoc);
+        // Fallback for demo doctors if API fails
+        setDoctor(demoDoctors.find(d => d.id === id) || demoDoctors[0]);
       } finally {
         setLoading(false);
       }
