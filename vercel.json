@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "cd mobile && npm install --legacy-peer-deps && npx expo export --platform web",
-  "outputDirectory": "mobile/dist",
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/build",
+  "framework": "create-react-app",
   "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/static/(.*)", "dest": "/frontend/build/static/$1" },
+    { "src": "/favicon.ico", "dest": "/frontend/build/favicon.ico" },
+    { "src": "/manifest.json", "dest": "/frontend/build/manifest.json" },
+    { "src": "/(.*)", "dest": "/frontend/build/index.html" }
   ]
 }
