@@ -24,6 +24,8 @@ export default function DoctorListPage() {
   const [sortBy, setSortBy] = useState("rating");
   const [showFilters, setShowFilters] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
+  const [consultType, setConsultType] = useState("all"); // 'all' | 'video' | 'in-person'
+  const [priceRange, setPriceRange] = useState(500);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,7 @@ export default function DoctorListPage() {
         const res = await doctorAPI.getAll();
         setDoctors(res.data.data.doctors || []);
       } catch (err) {
-        setDoctors(demoDoctors);
+        setDoctors([]);
       } finally {
         setLoading(false);
       }
@@ -43,7 +45,6 @@ export default function DoctorListPage() {
 
   const combinedDoctors = [...doctors];
 
-  // Only add demo doctors if they aren't already represented by real ones
   demoDoctors.forEach(demo => {
     if (!doctors.find(d => (d.name || d.user?.name) === demo.name)) {
       combinedDoctors.push(demo);
@@ -53,14 +54,29 @@ export default function DoctorListPage() {
   const filtered = combinedDoctors
     .filter((d) => {
       const docName = d.name || d.user?.name || "";
+      const specialty = d.specialty || "";
+      const fee = d.fee || d.consultationFee?.video || 0;
+      const tags = d.tags || [
+        d.consultationTypes?.video && "Video",
+        d.consultationTypes?.inPerson && "In-person"
+      ].filter(Boolean);
+
       const matchSearch = docName.toLowerCase().includes(search.toLowerCase()) ||
-        d.specialty?.toLowerCase().includes(search.toLowerCase());
-      const matchSpec = selectedSpec === "All" || d.specialty === selectedSpec;
+        specialty.toLowerCase().includes(search.toLowerCase());
+
+      const matchSpec = selectedSpec === "All" || specialty === selectedSpec;
+
       const matchAvail = !availableOnly || d.available !== false;
-      return matchSearch && matchSpec && matchAvail;
+
+      const matchType = consultType === "all" ||
+        tags.some(t => t.toLowerCase().includes(consultType.toLowerCase()));
+
+      const matchPrice = fee <= priceRange;
+
+      return matchSearch && matchSpec && matchAvail && matchType && matchPrice;
     })
     .sort((a, b) => {
-      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
+      if (sortBy === "rating") return (b.rating || b.averageRating || 0) - (a.rating || a.averageRating || 0);
       const feeA = a.fee || a.consultationFee?.video || 0;
       const feeB = b.fee || b.consultationFee?.video || 0;
       return feeA - feeB;
@@ -107,19 +123,75 @@ export default function DoctorListPage() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="card p-4 space-y-4"
+          className="card p-5 space-y-6 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900 text-sm">Filters</h3>
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <div className="grid sm:grid-cols-3 gap-6">
+            {/* Availability */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Availability</h3>
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={availableOnly}
+                  onChange={(e) => setAvailableOnly(e.target.checked)}
+                  className="w-4 h-4 rounded text-primary-600"
+                />
+                Available today only
+              </label>
+            </div>
+
+            {/* Consultation Type */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Consultation</h3>
+              <div className="flex flex-wrap gap-2">
+                {["all", "video", "in-person"].map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setConsultType(type)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border capitalize transition-all ${
+                      consultType === type
+                        ? "bg-primary-500 text-white border-primary-500"
+                        : "bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700"
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Max Fee */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Max Fee: ${priceRange}</h3>
               <input
-                type="checkbox"
-                checked={availableOnly}
-                onChange={(e) => setAvailableOnly(e.target.checked)}
-                className="w-4 h-4 rounded text-primary-600"
+                type="range"
+                min="0"
+                max="500"
+                step="10"
+                value={priceRange}
+                onChange={(e) => setPriceRange(parseInt(e.target.value))}
+                className="w-full accent-primary-600"
               />
-              Available today only
-            </label>
+              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                <span>$0</span>
+                <span>$500</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200 dark:border-slate-800 flex justify-end">
+            <button
+              onClick={() => {
+                setAvailableOnly(false);
+                setConsultType("all");
+                setPriceRange(500);
+                setSelectedSpec("All");
+                setSearch("");
+              }}
+              className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+            >
+              Reset All Filters
+            </button>
           </div>
         </motion.div>
       )}
@@ -180,13 +252,21 @@ export default function DoctorListPage() {
                 </div>
 
                 <div className="flex gap-1.5 mt-2">
-                  {(doc.tags || ["Video"]).map((t) => (
+                  {(doc.tags || [
+                    doc.consultationTypes?.video && "Video",
+                    doc.consultationTypes?.inPerson && "In-person"
+                  ].filter(Boolean)).length > 0 ? (doc.tags || [
+                    doc.consultationTypes?.video && "Video",
+                    doc.consultationTypes?.inPerson && "In-person"
+                  ].filter(Boolean)).map((t) => (
                     <span key={t} className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      t === "Video" ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
+                      t.toLowerCase().includes("video") ? "bg-blue-100 text-blue-600" : "bg-green-100 text-green-600"
                     }`}>
-                      {t === "Video" && <FiVideo size={9} className="inline mr-0.5" />}{t}
+                      {t.toLowerCase().includes("video") && <FiVideo size={9} className="inline mr-0.5" />}{t}
                     </span>
-                  ))}
+                  )) : (
+                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact for details</span>
+                  )}
                 </div>
               </div>
             </div>
