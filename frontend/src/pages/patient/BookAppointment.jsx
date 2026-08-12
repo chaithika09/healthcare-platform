@@ -29,18 +29,25 @@ export default function BookAppointment() {
     const fetchDoc = async () => {
       try {
         const res = await doctorAPI.getById(id);
-        setDoctor(res.data.data.doctor);
+        const data = res.data.data.doctor;
+        setDoctor({
+          ...data,
+          name: data.user?.name || data.name || "Doctor",
+          avatar: data.avatar || (data.user?.name || data.name || "DR").split(" ").map(n => n[0]).join("").slice(0, 2),
+          fee: (consultType === "video" ? data.consultationFee?.video : data.consultationFee?.inPerson) || 150
+        });
       } catch (err) {
         // Fallback for demo if API fails or not found
         const demoDocs = [
-          { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ", user: id },
-          { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC", user: id },
+          { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ", user: { _id: id } },
+          { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC", user: { _id: id } },
         ];
-        setDoctor(demoDocs.find(d => d.id === parseInt(id)) || demoDocs[0]);
+        const d = demoDocs.find(d => d.id === parseInt(id)) || demoDocs[0];
+        setDoctor({ ...d, user: d.user });
       }
     };
     fetchDoc();
-  }, [id]);
+  }, [id, consultType]);
 
   // Fetch available slots when date changes
   useEffect(() => {
@@ -110,7 +117,7 @@ export default function BookAppointment() {
 
       <div>
         <h1 className="text-2xl font-heading font-bold text-gray-900">Book Appointment</h1>
-        <p className="text-gray-500 text-sm mt-1">with {doctor.name}</p>
+        <p className="text-gray-500 text-sm mt-1">with {doctor?.name || doctor?.user?.name || "the doctor"}</p>
       </div>
 
       {/* Progress */}
@@ -137,14 +144,14 @@ export default function BookAppointment() {
       {/* Doctor summary */}
       <div className="card p-4 flex items-center gap-4">
         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg">
-          {doctor.avatar}
+          {doctor?.avatar || "DR"}
         </div>
         <div>
-          <p className="font-semibold text-gray-900">{doctor.name}</p>
-          <p className="text-sm text-primary-600">{doctor.specialty}</p>
+          <p className="font-semibold text-gray-900">{doctor?.name || doctor?.user?.name || "Doctor"}</p>
+          <p className="text-sm text-primary-600">{doctor?.specialty || "Specialist"}</p>
         </div>
         <div className="ml-auto text-right">
-          <p className="text-xl font-bold text-gray-900">${doctor.fee}</p>
+          <p className="text-xl font-bold text-gray-900">${doctor?.fee || 150}</p>
           <p className="text-xs text-gray-400">per session</p>
         </div>
       </div>
@@ -246,12 +253,12 @@ export default function BookAppointment() {
             <h3 className="font-semibold text-gray-900">Confirm Booking</h3>
             <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
               {[
-                { label: "Doctor", value: doctor.name },
-                { label: "Specialty", value: doctor.specialty },
+                { label: "Doctor", value: doctor?.name || doctor?.user?.name || "Doctor" },
+                { label: "Specialty", value: doctor?.specialty || "Specialist" },
                 { label: "Date", value: selectedDate },
                 { label: "Time", value: selectedSlot },
                 { label: "Type", value: consultType === "video" ? "Video Call" : "In-Person" },
-                { label: "Fee", value: `$${doctor.fee}` },
+                { label: "Fee", value: `$${doctor?.fee || 150}` },
               ].map((item) => (
                 <div key={item.label} className="flex justify-between text-sm">
                   <span className="text-gray-500">{item.label}</span>
@@ -284,7 +291,7 @@ export default function BookAppointment() {
             disabled={loading}
             className="btn-primary flex-1 justify-center"
           >
-            {loading ? "Booking..." : "Confirm & Pay $" + doctor.fee}
+            {loading ? "Booking..." : "Confirm & Pay $" + (doctor?.fee || 150)}
           </button>
         )}
       </div>
