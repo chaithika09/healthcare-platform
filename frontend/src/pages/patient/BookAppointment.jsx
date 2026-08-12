@@ -75,14 +75,15 @@ export default function BookAppointment() {
         medications: data.medications
       });
 
-      toast.success("Appointment booked successfully!");
-      navigate("/appointment-confirm", {
+      toast.success("Appointment slot reserved! Proceed to payment.");
+      navigate("/payment", {
         state: {
           doctor: { ...doctor, name: doctor.name || doctor.user?.name },
           date: selectedDate,
           slot: selectedSlot,
           type: consultType,
-          aptId: res.data.data.appointment._id
+          amount: doctor.fee || doctor.consultationFee?.video || 150,
+          appointmentId: res.data.data.appointment._id
         },
       });
     } catch (err) {

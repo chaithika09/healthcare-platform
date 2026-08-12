@@ -77,41 +77,6 @@ export default function MedicalRecords() {
 
   if (loading) return <div className="p-10 text-center text-gray-500">Loading your medical records...</div>;
 
-  const handleDownload = (rec) => {
-    const reportText = `
-============================================================
- SMART HEALTHCARE PORTAL — OFFICIAL MEDICAL RECORD REPORT
-============================================================
- Record Name   : ${rec.title}
- Record Type   : ${rec.type}
- Attending Doc : ${rec.doctor}
- Issue Date    : ${rec.date}
- File Format   : ${rec.format} (${rec.size})
- Patient Name  : ${user?.name || "John Smith"}
- Record Status : Verified & Authenticated
-============================================================
-
- DIAGNOSTIC SUMMARY & CLINICAL NOTES:
- ------------------------------------------------------------
- • Clinical Status: All tested parameters evaluated by ${rec.doctor}.
- • Results Overview: Test findings are within standard reference ranges.
- • Next Steps     : Maintain prescribed treatment plan & routine checkups.
- 
- Security Signature: SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}
- Verified by MedIQ+ Healthcare Diagnostic Systems
-============================================================
-`;
-    const blob = new Blob([reportText.trim()], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${rec.title.replace(/\s+/g, "_")}_${rec.date}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success(`Downloaded ${rec.title}!`);
-  };
 
   return (
     <div className="space-y-6">

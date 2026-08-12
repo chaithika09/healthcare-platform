@@ -74,42 +74,6 @@ ${medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dosage})
 
   if (loading) return <div className="p-10 text-center text-gray-500">Loading prescriptions...</div>;
 
-  const handleDownloadPrescription = (p) => {
-    const text = `
-============================================================
- SMART HEALTHCARE PORTAL — OFFICIAL PRESCRIPTION
-============================================================
- Prescribing Doctor: ${p.doctor} (${p.specialty})
- Date Issued       : ${p.date}
- Prescription Status: ${p.status.toUpperCase()}
-============================================================
-
- MEDICATIONS PRESCRIBED:
- ------------------------------------------------------------
-${p.medicines.map((m, i) => ` ${i + 1}. ${m.name} (${m.dose})
-    Dosage      : ${m.frequency}
-    Duration    : ${m.duration}
-    Instructions: ${m.instructions}`).join("\n\n")}
-
-------------------------------------------------------------
- DOCTOR'S NOTES:
- ${p.notes || "None"}
-============================================================
- Verified electronically by MedIQ+ Certified Systems.
- Rx Hash: SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}
-============================================================
-`;
-    const blob = new Blob([text.trim()], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Prescription_${p.doctor.replace(/\s+/g, "_")}_${p.date}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success(`Downloaded prescription from ${p.doctor}!`);
-  };
 
   return (
     <div className="space-y-6">
