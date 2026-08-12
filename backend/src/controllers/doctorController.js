@@ -103,11 +103,11 @@ exports.getDashboard = async (req, res, next) => {
 // ── Update Doctor Profile ─────────────────────────────────────
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { bio, specialty, experience, consultationFee, availability, languages, hospital } = req.body;
+    const { bio, specialty, experience, consultationFee, availability, languages, hospital, paymentQRCode } = req.body;
 
     const doctor = await Doctor.findOneAndUpdate(
       { user: req.user._id },
-      { $set: { bio, specialty, experience, consultationFee, availability, languages, hospital } },
+      { $set: { bio, specialty, experience, consultationFee, availability, languages, hospital, paymentQRCode } },
       { new: true, runValidators: true }
     ).populate("user", "name email avatar");
 

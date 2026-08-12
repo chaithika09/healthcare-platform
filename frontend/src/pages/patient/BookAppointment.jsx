@@ -90,7 +90,8 @@ export default function BookAppointment() {
           slot: selectedSlot,
           type: consultType,
           amount: doctor.fee || doctor.consultationFee?.video || 150,
-          appointmentId: res.data.data.appointment._id
+          appointmentId: res.data.data.appointment._id,
+          paymentQRCode: doctor.paymentQRCode
         },
       });
     } catch (err) {

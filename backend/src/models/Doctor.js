@@ -60,6 +60,7 @@ const doctorSchema = new mongoose.Schema(
     averageRating:     { type: Number, default: 0, min: 0, max: 5 },
     totalReviews:      { type: Number, default: 0 },
 
+    paymentQRCode:     { type: String, default: null }, // URL or Base64 of the QR code image
     isAvailableNow: { type: Boolean, default: false },
   },
   { timestamps: true }

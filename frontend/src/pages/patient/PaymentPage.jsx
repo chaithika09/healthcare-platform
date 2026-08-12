@@ -9,7 +9,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { appointmentId, doctor, amount } = location.state || {};
+  const { appointmentId, doctor, amount, paymentQRCode } = location.state || {};
 
   useEffect(() => {
     if (!appointmentId) {
@@ -68,6 +68,26 @@ export default function PaymentPage() {
           </p>
         </div>
       </div>
+
+      {/* QR Code Section */}
+      {paymentQRCode && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="card p-6 text-center space-y-4 border-2 border-primary-500 bg-white shadow-xl"
+        >
+          <h3 className="font-bold text-gray-900 flex items-center justify-center gap-2">
+            <FiCheckCircle className="text-primary-600" /> Pay via Doctor's QR Code
+          </h3>
+          <p className="text-xs text-gray-500">Scan the QR code below using your UPI or Banking app to complete the payment of <strong>${amount || 150}.00</strong> directly to the doctor.</p>
+
+          <div className="w-56 h-56 mx-auto bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-gray-100 p-2 shadow-inner">
+            <img src={paymentQRCode} alt="Doctor QR Code" className="w-full h-full object-contain rounded-xl" />
+          </div>
+
+          <p className="text-[10px] text-gray-400 uppercase tracking-widest">Transaction ID: {appointmentId?.slice(-8).toUpperCase()}</p>
+        </motion.div>
+      )}
 
       <button
         onClick={handlePay}

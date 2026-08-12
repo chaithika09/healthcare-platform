@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { FiArrowLeft, FiCamera, FiSave } from "react-icons/fi";
+import { FiArrowLeft, FiCamera, FiSave, FiQrCode } from "react-icons/fi";
 import { useAuthStore } from "../store/authStore";
-import { patientAPI } from "../services/api";
+import { patientAPI, doctorAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 export default function EditProfile() {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [qrPreview, setQrPreview] = useState(user?.profile?.paymentQRCode || null);
+  const qrRef = useRef();
 
   const existingProfile = user?.profile || {};
+  const isDoctor = user?.role === "doctor";
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -28,37 +31,61 @@ export default function EditProfile() {
       allergies:   existingProfile.medicalHistory?.allergies?.join(", ")  || "",
       conditions:  existingProfile.medicalHistory?.conditions?.join(", ") || "",
       medications: existingProfile.medicalHistory?.medications?.join(", ")|| "",
+      // Doctor specific
+      specialty:   existingProfile.specialty || "",
+      hospital:    existingProfile.hospital  || "",
+      bio:         existingProfile.bio       || "",
+      experience:  existingProfile.experience|| "",
     },
   });
+
+  const handleQrUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setQrPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const updateData = {
-        name: data.name,
-        phone: data.phone,
-        dateOfBirth: data.dob,
-        gender: data.gender,
-        bloodGroup: data.bloodGroup,
-        height: data.height,
-        weight: data.weight,
-        address: data.address,
-        medicalHistory: {
-          allergies: data.allergies ? data.allergies.split(",").map(s => s.trim()).filter(Boolean) : [],
-          conditions: data.conditions ? data.conditions.split(",").map(s => s.trim()).filter(Boolean) : [],
-          medications: data.medications ? data.medications.split(",").map(s => s.trim()).filter(Boolean) : [],
-        }
-      };
-
-      const res = await patientAPI.updateProfile(updateData);
-      const updatedPatient = res.data.data.patient;
-
-      setUser({
-        ...user,
-        name: updatedPatient.user.name,
-        phone: updatedPatient.user.phone,
-        profile: updatedPatient
-      });
+      if (isDoctor) {
+        const updateData = {
+          name: data.name,
+          phone: data.phone,
+          specialty: data.specialty,
+          hospital: data.hospital,
+          bio: data.bio,
+          experience: parseInt(data.experience),
+          paymentQRCode: qrPreview
+        };
+        const res = await doctorAPI.updateProfile(updateData);
+        const updatedDoc = res.data.data.doctor;
+        setUser({ ...user, name: updatedDoc.user.name, phone: updatedDoc.user.phone, profile: updatedDoc });
+      } else {
+        const updateData = {
+          name: data.name,
+          phone: data.phone,
+          dateOfBirth: data.dob,
+          gender: data.gender,
+          bloodGroup: data.bloodGroup,
+          height: data.height,
+          weight: data.weight,
+          address: data.address,
+          medicalHistory: {
+            allergies: data.allergies ? data.allergies.split(",").map(s => s.trim()).filter(Boolean) : [],
+            conditions: data.conditions ? data.conditions.split(",").map(s => s.trim()).filter(Boolean) : [],
+            medications: data.medications ? data.medications.split(",").map(s => s.trim()).filter(Boolean) : [],
+          }
+        };
+        const res = await patientAPI.updateProfile(updateData);
+        const updatedPatient = res.data.data.patient;
+        setUser({ ...user, name: updatedPatient.user.name, phone: updatedPatient.user.phone, profile: updatedPatient });
+      }
 
       toast.success("Profile updated successfully!");
       navigate("/profile");
@@ -123,29 +150,103 @@ export default function EditProfile() {
               <label className="label">Phone Number</label>
               <input {...register("phone")} type="tel" placeholder="+1 555-0100" className="input" />
             </div>
-            <div>
-              <label className="label">Date of Birth</label>
-              <input {...register("dob")} type="date" className="input" />
-            </div>
-            <div>
-              <label className="label">Gender</label>
-              <select {...register("gender")} className="input">
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer_not">Prefer not to say</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="label">Address</label>
-              <input {...register("address")} placeholder="Your full address" className="input" />
-            </div>
+            {!isDoctor && (
+              <>
+                <div>
+                  <label className="label">Date of Birth</label>
+                  <input {...register("dob")} type="date" className="input" />
+                </div>
+                <div>
+                  <label className="label">Gender</label>
+                  <select {...register("gender")} className="input">
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    <option value="prefer_not">Prefer not to say</option>
+                  </select>
+                </div>
+              </>
+            )}
+            {isDoctor && (
+              <>
+                <div>
+                  <label className="label">Specialty</label>
+                  <input {...register("specialty")} placeholder="e.g. Cardiologist" className="input" />
+                </div>
+                <div>
+                  <label className="label">Experience (Years)</label>
+                  <input {...register("experience")} type="number" placeholder="e.g. 10" className="input" />
+                </div>
+                <div className="col-span-2">
+                  <label className="label">Hospital / Clinic</label>
+                  <input {...register("hospital")} placeholder="e.g. City General Hospital" className="input" />
+                </div>
+                <div className="col-span-2">
+                  <label className="label">Bio</label>
+                  <textarea {...register("bio")} rows={3} placeholder="Write a short bio..." className="input resize-none" />
+                </div>
+              </>
+            )}
+            {!isDoctor && (
+              <div className="col-span-2">
+                <label className="label">Address</label>
+                <input {...register("address")} placeholder="Your full address" className="input" />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Medical Info */}
-        <div className="card p-5 space-y-4">
+        {/* Doctor Payment QR Section */}
+        {isDoctor && (
+          <div className="card p-5 space-y-4">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <FiQrCode className="text-primary-600" /> Payment QR Code
+            </h3>
+            <p className="text-xs text-gray-500">Upload your payment QR code (UPI, PayPal, etc.) so patients can pay you directly.</p>
+
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
+              {qrPreview ? (
+                <div className="relative group">
+                  <img src={qrPreview} alt="QR Preview" className="w-48 h-48 object-contain rounded-lg shadow-md bg-white p-2" />
+                  <button
+                    type="button"
+                    onClick={() => { setQrPreview(null); }}
+                    className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                  >
+                    <FiSave className="rotate-45" size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <FiQrCode size={28} className="text-gray-300" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">No QR Code Uploaded</p>
+                </div>
+              )}
+
+              <input
+                ref={qrRef}
+                type="file"
+                accept="image/*"
+                onChange={handleQrUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => qrRef.current?.click()}
+                className="mt-4 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+              >
+                {qrPreview ? "Change QR Code" : "Upload QR Code"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Medical Info (Only for patients) */}
+        {!isDoctor && (
+          <div className="card p-5 space-y-4">
           <h3 className="font-semibold text-gray-900">Medical Information</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
