@@ -15,22 +15,21 @@ export default function AppointmentConfirm() {
   const handleDownloadReceipt = () => {
     const text = `
 ============================================================
- SMART HEALTHCARE PORTAL — APPOINTMENT RECEIPT
+ SMART HEALTHCARE PORTAL — APPOINTMENT CONFIRMATION
 ============================================================
  Booking Reference : APT-${Math.floor(100000 + Math.random() * 900000)}
  Doctor/Provider   : ${doctor.name} (${doctor.specialty})
  Appointment Date  : ${date}
  Appointment Time  : ${slot}
  Consultation Type : ${type.toUpperCase()}
- Consultation Fee  : $${doctor.fee}.00 USD
- Payment Status    : PAID & CONFIRMED
+ Status            : CONFIRMED
 ============================================================
 
  APPOINTMENT INSTRUCTIONS:
  • Please join the video room or arrive at the clinic 5 mins early.
  • Bring any relevant previous medical history or lab reports.
 
- Security Code: SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}
+ Confirmation Code: ${Math.random().toString(36).substring(2, 12).toUpperCase()}
  Verified by MedIQ+ Healthcare Portal
 ============================================================
 `;
@@ -38,12 +37,12 @@ export default function AppointmentConfirm() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Appointment_Receipt_${doctor.name.replace(/\s+/g, "_")}.txt`;
+    a.download = `Appointment_Confirmation_${doctor.name.replace(/\s+/g, "_")}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("Downloaded appointment receipt!");
+    toast.success("Downloaded appointment confirmation!");
   };
 
   return (
@@ -103,8 +102,8 @@ export default function AppointmentConfirm() {
           </div>
 
           <div className="mt-5 pt-5 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-gray-500 text-sm">Total Paid</span>
-            <span className="text-xl font-bold text-gray-900">${doctor.fee}</span>
+            <span className="text-gray-500 text-sm">Status</span>
+            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">✓ Confirmed</span>
           </div>
         </motion.div>
 
@@ -125,7 +124,7 @@ export default function AppointmentConfirm() {
             <FiHome size={18} /> Back to Dashboard
           </Link>
           <button onClick={handleDownloadReceipt} className="btn-ghost btn-lg w-full justify-center gap-2 text-gray-600 dark:text-slate-300 hover:text-primary-600">
-            <FiDownload size={18} /> Download Receipt
+            <FiDownload size={18} /> Download Confirmation
           </button>
         </div>
       </motion.div>
