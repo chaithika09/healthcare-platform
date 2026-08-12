@@ -17,7 +17,7 @@ exports.initiate = async (req, res, next) => {
       doctor:      appointment.doctor,
       appointment: appointmentId,
       amount:      finalAmount,
-      method:      "online",
+      method:      "card",
       status:      "processing",
       description: `Consultation fee for appointment ${appointment.confirmationId}`,
     });
