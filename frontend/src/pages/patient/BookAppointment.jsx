@@ -2,17 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
-import { FiArrowLeft, FiCalendar, FiVideo, FiUser, FiClock, FiFileText } from "react-icons/fi";
+import { FiArrowLeft, FiCalendar, FiVideo, FiUser, FiClock, FiFileText, FiCheckCircle } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../store/authStore";
 import { appointmentAPI, doctorAPI } from "../../services/api";
 
-const steps = ["Select Date & Time", "Consultation Type", "Symptoms", "Confirm"];
-
 export default function BookAppointment() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -21,7 +18,7 @@ export default function BookAppointment() {
   const [fetchingSlots, setFetchingSlots] = useState(false);
   const [doctor, setDoctor] = useState(null);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const { user } = useAuthStore();
 
   // Fetch doctor details
@@ -37,7 +34,6 @@ export default function BookAppointment() {
           fee: (consultType === "video" ? data.consultationFee?.video : data.consultationFee?.inPerson) || 150
         });
       } catch (err) {
-        // Fallback for demo if API fails or not found
         const demoDocs = [
           { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150, avatar: "SJ", user: { _id: id } },
           { id: 2, name: "Dr. Michael Chen",  specialty: "Neurologist",  fee: 180, avatar: "MC", user: { _id: id } },
@@ -49,7 +45,7 @@ export default function BookAppointment() {
     fetchDoc();
   }, [id, consultType]);
 
-  // Fetch available slots when date changes
+  // Fetch available slots
   useEffect(() => {
     if (selectedDate && doctor) {
       const getSlots = async () => {
@@ -77,9 +73,9 @@ export default function BookAppointment() {
         date: selectedDate,
         timeSlot: selectedSlot,
         type: consultType,
-        symptoms: data.symptoms,
-        conditions: data.conditions,
-        medications: data.medications
+        symptoms: data.symptoms || "Regular Checkup",
+        conditions: data.conditions || "",
+        medications: data.medications || ""
       });
 
       toast.success("Appointment booked successfully!");
@@ -100,12 +96,6 @@ export default function BookAppointment() {
     }
   };
 
-  const canNext = () => {
-    if (step === 0) return selectedDate && selectedSlot;
-    if (step === 1) return consultType;
-    return true;
-  };
-
   if (!doctor) return <div className="p-10 text-center text-gray-500">Loading doctor profile...</div>;
 
   return (
@@ -115,185 +105,111 @@ export default function BookAppointment() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-heading font-bold text-gray-900">Book Appointment</h1>
-        <p className="text-gray-500 text-sm mt-1">with {doctor?.name || doctor?.user?.name || "the doctor"}</p>
+        <h1 className="text-2xl font-heading font-bold text-gray-900 dark:text-white">Quick Booking</h1>
+        <p className="text-gray-500 text-sm mt-1">Book your appointment with {doctor?.name}</p>
       </div>
 
-      {/* Progress */}
-      <div className="flex items-center gap-2">
-        {steps.map((s, i) => (
-          <React.Fragment key={s}>
-            <div className={`flex items-center gap-2 ${i <= step ? "text-primary-600" : "text-gray-400"}`}>
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all ${
-                i < step ? "bg-primary-500 border-primary-500 text-white" :
-                i === step ? "border-primary-500 text-primary-600" :
-                "border-gray-300 text-gray-400"
-              }`}>
-                {i < step ? "✓" : i + 1}
-              </div>
-              <span className="text-xs font-medium hidden sm:block">{s}</span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 rounded-full ${i < step ? "bg-primary-500" : "bg-gray-200"}`} />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-
-      {/* Doctor summary */}
+      {/* Doctor card */}
       <div className="card p-4 flex items-center gap-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
-          {doctor?.avatar || "DR"}
+          {doctor?.avatar}
         </div>
         <div>
-          <p className="font-semibold text-gray-900 dark:text-white">{doctor?.name || doctor?.user?.name || "Doctor"}</p>
-          <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">{doctor?.specialty || "Specialist"}</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{doctor?.name}</p>
+          <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">{doctor?.specialty}</p>
         </div>
         <div className="ml-auto text-right">
-          <p className="text-xl font-bold text-gray-900 dark:text-white">${doctor?.fee || 150}</p>
-          <p className="text-xs text-gray-400">per session</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">${doctor?.fee}</p>
+          <p className="text-xs text-gray-400">Consultation Fee</p>
         </div>
       </div>
 
-      {/* Step content */}
-      <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
-        {step === 0 && (
-          <div className="space-y-5">
-            <div>
-              <label className="label flex items-center gap-2 dark:text-slate-300"><FiCalendar size={14} /> Select Date</label>
-              <input
-                type="date"
-                className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                min={new Date().toISOString().split("T")[0]}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </div>
-            {selectedDate && (
-              <div>
-                <label className="label flex items-center gap-2 dark:text-slate-300"><FiClock size={14} /> Select Time Slot</label>
-                {fetchingSlots ? (
-                  <p className="text-xs text-gray-400">Loading slots...</p>
-                ) : availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-4 gap-2">
-                    {availableSlots.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`py-2 px-2 rounded-xl text-xs font-medium border-2 transition-all ${
-                          selectedSlot === slot
-                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-                            : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-primary-300"
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-red-500">No slots available for this date.</p>
-                )}
+      <div className="card p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 space-y-6">
+        {/* 1. Consultation Type */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Consultation Type</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: "video", icon: FiVideo, label: "Video Call", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
+              { value: "in-person", icon: FiUser, label: "In-Person", color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
+            ].map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setConsultType(t.value)}
+                className={`p-4 rounded-xl border-2 text-center transition-all ${
+                  consultType === t.value ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20" : "border-gray-200 dark:border-slate-700 hover:border-gray-300"
+                }`}
+              >
+                <t.icon size={20} className={`mx-auto mb-2 ${t.color}`} />
+                <p className="font-bold text-gray-900 dark:text-white text-xs">{t.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Select Date */}
+        <div className="space-y-3">
+          <label className="label flex items-center gap-2 dark:text-slate-300 font-semibold"><FiCalendar size={14} /> Select Date</label>
+          <input
+            type="date"
+            className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+            min={new Date().toISOString().split("T")[0]}
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+        </div>
+
+        {/* 3. Select Time Slot */}
+        {selectedDate && (
+          <div className="space-y-3">
+            <label className="label flex items-center gap-2 dark:text-slate-300 font-semibold"><FiClock size={14} /> Select Time Slot</label>
+            {fetchingSlots ? (
+              <p className="text-xs text-gray-400">Checking availability...</p>
+            ) : availableSlots.length > 0 ? (
+              <div className="grid grid-cols-4 gap-2">
+                {availableSlots.map((slot) => (
+                  <button
+                    key={slot}
+                    onClick={() => setSelectedSlot(slot)}
+                    className={`py-2 px-1 rounded-xl text-xs font-bold border-2 transition-all ${
+                      selectedSlot === slot
+                        ? "border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+                        : "border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:border-primary-300"
+                    }`}
+                  >
+                    {slot}
+                  </button>
+                ))}
               </div>
+            ) : (
+              <p className="text-xs text-red-500">No slots available for this date.</p>
             )}
           </div>
         )}
 
-        {step === 1 && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Consultation Type</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { value: "video", icon: FiVideo, label: "Video Call", desc: "Consult from home", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
-                { value: "in-person", icon: FiUser, label: "In-Person", desc: "Visit the clinic", color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
-              ].map((t) => (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setConsultType(t.value)}
-                  className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                    consultType === t.value ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20" : "border-gray-200 dark:border-slate-700 hover:border-gray-300"
-                  }`}
-                >
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${t.color} mb-3`}>
-                    <t.icon size={22} />
-                  </div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{t.label}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{t.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 4. Optional Symptoms */}
+        <div className="space-y-3">
+          <label className="label flex items-center gap-2 dark:text-slate-300 font-semibold"><FiFileText size={14} /> Symptoms (Optional)</label>
+          <textarea
+            {...register("symptoms")}
+            rows={2}
+            placeholder="How are you feeling?"
+            className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none text-sm"
+          />
+        </div>
 
-        {step === 2 && (
-          <form className="space-y-4">
-            <div>
-              <label className="label flex items-center gap-2 dark:text-slate-300"><FiFileText size={14} /> Describe your symptoms</label>
-              <textarea
-                {...register("symptoms")}
-                rows={4}
-                placeholder="Describe what you're experiencing..."
-                className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
-              />
-            </div>
-            <div>
-              <label className="label dark:text-slate-300">Any existing conditions? (optional)</label>
-              <input {...register("conditions")} placeholder="e.g., Diabetes, Hypertension" className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-            </div>
-            <div>
-              <label className="label dark:text-slate-300">Current medications? (optional)</label>
-              <input {...register("medications")} placeholder="e.g., Metformin 500mg" className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-            </div>
-          </form>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Confirm Booking</h3>
-            <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 space-y-3">
-              {[
-                { label: "Doctor", value: doctor?.name || doctor?.user?.name || "Doctor" },
-                { label: "Specialty", value: doctor?.specialty || "Specialist" },
-                { label: "Date", value: selectedDate },
-                { label: "Time", value: selectedSlot },
-                { label: "Type", value: consultType === "video" ? "Video Call" : "In-Person" },
-                { label: "Fee", value: `$${doctor?.fee || 150}` },
-              ].map((item) => (
-                <div key={item.label} className="flex justify-between text-sm border-b border-gray-100 dark:border-slate-700 pb-2 last:border-0 last:pb-0">
-                  <span className="text-gray-500 dark:text-slate-400">{item.label}</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </motion.div>
-
-      {/* Navigation */}
-      <div className="flex gap-3">
-        {step > 0 && (
-          <button onClick={() => setStep(step - 1)} className="btn-outline flex-1">
-            Back
-          </button>
-        )}
-        {step < steps.length - 1 ? (
-          <button
-            onClick={() => setStep(step + 1)}
-            disabled={!canNext()}
-            className="btn-primary flex-1 justify-center"
-          >
-            Continue
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit(handleBook)}
-            disabled={loading}
-            className="btn-primary flex-1 justify-center"
-          >
-            {loading ? "Booking..." : "Confirm Appointment"}
-          </button>
-        )}
+        {/* Book Button */}
+        <button
+          onClick={handleSubmit(handleBook)}
+          disabled={loading || !selectedDate || !selectedSlot}
+          className="btn-primary btn-lg w-full justify-center gap-2 shadow-xl shadow-primary-500/20 disabled:opacity-50"
+        >
+          {loading ? (
+            <><svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Booking...</>
+          ) : (
+            <><FiCheckCircle size={18} /> Confirm & Book Appointment</>
+          )}
+        </button>
       </div>
     </div>
   );
