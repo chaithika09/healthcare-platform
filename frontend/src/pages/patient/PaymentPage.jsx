@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiCreditCard, FiLock, FiCheckCircle } from "react-icons/fi";
+import { FiLock, FiCheckCircle } from "react-icons/fi";
 import { paymentAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
@@ -16,28 +16,19 @@ export default function PaymentPage() {
       toast.error("Invalid payment request");
       navigate("/patient/dashboard");
     }
-  }, [appointmentId]);
+  }, [appointmentId, navigate]);
 
   const handlePay = async () => {
     setLoading(true);
     try {
-      // 1. Tell backend to create a Stripe PaymentIntent
-      const res = await paymentAPI.initiate({ appointmentId, amount });
-      const { clientSecret, publishableKey } = res.data.data;
+      await paymentAPI.initiate({ appointmentId, amount });
 
-      if (clientSecret.startsWith("demo_")) {
-        // Handle Demo Mode
-        await new Promise(r => setTimeout(r, 1500));
-        toast.success("Payment Successful (Demo Mode)!");
-        navigate("/appointment-confirm", { state: location.state });
-      } else {
-        // Here you would normally use Stripe SDK to confirm the payment
-        // For this task, we'll simulate the successful confirmation call
-        toast.success("Contacting Payment Gateway...");
-        await new Promise(r => setTimeout(r, 2000));
-        toast.success("Payment successful!");
-        navigate("/appointment-confirm", { state: location.state });
-      }
+      // Since it's a simulated payment for the project
+      toast.success("Processing payment...");
+      await new Promise(r => setTimeout(r, 1500));
+
+      toast.success("Payment successful!");
+      navigate("/appointment-confirm", { state: location.state });
     } catch (err) {
       toast.error(err.response?.data?.message || "Payment failed");
     } finally {
@@ -71,9 +62,9 @@ export default function PaymentPage() {
           <FiLock className="text-primary-600" size={20} />
         </div>
         <div>
-          <p className="text-sm font-bold text-primary-900">Encrypted Transaction</p>
+          <p className="text-sm font-bold text-primary-900">Project Demo Mode</p>
           <p className="text-xs text-primary-700 mt-0.5 leading-relaxed">
-            Your payment is processed securely via Stripe. We do not store your card details on our servers.
+            Payment processing is simulated for this project. No real money will be charged.
           </p>
         </div>
       </div>
@@ -89,9 +80,9 @@ export default function PaymentPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            Securing Payment...
+            Processing...
           </span>
-        ) : `Pay $${amount || 150}.00 Now`}
+        ) : `Confirm & Pay $${amount || 150}.00`}
       </button>
     </div>
   );
