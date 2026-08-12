@@ -142,29 +142,29 @@ export default function BookAppointment() {
       </div>
 
       {/* Doctor summary */}
-      <div className="card p-4 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg">
+      <div className="card p-4 flex items-center gap-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
           {doctor?.avatar || "DR"}
         </div>
         <div>
-          <p className="font-semibold text-gray-900">{doctor?.name || doctor?.user?.name || "Doctor"}</p>
-          <p className="text-sm text-primary-600">{doctor?.specialty || "Specialist"}</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{doctor?.name || doctor?.user?.name || "Doctor"}</p>
+          <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">{doctor?.specialty || "Specialist"}</p>
         </div>
         <div className="ml-auto text-right">
-          <p className="text-xl font-bold text-gray-900">${doctor?.fee || 150}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">${doctor?.fee || 150}</p>
           <p className="text-xs text-gray-400">per session</p>
         </div>
       </div>
 
       {/* Step content */}
-      <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card p-6">
+      <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card p-6 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800">
         {step === 0 && (
           <div className="space-y-5">
             <div>
-              <label className="label flex items-center gap-2"><FiCalendar size={14} /> Select Date</label>
+              <label className="label flex items-center gap-2 dark:text-slate-300"><FiCalendar size={14} /> Select Date</label>
               <input
                 type="date"
-                className="input"
+                className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                 min={new Date().toISOString().split("T")[0]}
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
@@ -172,7 +172,7 @@ export default function BookAppointment() {
             </div>
             {selectedDate && (
               <div>
-                <label className="label flex items-center gap-2"><FiClock size={14} /> Select Time Slot</label>
+                <label className="label flex items-center gap-2 dark:text-slate-300"><FiClock size={14} /> Select Time Slot</label>
                 {fetchingSlots ? (
                   <p className="text-xs text-gray-400">Loading slots...</p>
                 ) : availableSlots.length > 0 ? (
@@ -184,8 +184,8 @@ export default function BookAppointment() {
                         onClick={() => setSelectedSlot(slot)}
                         className={`py-2 px-2 rounded-xl text-xs font-medium border-2 transition-all ${
                           selectedSlot === slot
-                            ? "border-primary-500 bg-primary-50 text-primary-700"
-                            : "border-gray-200 text-gray-600 hover:border-primary-300"
+                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+                            : "border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-primary-300"
                         }`}
                       >
                         {slot}
@@ -202,24 +202,25 @@ export default function BookAppointment() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Consultation Type</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Consultation Type</h3>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: "video", icon: FiVideo, label: "Video Call", desc: "Consult from home", color: "text-blue-600 bg-blue-50" },
-                { value: "in-person", icon: FiUser, label: "In-Person", desc: "Visit the clinic", color: "text-green-600 bg-green-50" },
+                { value: "video", icon: FiVideo, label: "Video Call", desc: "Consult from home", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
+                { value: "in-person", icon: FiUser, label: "In-Person", desc: "Visit the clinic", color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
               ].map((t) => (
                 <button
                   key={t.value}
+                  type="button"
                   onClick={() => setConsultType(t.value)}
                   className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                    consultType === t.value ? "border-primary-500 bg-primary-50" : "border-gray-200 hover:border-gray-300"
+                    consultType === t.value ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20" : "border-gray-200 dark:border-slate-700 hover:border-gray-300"
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${t.color} mb-3`}>
                     <t.icon size={22} />
                   </div>
-                  <p className="font-semibold text-gray-900">{t.label}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t.desc}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{t.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{t.desc}</p>
                 </button>
               ))}
             </div>
@@ -229,29 +230,29 @@ export default function BookAppointment() {
         {step === 2 && (
           <form className="space-y-4">
             <div>
-              <label className="label flex items-center gap-2"><FiFileText size={14} /> Describe your symptoms</label>
+              <label className="label flex items-center gap-2 dark:text-slate-300"><FiFileText size={14} /> Describe your symptoms</label>
               <textarea
                 {...register("symptoms")}
                 rows={4}
                 placeholder="Describe what you're experiencing..."
-                className="input resize-none"
+                className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white resize-none"
               />
             </div>
             <div>
-              <label className="label">Any existing conditions? (optional)</label>
-              <input {...register("conditions")} placeholder="e.g., Diabetes, Hypertension" className="input" />
+              <label className="label dark:text-slate-300">Any existing conditions? (optional)</label>
+              <input {...register("conditions")} placeholder="e.g., Diabetes, Hypertension" className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
             </div>
             <div>
-              <label className="label">Current medications? (optional)</label>
-              <input {...register("medications")} placeholder="e.g., Metformin 500mg" className="input" />
+              <label className="label dark:text-slate-300">Current medications? (optional)</label>
+              <input {...register("medications")} placeholder="e.g., Metformin 500mg" className="input dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
             </div>
           </form>
         )}
 
         {step === 3 && (
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Confirm Booking</h3>
-            <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Confirm Booking</h3>
+            <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-4 space-y-3">
               {[
                 { label: "Doctor", value: doctor?.name || doctor?.user?.name || "Doctor" },
                 { label: "Specialty", value: doctor?.specialty || "Specialist" },
@@ -260,9 +261,9 @@ export default function BookAppointment() {
                 { label: "Type", value: consultType === "video" ? "Video Call" : "In-Person" },
                 { label: "Fee", value: `$${doctor?.fee || 150}` },
               ].map((item) => (
-                <div key={item.label} className="flex justify-between text-sm">
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="font-semibold text-gray-900">{item.value}</span>
+                <div key={item.label} className="flex justify-between text-sm border-b border-gray-100 dark:border-slate-700 pb-2 last:border-0 last:pb-0">
+                  <span className="text-gray-500 dark:text-slate-400">{item.label}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{item.value}</span>
                 </div>
               ))}
             </div>
