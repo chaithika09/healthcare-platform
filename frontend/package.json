@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Smart Healthcare Record & Doctor-Patient Portal System - Frontend",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "react": "18.2.0",
     "react-dom": "18.2.0",

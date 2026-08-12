@@ -5,6 +5,7 @@ services:
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -16,21 +17,3 @@ services:
         value: 30d
       - key: BCRYPT_SALT_ROUNDS
         value: 12
-      - key: LOG_LEVEL
-        value: info
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: 587
-      - key: SMTP_SECURE
-        value: false
-      - key: SMTP_USER
-        value: lschaithika@gmail.com
-      - key: EMAIL_FROM_NAME
-        value: Smart Healthcare Portal
-      - key: EMAIL_FROM_ADDRESS
-        value: lschaithika@gmail.com
-      - key: UPLOAD_PROVIDER
-        value: local
-      - key: MAX_FILE_SIZE_MB
-        value: 10
