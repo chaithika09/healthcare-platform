@@ -147,7 +147,7 @@ function CallModal({ onClose }) {
 // ── Main Component ────────────────────────────────────────────
 const topics = [
   { icon: "📅", title: "Appointments",       desc: "Booking, cancelling, rescheduling", link: "/faq" },
-  { icon: "💳", title: "Payments",           desc: "Billing, refunds, invoices",         link: "/payment-history" },
+  { icon: "📅", title: "My Appointments",     desc: "View and manage your bookings",      link: "/appointments" },
   { icon: "📋", title: "Medical Records",    desc: "Uploading, downloading, sharing",    link: "/medical-records" },
   { icon: "🎥", title: "Video Calls",        desc: "Setup, troubleshooting, tips",       link: "/faq" },
   { icon: "🔒", title: "Privacy & Security", desc: "Data protection, account security",  link: "/privacy" },

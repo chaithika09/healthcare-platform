@@ -70,6 +70,25 @@ export default function BookAppointment() {
 
     setConfirmId(aptId);
     setBooked(true);
+
+    // Save to localStorage so history page picks it up
+    try {
+      const existing = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+      const newApt = {
+        _id: aptId,
+        doctorName: doctor?.name || "Doctor",
+        specialty: doctor?.specialty || "Specialist",
+        avatar: doctor?.avatar || "DR",
+        date: selectedDate,
+        timeSlot: selectedSlot,
+        type: consultType,
+        status: "confirmed",
+        symptoms: symptoms || "",
+        confirmationId: aptId,
+      };
+      localStorage.setItem("myAppointments", JSON.stringify([newApt, ...existing]));
+    } catch {}
+
     toast.success("Appointment booked successfully!");
     setLoading(false);
   };

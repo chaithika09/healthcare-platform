@@ -88,6 +88,10 @@ export default function AppointmentHistory() {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
+        // Load from localStorage first
+        const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+
+        // Try to get from API
         const res = await appointmentAPI.getAll({ patient: user?._id });
         const raw = res.data.data.appointments || [];
         const mapped = raw.map((a) => ({
@@ -103,15 +107,21 @@ export default function AppointmentHistory() {
           symptoms: a.symptoms || "",
           confirmationId: a.confirmationId || "APT-" + a._id?.slice(-5).toUpperCase(),
         }));
-        setAppointments(mapped.length > 0 ? mapped : DEMO_APPOINTMENTS);
+
+        // Merge: local + API + demo (if nothing else)
+        const merged = [...localApts, ...mapped];
+        const unique = Array.from(new Map(merged.map(a => [a._id, a])).values());
+        setAppointments(unique.length > 0 ? unique : DEMO_APPOINTMENTS);
       } catch {
-        setAppointments(DEMO_APPOINTMENTS);
+        // API failed — use localStorage + demo
+        const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+        setAppointments(localApts.length > 0 ? localApts : DEMO_APPOINTMENTS);
       } finally {
         setLoading(false);
       }
     };
     fetchAppointments();
-  }, []);
+  }, [user]);
 
   const filtered = appointments.filter((a) => {
     const matchSearch =
