@@ -3,19 +3,12 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/build",
   "env": {
-    "REACT_APP_API_URL":    "https://mediq-backend-vcus.onrender.com/api/v1",
+    "REACT_APP_API_URL": "https://mediq-backend-vcus.onrender.com/api/v1",
     "REACT_APP_SOCKET_URL": "https://mediq-backend-vcus.onrender.com",
-    "REACT_APP_NAME":       "MediQ - Smart Healthcare",
-    "REACT_APP_VERSION":    "2.0.0"
+    "REACT_APP_NAME": "MediQ - Smart Healthcare",
+    "REACT_APP_VERSION": "2.0.0"
   },
-  "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/favicon.ico",   "dest": "/favicon.ico" },
-    { "src": "/manifest.json", "dest": "/manifest.json" },
-    { "src": "/sw.js",         "dest": "/sw.js" },
-    { "src": "/logo192.png",   "dest": "/logo192.png" },
-    { "src": "/logo512.png",   "dest": "/logo512.png" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
