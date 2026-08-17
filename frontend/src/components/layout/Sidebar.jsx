@@ -29,12 +29,12 @@ const patientNav = [
 ];
 
 const doctorNav = [
-  { to: "/doctor/dashboard",     icon: FiHome,        label: "Dashboard" },
-  { to: "/doctor/appointments",  icon: FiCalendar,    label: "Appointments" },
-  { to: "/doctor/patients",      icon: FiUsers,       label: "My Patients" },
-  { to: "/doctor/prescriptions", icon: FiClipboard,   label: "Prescriptions" },
+  { to: "/doctor/dashboard",     icon: FiHome,         label: "Dashboard" },
+  { to: "/doctor/appointments",  icon: FiCalendar,     label: "Appointments" },
+  { to: "/doctor/profile",       icon: FiUser,         label: "My Profile" },
+  { to: "/doctor/patients",      icon: FiUsers,        label: "My Patients" },
   { to: "/chat",                 icon: FiMessageSquare,label: "Messages" },
-  { to: "/notifications",        icon: FiBell,        label: "Notifications" },
+  { to: "/notifications",        icon: FiBell,         label: "Notifications" },
 ];
 
 const adminNav = [

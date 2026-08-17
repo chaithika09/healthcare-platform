@@ -140,6 +140,67 @@ export default function WelcomePage() {
         </div>
       </section>
 
+      {/* Find Doctors Section */}
+      <section id="specialists" className="py-24 bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-heading font-bold text-slate-900 dark:text-white mb-4">Find Top Specialists</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+              Connect with board-certified doctors across all specialties — available 24/7 for video or in-person consultations
+            </p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-3xl mx-auto mb-16">
+            <Link
+              to="/doctors"
+              className="block p-6 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl hover:border-primary-500 hover:shadow-2xl hover:shadow-primary-500/10 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center flex-shrink-0">
+                  <FiAlertCircle size={24} className="text-primary-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-bold text-slate-900 dark:text-white text-lg">Search for Doctors or Specialties</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Find cardiologists, neurologists, pediatricians, and more...</p>
+                </div>
+                <FiArrowRight size={24} className="text-slate-400 group-hover:text-primary-600 group-hover:translate-x-2 transition-all" />
+              </div>
+            </Link>
+          </div>
+
+          {/* Quick Specialty Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-12">
+            {[
+              { name: "Cardiologist", icon: "❤️" },
+              { name: "Neurologist", icon: "🧠" },
+              { name: "Dermatologist", icon: "✨" },
+              { name: "Pediatrician", icon: "👶" },
+              { name: "Orthopedic", icon: "🦴" },
+            ].map((spec) => (
+              <Link
+                key={spec.name}
+                to="/doctors"
+                className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-500 hover:shadow-lg transition-all text-center group"
+              >
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{spec.icon}</div>
+                <p className="font-semibold text-slate-900 dark:text-white text-sm">{spec.name}</p>
+              </Link>
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          <div className="text-center">
+            <Link
+              to="/doctors"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-xl shadow-primary-500/25 transition-all group"
+            >
+              Browse All Doctors <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Trust & Stats */}
       <section id="security" className="py-24 bg-primary-600 text-white overflow-hidden relative">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />

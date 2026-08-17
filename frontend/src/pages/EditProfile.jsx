@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { FiArrowLeft, FiCamera, FiSave, FiQrCode } from "react-icons/fi";
+import { FiArrowLeft, FiCamera, FiSave, FiImage } from "react-icons/fi";
 import { useAuthStore } from "../store/authStore";
 import { patientAPI, doctorAPI } from "../services/api";
 import toast from "react-hot-toast";
@@ -201,7 +201,7 @@ export default function EditProfile() {
         {isDoctor && (
           <div className="card p-5 space-y-4">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-              <FiQrCode className="text-primary-600" /> Payment QR Code
+              <FiImage className="text-primary-600" /> Payment QR Code
             </h3>
             <p className="text-xs text-gray-500">Upload your payment QR code (UPI, PayPal, etc.) so patients can pay you directly.</p>
 
@@ -220,7 +220,7 @@ export default function EditProfile() {
               ) : (
                 <div className="text-center py-4">
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-                    <FiQrCode size={28} className="text-gray-300" />
+                    <FiImage size={28} className="text-gray-300" />
                   </div>
                   <p className="text-sm font-medium text-gray-600">No QR Code Uploaded</p>
                 </div>
@@ -280,6 +280,7 @@ export default function EditProfile() {
             <input {...register("medications")} placeholder="e.g. Metformin 500mg, Amlodipine 5mg" className="input" />
           </div>
         </div>
+        )}
 
         <div className="flex gap-3">
           <Link to="/profile" className="btn-outline flex-1 justify-center">Cancel</Link>

@@ -10,6 +10,7 @@ router.get("/",          optionalAuth, doctorController.getAll);
 router.use(authenticate);
 router.get("/dashboard",    authorize("doctor"), doctorController.getDashboard);
 router.get("/appointments", authorize("doctor"), doctorController.getAppointments);
+router.get("/me",           authorize("doctor"), doctorController.getMyProfile);
 router.put("/me",           authorize("doctor"), doctorController.updateProfile);
 
 // ── Wildcard /:id route LAST ──────────────────────────────────

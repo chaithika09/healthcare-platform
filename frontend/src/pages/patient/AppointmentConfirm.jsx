@@ -6,9 +6,9 @@ import toast from "react-hot-toast";
 
 export default function AppointmentConfirm() {
   const { state } = useLocation();
-  const doctor = state?.doctor || { name: "Dr. Sarah Johnson", specialty: "Cardiologist", fee: 150 };
-  const date = state?.date || "2024-06-28";
-  const slot = state?.slot || "3:00 PM";
+  const doctor = state?.doctor || { name: "Doctor", specialty: "Specialist", fee: 0 };
+  const date = state?.date || new Date().toISOString().split("T")[0];
+  const slot = state?.slot || "12:00 PM";
   const type = state?.type || "video";
   const confirmId = "APT-" + Math.random().toString(36).substr(2, 8).toUpperCase();
 

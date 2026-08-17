@@ -59,12 +59,15 @@ exports.book = async (req, res, next) => {
     }, req.user.name);
 
     // Create notification for doctor
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric"
+    });
     await Notification.create({
       recipient: doctorId,
       sender:    req.user._id,
       type:      "appointment",
       title:     "New Appointment Booked",
-      message:   `${req.user.name} has booked an appointment on ${new Date(date).toLocaleDateString()} at ${timeSlot}`,
+      message:   `${req.user.name} has booked an appointment on ${formattedDate} at ${timeSlot}`,
       data:      { appointmentId: appointment._id },
     });
 

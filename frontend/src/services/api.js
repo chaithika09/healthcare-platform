@@ -61,6 +61,7 @@ export const patientAPI = {
 export const doctorAPI = {
   getAll:         (params) => api.get("/doctors", { params }),
   getById:        (id)     => api.get(`/doctors/${id}`),
+  getMyProfile:   ()       => api.get("/doctors/me"),
   getDashboard:   ()       => api.get("/doctors/dashboard"),
   getAppointments:(params) => api.get("/doctors/appointments", { params }),
   updateProfile:  (data)   => api.put("/doctors/me", data),

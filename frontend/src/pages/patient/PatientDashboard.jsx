@@ -21,10 +21,6 @@ const healthData = [
   { month: "Jun", bp: 117, sugar: 90, weight: 70 },
 ];
 
-const demoAppointments = [
-  { id: 1, doctorName: "Dr. Sarah Johnson", specialty: "Cardiologist", date: "Today, 3:00 PM", type: "video", status: "upcoming", avatar: "SJ" },
-];
-
 const quickActions = [
   { to: "/doctors",          icon: FiUser,        label: "Find Doctor",    color: "bg-blue-100 text-blue-600" },
   { to: "/lab-tests",        icon: FiActivity,    label: "Book Lab Test",  color: "bg-green-100 text-green-600" },
@@ -79,9 +75,7 @@ export default function PatientDashboard() {
   }, []);
 
   const isDemoAccount = user?.email?.includes("lschaithika+patient");
-  const displayAppointments = appointments.length > 0
-    ? appointments
-    : isDemoAccount ? demoAppointments : [];
+  const displayAppointments = appointments || [];
 
   const totalApts = displayAppointments.length;
   const pieData = [

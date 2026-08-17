@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiStar, FiMapPin, FiClock, FiVideo, FiUser, FiAward, FiCalendar, FiMessageSquare, FiArrowLeft, FiCheckCircle } from "react-icons/fi";
+import { FiStar, FiMapPin, FiClock, FiUser, FiAward, FiCalendar, FiMessageSquare, FiArrowLeft, FiCheckCircle } from "react-icons/fi";
 import { doctorAPI, appointmentAPI } from "../../services/api";
+import { useAuthStore } from "../../store/authStore";
+import toast from "react-hot-toast";
 
-const demoDoctors = [
-  { id: "1", name: "Dr. Sarah Johnson", specialty: "Cardiologist", rating: 4.9, reviews: 312, experience: 12, location: "New York, NY", fee: 150, available: true, avatar: "SJ", about: "Board-certified cardiologist with 12+ years treating heart conditions and hypertension.", education: ["MD - Harvard Medical School", "Residency - Johns Hopkins Hospital"], specializations: ["Cardiologist", "Preventive Care"], languages: ["English", "Spanish"], hospital: "City General Hospital", consultationTypes: ["Video Call", "In-Person"] },
-  { id: "2", name: "Dr. Michael Chen",  specialty: "Neurologist",  rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true, avatar: "MC", about: "Leading neurologist specializing in brain health, migraines, and nerve treatment.", education: ["MD - Stanford Medicine"], specializations: ["Neurology", "Nerve Care"], languages: ["English", "Mandarin"], hospital: "Green Valley Medical", consultationTypes: ["Video Call"] },
-];
+const reviews = [];
 
 export default function DoctorProfilePage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
   const [doctor, setDoctor] = useState(null);
   const [activeTab, setActiveTab] = useState("about");
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -25,22 +26,25 @@ export default function DoctorProfilePage() {
         const data = res.data.data.doctor;
         setDoctor({
           ...data,
-          name: data.user?.name || data.name,
-          fee: data.consultationFee?.video || 150,
+          name: data.user?.name || data.name || "Doctor",
+          fee: data.consultationFee?.video || 0,
           avatar: (data.user?.name || data.name || "DR").split(" ").map(n => n[0]).join("").slice(0, 2),
           about: data.bio || "No biography provided.",
-          education: data.education?.map(e => `${e.degree} - ${e.institution}`) || ["General Medical Degree"],
-          specializations: [data.specialty, ...(data.subSpecialties || [])],
+          education: data.education?.map(e => `${e.degree} - ${e.institution}`) || [],
+          specializations: [data.specialty, ...(data.subSpecialties || [])].filter(Boolean),
           languages: data.languages?.length > 0 ? data.languages : ["English"],
-          hospital: data.hospital || "General Hospital",
+          hospital: data.hospital || "Medical Center",
           consultationTypes: [
             data.consultationTypes?.video && "Video Call",
             data.consultationTypes?.inPerson && "In-Person"
-          ].filter(Boolean)
+          ].filter(Boolean),
+          rating: data.averageRating || 0,
+          reviewCount: data.totalReviews || 0,
+          experience: data.experience || 0,
         });
       } catch (err) {
-        // Fallback for demo doctors if API fails
-        setDoctor(demoDoctors.find(d => d.id === id) || demoDoctors[0]);
+        console.error("Failed to load doctor:", err);
+        toast.error("Doctor not found");
       } finally {
         setLoading(false);
       }
@@ -64,6 +68,33 @@ export default function DoctorProfilePage() {
 
   if (loading) return <div className="p-10 text-center">Loading profile...</div>;
   if (!doctor) return <div className="p-10 text-center">Doctor not found</div>;
+
+  const handleMessage = async () => {
+    if (!isAuthenticated) {
+      toast("Please login to message the doctor", { icon: "🔒" });
+      navigate("/login");
+      return;
+    }
+    try {
+      const token = JSON.parse(localStorage.getItem("healthcare-auth"))?.state?.token;
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000/api/v1"}/chat/conversations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ participantId: doctor.user?._id || id }),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        navigate(`/chat/${data.data.conversation._id}`);
+      } else {
+        toast.error("Could not open chat");
+      }
+    } catch (err) {
+      toast.error("Could not open chat");
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -107,9 +138,9 @@ export default function DoctorProfilePage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Link to={`/chat/doc-${id}`} className="btn-outline btn-sm gap-1.5">
+                  <button onClick={handleMessage} className="btn-outline btn-sm gap-1.5">
                     <FiMessageSquare size={14} /> Message
-                  </Link>
+                  </button>
                   <Link to={`/book-appointment/${id}`} className="btn-primary btn-sm gap-1.5">
                     <FiCalendar size={14} /> Book
                   </Link>

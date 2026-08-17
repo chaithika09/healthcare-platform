@@ -6,6 +6,11 @@ import LoadingScreen from "./components/common/LoadingScreen";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import AuthLayout from "./components/layout/AuthLayout";
+import IncomingCallModal from "./components/IncomingCallModal";
+import InstallPWA from "./components/InstallPWA";
+import { getSocket, destroySocket } from "./services/socket";
+import { chatAPI } from "./services/api";
+import toast from "react-hot-toast";
 
 // ── Auth Pages ────────────────────────────────────────────────
 const SplashScreen      = lazy(() => import("./pages/SplashScreen"));
@@ -34,6 +39,7 @@ const MedicineReminder  = lazy(() => import("./pages/patient/MedicineReminder"))
 // ── Doctor Pages ──────────────────────────────────────────────
 const DoctorDashboard   = lazy(() => import("./pages/doctor/DoctorDashboard"));
 const DoctorAppointments= lazy(() => import("./pages/doctor/DoctorAppointments"));
+const DoctorProfile     = lazy(() => import("./pages/doctor/DoctorProfile"));
 const PatientRecords    = lazy(() => import("./pages/doctor/PatientRecords"));
 const PrescriptionUpload= lazy(() => import("./pages/doctor/PrescriptionUpload"));
 const VideoConsultation = lazy(() => import("./pages/VideoConsultation"));
@@ -63,8 +69,51 @@ const PrivacyPage       = lazy(() => import("./pages/PrivacyPage"));
 const NotFoundPage      = lazy(() => import("./pages/NotFoundPage"));
 
 export default function App() {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, token } = useAuthStore();
   const { darkMode } = useUIStore();
+
+  // ── Global socket: join all chat rooms + show message toasts ──
+  useEffect(() => {
+    if (!isAuthenticated || !token) {
+      destroySocket();
+      return;
+    }
+
+    const socket = getSocket(token);
+
+    // On connect: join ALL conversation rooms so messages arrive everywhere
+    const handleConnect = () => {
+      chatAPI.getConversations().then(res => {
+        const convs = res.data.data.conversations || [];
+        convs.forEach(c => socket.emit("chat:join", c._id));
+      }).catch(() => {});
+    };
+
+    socket.on("connect", handleConnect);
+
+    // If already connected, join rooms immediately
+    if (socket.connected) handleConnect();
+
+    // Global message toast when not on chat page
+    const handleMsg = ({ message }) => {
+      const isOnChatPage = window.location.pathname.startsWith("/chat");
+      if (!isOnChatPage) {
+        const name = message?.sender?.name || "Someone";
+        const content = message?.type === "image"
+          ? "📷 Sent a photo"
+          : (message?.content || "").slice(0, 60);
+        toast(`💬 ${name}: ${content}`, { duration: 4000 });
+      }
+    };
+
+    socket.on("chat:message", handleMsg);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("chat:message", handleMsg);
+      // Don't destroy socket here — keep it alive for the session
+    };
+  }, [isAuthenticated, token]);
 
   // Apply dark class to <html> element
   useEffect(() => {
@@ -88,6 +137,10 @@ export default function App() {
 
   return (
     <Suspense fallback={<LoadingScreen />}>
+      {/* Global incoming call popup */}
+      <IncomingCallModal />
+      {/* PWA install prompt */}
+      <InstallPWA />
       <Routes>
         {/* ── Public splash / onboarding ── */}
         <Route path="/splash"      element={<SplashScreen />} />
@@ -103,14 +156,16 @@ export default function App() {
           <Route path="/reset-password"  element={<ResetPasswordPage />} />
         </Route>
 
+        {/* ── Public doctor browsing (no login required) ── */}
+        <Route path="/doctors"              element={<DoctorListPage />} />
+        <Route path="/doctors/:id"          element={<DoctorProfilePage />} />
+
         {/* ── Protected app routes ── */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
 
             {/* Patient */}
             <Route path="/patient/dashboard"    element={<PatientDashboard />} />
-            <Route path="/doctors"              element={<DoctorListPage />} />
-            <Route path="/doctors/:id"          element={<DoctorProfilePage />} />
             <Route path="/book-appointment/:id" element={<BookAppointment />} />
             <Route path="/appointment-confirm"  element={<AppointmentConfirm />} />
             <Route path="/medical-records"      element={<MedicalRecords />} />
@@ -124,6 +179,7 @@ export default function App() {
             {/* Doctor */}
             <Route path="/doctor/dashboard"     element={<DoctorDashboard />} />
             <Route path="/doctor/appointments"  element={<DoctorAppointments />} />
+            <Route path="/doctor/profile"       element={<DoctorProfile />} />
             <Route path="/doctor/patients"      element={<PatientRecords />} />
             <Route path="/doctor/prescriptions" element={<PrescriptionUpload />} />
 

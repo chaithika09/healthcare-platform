@@ -7,6 +7,16 @@ import { Toaster } from "react-hot-toast";
 import App from "./App";
 import "./index.css";
 
+// ─── Service Worker (PWA) ─────────────────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => console.log("✅ Service Worker registered:", reg.scope))
+      .catch((err) => console.warn("SW registration failed:", err));
+  });
+}
+
 // ─── React Query Client ───────────────────────────────────────────────────────
 const queryClient = new QueryClient({
   defaultOptions: {

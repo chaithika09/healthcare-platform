@@ -55,7 +55,7 @@ const initSocket = (server) => {
       socket.leave(`conv:${conversationId}`);
     });
 
-    socket.on("chat:message", async (data) => {
+    socket.on("chat:message", async (data, callback) => {
       try {
         const { conversationId, content, type = "text" } = data;
 
@@ -72,11 +72,17 @@ const initSocket = (server) => {
 
         const savedMsg = conversation.messages[conversation.messages.length - 1];
 
-        // Broadcast to conversation room
-        io.to(`conv:${conversationId}`).emit("chat:message", {
+        // Broadcast ONLY to other participants (not back to sender)
+        // This prevents the sender seeing their own message twice
+        socket.to(`conv:${conversationId}`).emit("chat:message", {
           conversationId,
           message: savedMsg,
         });
+
+        // ACK back to sender only — so they can replace their temp bubble
+        if (typeof callback === "function") {
+          callback({ message: savedMsg });
+        }
 
         // Notify offline participants
         conversation.participants.forEach((participantId) => {

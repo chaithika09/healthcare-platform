@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiBell, FiCalendar, FiFileText, FiCreditCard,
-  FiAlertCircle, FiCheckCircle, FiTrash2, FiRefreshCw
+  FiBell, FiCalendar, FiFileText, FiMessageSquare,
+  FiAlertCircle, FiCheckCircle, FiTrash2, FiRefreshCw, FiChevronRight
 } from "react-icons/fi";
 import { notificationAPI } from "../services/api";
+import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
 
 const typeConfig = {
-  appointment: { icon: FiCalendar,    color: "bg-blue-100 text-blue-600" },
-  record:      { icon: FiFileText,    color: "bg-green-100 text-green-600" },
-  payment:     { icon: FiCreditCard,  color: "bg-purple-100 text-purple-600" },
-  alert:       { icon: FiAlertCircle, color: "bg-amber-100 text-amber-600" },
-  message:     { icon: FiBell,        color: "bg-pink-100 text-pink-600" },
-  system:      { icon: FiCheckCircle, color: "bg-gray-100 text-gray-600" },
-  reminder:    { icon: FiAlertCircle, color: "bg-orange-100 text-orange-600" },
+  appointment: { icon: FiCalendar,      color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",    route: (u) => u?.role === "doctor" ? "/doctor/appointments" : "/appointments" },
+  record:      { icon: FiFileText,      color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400", route: () => "/medical-records" },
+  message:     { icon: FiMessageSquare, color: "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",     route: () => "/chat" },
+  alert:       { icon: FiAlertCircle,   color: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400", route: () => null },
+  system:      { icon: FiCheckCircle,   color: "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400",      route: () => null },
+  reminder:    { icon: FiAlertCircle,   color: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400", route: () => null },
 };
 
 export default function NotificationsPage() {
+  const navigate = useNavigate();
+  const { user }  = useAuthStore();
   const [notifs, setNotifs]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState("all");
@@ -57,6 +60,27 @@ export default function NotificationsPage() {
   const deleteNotif = async (id) => {
     setNotifs((prev) => prev.filter((n) => n._id !== id));
     toast.success("Notification removed");
+  };
+
+  const handleNotifClick = async (notif) => {
+    // Mark as read
+    if (!notif.isRead) await markRead(notif._id);
+
+    // Navigate based on type
+    const config = typeConfig[notif.type] || typeConfig.system;
+    const route  = config.route?.(user);
+
+    // If notification has specific appointment data, go to appointments
+    if (notif.data?.appointmentId) {
+      const dest = user?.role === "doctor" ? "/doctor/appointments" : "/appointments";
+      navigate(dest);
+      return;
+    }
+    if (notif.data?.conversationId) {
+      navigate(`/chat/${notif.data.conversationId}`);
+      return;
+    }
+    if (route) navigate(route);
   };
 
   const filtered = notifs.filter((n) => {
@@ -127,30 +151,38 @@ export default function NotificationsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => markRead(notif._id)}
-                  className={`card p-4 flex items-start gap-3 cursor-pointer transition-all hover:shadow-card-hover ${!notif.isRead ? "border-l-4 border-l-primary-500" : ""}`}
+                  onClick={() => handleNotifClick(notif)}
+                  className={`card p-4 flex items-start gap-3 cursor-pointer transition-all hover:shadow-md dark:bg-slate-900 dark:border-slate-800 ${!notif.isRead ? "border-l-4 border-l-primary-500 bg-primary-50/30 dark:bg-primary-900/10" : ""}`}
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${config.color}`}>
                     <Icon size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-semibold ${notif.isRead ? "text-gray-700" : "text-gray-900"}`}>
+                      <p className={`text-sm font-semibold ${notif.isRead ? "text-gray-700 dark:text-slate-300" : "text-gray-900 dark:text-white"}`}>
                         {notif.title}
                       </p>
-                      {!notif.isRead && <div className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-1.5" />}
+                      {!notif.isRead && <div className="w-2.5 h-2.5 bg-primary-500 rounded-full flex-shrink-0 mt-1" />}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.message}</p>
-                    <p className="text-xs text-gray-400 mt-1.5">
-                      {new Date(notif.createdAt).toLocaleString()}
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 leading-relaxed">{notif.message}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">
+                      {new Date(notif.createdAt).toLocaleString("en-IN", {
+                        day: "2-digit", month: "short", year: "numeric",
+                        hour: "2-digit", minute: "2-digit"
+                      })}
                     </p>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deleteNotif(notif._id); }}
-                    className="p-1.5 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-400 transition-colors flex-shrink-0"
-                  >
-                    <FiTrash2 size={14} />
-                  </button>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {(typeConfig[notif.type]?.route?.(user)) && (
+                      <FiChevronRight size={14} className="text-gray-300 dark:text-slate-600" />
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteNotif(notif._id); }}
+                      className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-gray-300 dark:text-slate-600 hover:text-red-400 transition-colors"
+                    >
+                      <FiTrash2 size={14} />
+                    </button>
+                  </div>
                 </motion.div>
               );
             })}

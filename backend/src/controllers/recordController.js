@@ -5,7 +5,11 @@ const fs   = require("fs");
 // ── Upload Record ─────────────────────────────────────────────
 exports.upload = async (req, res, next) => {
   try {
-    const { title, description, type, category, reportDate, doctor, hospital, notes, tags } = req.body;
+    const {
+      title, description, type, category,
+      reportDate, date,
+      doctor, doctorName, hospital, notes, tags
+    } = req.body;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: "At least one file is required" });
@@ -23,10 +27,15 @@ exports.upload = async (req, res, next) => {
     const record = await MedicalRecord.create({
       patient:    req.user._id,
       uploadedBy: req.user._id,
-      title, description, type, category,
+      title:      title || "Untitled Report",
+      description,
+      type:       type || "other",
+      category,
       files,
-      reportDate: reportDate ? new Date(reportDate) : new Date(),
-      doctor, hospital, notes,
+      reportDate: reportDate || date ? new Date(reportDate || date) : new Date(),
+      doctor:     doctor || doctorName || "",
+      hospital,
+      notes,
       tags: tags ? tags.split(",").map((t) => t.trim()) : [],
     });
 

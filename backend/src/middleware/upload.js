@@ -7,7 +7,8 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const subDir = path.join(uploadDir, req.user?.id || "temp");
+    const userId = req.user?._id || req.user?.id || "temp";
+    const subDir = path.join(uploadDir, userId.toString());
     if (!fs.existsSync(subDir)) fs.mkdirSync(subDir, { recursive: true });
     cb(null, subDir);
   },
@@ -19,10 +20,29 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowed = ["image/jpeg","image/jpg","image/png","image/gif","application/pdf",
-    "application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
-  if (allowed.includes(file.mimetype)) cb(null, true);
-  else cb(new Error(`File type ${file.mimetype} not allowed`), false);
+  const allowed = [
+    // Images
+    "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp",
+    // Documents
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    // Text (plain text reports)
+    "text/plain",
+    // Spreadsheets
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ];
+
+  // Also allow by extension as a fallback (some browsers send wrong MIME)
+  const allowedExts = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".txt", ".xls", ".xlsx"];
+  const ext = path.extname(file.originalname).toLowerCase();
+
+  if (allowed.includes(file.mimetype) || allowedExts.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error(`File type not allowed. Supported: PDF, JPG, PNG, DOC, DOCX, TXT`), false);
+  }
 };
 
 const upload = multer({

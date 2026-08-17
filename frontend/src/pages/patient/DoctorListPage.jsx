@@ -11,11 +11,6 @@ const gradients = [
   "from-orange-500 to-orange-700", "from-pink-500 to-pink-700", "from-teal-500 to-teal-700",
 ];
 
-const demoDoctors = [
-  { id: 1, name: "Dr. Sarah Johnson",  specialty: "Cardiologist",   rating: 4.9, reviews: 312, experience: 12, location: "New York, NY",   fee: 150, available: true,  avatar: "SJ", tags: ["Video", "In-person"] },
-  { id: 2, name: "Dr. Michael Chen",   specialty: "Neurologist",    rating: 4.8, reviews: 245, experience: 15, location: "Los Angeles, CA", fee: 180, available: true,  avatar: "MC", tags: ["Video"] },
-];
-
 export default function DoctorListPage() {
   const [searchParams] = useSearchParams();
   const queryParam = searchParams.get("search") || "";
@@ -35,6 +30,7 @@ export default function DoctorListPage() {
         const res = await doctorAPI.getAll();
         setDoctors(res.data.data.doctors || []);
       } catch (err) {
+        console.error("Failed to fetch doctors:", err);
         setDoctors([]);
       } finally {
         setLoading(false);
@@ -43,15 +39,7 @@ export default function DoctorListPage() {
     fetchDoctors();
   }, []);
 
-  const combinedDoctors = [...doctors];
-
-  demoDoctors.forEach(demo => {
-    if (!doctors.find(d => (d.name || d.user?.name) === demo.name)) {
-      combinedDoctors.push(demo);
-    }
-  });
-
-  const filtered = combinedDoctors
+  const filtered = doctors
     .filter((d) => {
       const docName = d.name || d.user?.name || "";
       const specialty = d.specialty || "";

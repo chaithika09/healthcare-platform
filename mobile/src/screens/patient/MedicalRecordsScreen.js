@@ -1,245 +1,130 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Alert, Share } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
 import Card from '../../components/Card';
+import { recordAPI } from '../../config/api';
 import { Colors, Fonts, Radius } from '../../theme/colors';
 
-const sampleRecords = [
-  { id: '1', title: 'Blood Test Report', type: 'Lab Report', doctor: 'Dr. Sarah Johnson', date: '2024-06-15', size: '2.4 MB', format: 'PDF', category: 'lab' },
-  { id: '2', title: 'Chest X-Ray Scan', type: 'Radiology', doctor: 'Dr. Michael Chen', date: '2024-06-10', size: '8.1 MB', format: 'DICOM', category: 'imaging' },
-  { id: '3', title: 'ECG Cardiology Report', type: 'Cardiology', doctor: 'Dr. Sarah Johnson', date: '2024-05-28', size: '1.2 MB', format: 'PDF', category: 'lab' },
-  { id: '4', title: 'Prescription Summary', type: 'Prescription', doctor: 'Dr. Emily Davis', date: '2024-06-01', size: '0.5 MB', format: 'PDF', category: 'prescription' },
-  { id: '5', title: 'MRI Brain Scan', type: 'Radiology', doctor: 'Dr. Michael Chen', date: '2024-05-15', size: '45 MB', format: 'DICOM', category: 'imaging' },
-];
+const TYPE_CONFIG = {
+  'lab-report':        { icon:'flask', color:'#3B82F6', bg:'#DBEAFE', label:'Lab Report' },
+  imaging:             { icon:'scan', color:'#8B5CF6', bg:'#EDE9FE', label:'Imaging' },
+  prescription:        { icon:'medical', color:Colors.secondary, bg:Colors.secondary100, label:'Prescription' },
+  'discharge-summary': { icon:'document-text', color:'#F59E0B', bg:'#FEF3C7', label:'Discharge' },
+  other:               { icon:'attach', color:'#6B7280', bg:'#F3F4F6', label:'Other' },
+};
 
-export default function MedicalRecordsScreen() {
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('all');
-  const [selectedRecord, setSelectedRecord] = useState(null);
-  const [records, setRecords] = useState(sampleRecords);
+export default function MedicalRecordsScreen({ navigation }) {
+  const [records, setRecords] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState('all');
 
-  const categories = ['all', 'lab', 'imaging', 'prescription'];
-
-  const filtered = records.filter((r) => {
-    const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) || r.doctor.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category === 'all' || r.category === category;
-    return matchSearch && matchCat;
-  });
-
-  const handleUpload = async () => {
+  const load = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
-        const newRec = {
-          id: String(Date.now()),
-          title: file.name || 'Uploaded Report',
-          type: 'Lab Report',
-          doctor: 'Self Uploaded',
-          date: new Date().toISOString().split('T')[0],
-          size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-          format: file.name.split('.').pop()?.toUpperCase() || 'PDF',
-          category: 'lab',
-        };
-        setRecords([newRec, ...records]);
-        Alert.alert('Upload Successful', `Successfully uploaded ${newRec.title}`);
-      }
-    } catch {
-      Alert.alert('Upload Status', 'Document selected and added to your records list.');
-    }
+      const res = await recordAPI.getAll();
+      setRecords(res.data.data.records || []);
+    } catch { setRecords([]); }
   };
 
-  const handleShare = async (rec) => {
-    try {
-      await Share.share({
-        title: rec.title,
-        message: `Medical Record: ${rec.title}\nDoctor: ${rec.doctor}\nDate: ${rec.date}\nFormat: ${rec.format} (${rec.size})\nVerified by MedIQ+ Healthcare.`,
-      });
-    } catch {
-      Alert.alert('Shared', `Medical Record ${rec.title} ready for sharing.`);
-    }
+  useEffect(() => { load(); }, []);
+
+  const filtered = records.filter(r => filter === 'all' || r.type === filter);
+
+  const deleteRecord = (id) => {
+    Alert.alert('Delete Record', 'This will permanently delete this record.', [
+      { text:'Cancel' },
+      { text:'Delete', style:'destructive', onPress: async () => {
+        try { await recordAPI.delete(id); await load(); } catch {}
+      }}
+    ]);
   };
 
-  const renderItem = ({ item }) => (
-    <Card style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.iconBox}>
-          <Ionicons name="document-text" size={24} color={Colors.primary} />
+  const renderItem = ({ item }) => {
+    const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.other;
+    return (
+      <Card style={styles.card}>
+        <View style={styles.row}>
+          <View style={[styles.iconBox, { backgroundColor:cfg.bg }]}>
+            <Ionicons name={cfg.icon} size={22} color={cfg.color} />
+          </View>
+          <View style={styles.info}>
+            <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+            <View style={[styles.typeBadge, { backgroundColor:cfg.bg }]}>
+              <Text style={[styles.typeText, { color:cfg.color }]}>{cfg.label}</Text>
+            </View>
+            <Text style={styles.meta}>{item.doctor || 'N/A'} · {new Date(item.reportDate || item.createdAt).toLocaleDateString()}</Text>
+            {item.files?.[0] && <Text style={styles.size}>{item.files[0].size ? (item.files[0].size/1024/1024).toFixed(1)+' MB' : ''} · {item.files[0].mimeType?.split('/')[1]?.toUpperCase() || 'FILE'}</Text>}
+          </View>
         </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardDoc}>{item.doctor} · {item.date}</Text>
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeTxt}>{item.format}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardFooter}>
-        <Text style={styles.sizeTxt}>{item.size}</Text>
-        <View style={styles.actionBtns}>
-          <TouchableOpacity style={styles.viewBtn} onPress={() => setSelectedRecord(item)}>
-            <Ionicons name="eye-outline" size={14} color={Colors.primary} />
-            <Text style={styles.viewTxt}>View</Text>
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Ionicons name="eye-outline" size={15} color={Colors.primary} />
+            <Text style={styles.actionTxt}> View</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shareBtn} onPress={() => handleShare(item)}>
-            <Ionicons name="share-social-outline" size={14} color={Colors.textMuted} />
-            <Text style={styles.shareTxt}>Share</Text>
+          <TouchableOpacity style={styles.actionBtn}>
+            <Ionicons name="download-outline" size={15} color={Colors.secondary} />
+            <Text style={[styles.actionTxt,{color:Colors.secondary}]}> Download</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => deleteRecord(item._id)} style={[styles.actionBtn,{borderColor:'#FEE2E2'}]}>
+            <Ionicons name="trash-outline" size={15} color="#EF4444" />
           </TouchableOpacity>
         </View>
-      </View>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Search & Upload Header */}
-      <View style={styles.header}>
-        <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color={Colors.textMuted} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search medical records..."
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
-        <TouchableOpacity style={styles.uploadBtn} onPress={handleUpload}>
-          <Ionicons name="cloud-upload" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      {/* Upload FAB */}
+      <TouchableOpacity style={styles.fab} onPress={() => Alert.alert('Upload', 'Document picker coming soon')}>
+        <Ionicons name="cloud-upload" size={22} color="#fff" />
+      </TouchableOpacity>
 
-      {/* Category Tabs */}
-      <View style={styles.categories}>
-        {categories.map((c) => (
-          <TouchableOpacity
-            key={c}
-            style={[styles.catChip, category === c && styles.catChipActive]}
-            onPress={() => setCategory(c)}
-          >
-            <Text style={[styles.catTxt, category === c && styles.catTxtActive]}>
-              {c === 'all' ? 'All Records' : c.charAt(0).toUpperCase() + c.slice(1)}
-            </Text>
+      {/* Filters */}
+      <FlatList horizontal showsHorizontalScrollIndicator={false}
+        data={[{k:'all',l:'All'},{ k:'lab-report',l:'Lab'},{k:'imaging',l:'Imaging'},{k:'prescription',l:'Prescription'}]}
+        keyExtractor={i=>i.k} contentContainerStyle={styles.filters}
+        renderItem={({item}) => (
+          <TouchableOpacity onPress={()=>setFilter(item.k)} style={[styles.chip, filter===item.k && styles.chipActive]}>
+            <Text style={[styles.chipTxt, filter===item.k && styles.chipTxtActive]}>{item.l}</Text>
           </TouchableOpacity>
-        ))}
-      </View>
+        )}
+      />
 
-      {/* List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
+      <FlatList data={filtered} keyExtractor={(_,i)=>String(i)} renderItem={renderItem}
         contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async()=>{setRefreshing(true);await load();setRefreshing(false);}} />}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="folder-open-outline" size={48} color={Colors.textFaint} />
-            <Text style={styles.emptyTxt}>No medical records found</Text>
+            <Ionicons name="document-text-outline" size={48} color={Colors.textFaint} />
+            <Text style={styles.emptyTxt}>No records found</Text>
           </View>
         }
       />
-
-      {/* View Record Modal */}
-      {selectedRecord && (
-        <Modal transparent animationType="fade" visible={!!selectedRecord} onRequestClose={() => setSelectedRecord(null)}>
-          <View style={styles.modalBg}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <View style={styles.modalTitleRow}>
-                  <Ionicons name="document-text" size={22} color={Colors.primary} />
-                  <Text style={styles.modalTitle}>{selectedRecord.title}</Text>
-                </View>
-                <TouchableOpacity onPress={() => setSelectedRecord(null)}>
-                  <Ionicons name="close" size={22} color={Colors.textMuted} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.modalBody}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Doctor:</Text>
-                  <Text style={styles.detailVal}>{selectedRecord.doctor}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Date Issued:</Text>
-                  <Text style={styles.detailVal}>{selectedRecord.date}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>File Details:</Text>
-                  <Text style={styles.detailVal}>{selectedRecord.format} ({selectedRecord.size})</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Security:</Text>
-                  <Text style={[styles.detailVal, { color: '#059669', fontWeight: '700' }]}>✓ Verified SHA256 Signature</Text>
-                </View>
-
-                <View style={styles.summaryBox}>
-                  <Text style={styles.summaryTitle}>Diagnostic Notes Summary:</Text>
-                  <Text style={styles.summaryText}>
-                    All tested diagnostic parameters evaluated by {selectedRecord.doctor}. Patient lab parameters are within normal reference ranges.
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.modalFooter}>
-                <TouchableOpacity style={styles.modalShareBtn} onPress={() => handleShare(selectedRecord)}>
-                  <Ionicons name="share-social" size={16} color="#fff" />
-                  <Text style={styles.modalShareTxt}>Export & Share</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container:      { flex: 1, backgroundColor: Colors.background },
-  header:         { flexDirection: 'row', gap: 10, padding: 16, backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  searchBox:      { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.background, borderRadius: Radius.lg, paddingHorizontal: 12, borderWidth: 1, borderColor: Colors.border },
-  searchInput:    { flex: 1, height: 42, fontSize: Fonts.size.sm, color: Colors.text },
-  uploadBtn:      { width: 42, height: 42, backgroundColor: Colors.primary, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center' },
-  categories:     { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8, backgroundColor: Colors.card },
-  catChip:        { paddingHorizontal: 14, paddingVertical: 6, borderRadius: Radius.full, backgroundColor: Colors.background, borderWidth: 1, borderColor: Colors.border },
-  catChipActive:  { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  catTxt:         { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  catTxtActive:   { color: '#fff' },
-  list:           { padding: 16, gap: 12 },
-  card:           { padding: 14 },
-  cardHeader:     { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  iconBox:        { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.primary100, alignItems: 'center', justifyContent: 'center' },
-  cardInfo:       { flex: 1 },
-  cardTitle:      { fontSize: Fonts.size.md, fontWeight: '700', color: Colors.text },
-  cardDoc:        { fontSize: Fonts.size.xs, color: Colors.textMuted, marginTop: 2 },
-  badge:          { backgroundColor: Colors.primary100, paddingHorizontal: 8, paddingVertical: 3, borderRadius: Radius.full },
-  badgeTxt:       { fontSize: 10, fontWeight: '700', color: Colors.primary },
-  cardFooter:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: Colors.border },
-  sizeTxt:        { fontSize: Fonts.size.xs, color: Colors.textMuted },
-  actionBtns:     { flexDirection: 'row', gap: 10 },
-  viewBtn:        { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary100, paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radius.md },
-  viewTxt:        { fontSize: 12, fontWeight: '700', color: Colors.primary },
-  shareBtn:       { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 10, paddingVertical: 5, borderRadius: Radius.md },
-  shareTxt:       { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  empty:          { alignItems: 'center', paddingTop: 60, gap: 12 },
-  emptyTxt:       { color: Colors.textMuted, fontSize: Fonts.size.sm },
-  modalBg:        { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
-  modalContent:   { backgroundColor: Colors.card, borderRadius: Radius.xxl, padding: 20 },
-  modalHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  modalTitleRow:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  modalTitle:     { fontSize: Fonts.size.md, fontWeight: '800', color: Colors.text },
-  modalBody:      { gap: 10, marginBottom: 20 },
-  detailRow:      { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: Colors.border },
-  detailLabel:    { fontSize: Fonts.size.xs, color: Colors.textMuted },
-  detailVal:      { fontSize: Fonts.size.xs, fontWeight: '600', color: Colors.text },
-  summaryBox:     { backgroundColor: Colors.background, padding: 12, borderRadius: Radius.lg, marginTop: 8 },
-  summaryTitle:   { fontSize: Fonts.size.xs, fontWeight: '700', color: Colors.text, marginBottom: 4 },
-  summaryText:    { fontSize: Fonts.size.xs, color: Colors.textMuted, lineHeight: 16 },
-  modalFooter:    { alignItems: 'center' },
-  modalShareBtn:  { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: Colors.primary, paddingVertical: 12, borderRadius: Radius.xl },
-  modalShareTxt:  { color: '#fff', fontWeight: '700', fontSize: Fonts.size.sm },
+  container: { flex:1, backgroundColor:Colors.background },
+  fab:       { position:'absolute', bottom:24, right:20, zIndex:10, width:56, height:56, borderRadius:16, backgroundColor:Colors.primary, alignItems:'center', justifyContent:'center', shadowColor:Colors.primary, shadowOffset:{width:0,height:4}, shadowOpacity:0.4, shadowRadius:8, elevation:8 },
+  filters:   { paddingHorizontal:16, paddingVertical:12, gap:8 },
+  chip:      { paddingHorizontal:14, paddingVertical:7, borderRadius:Radius.full, backgroundColor:Colors.card, borderWidth:1.5, borderColor:Colors.border },
+  chipActive:{ backgroundColor:Colors.primary, borderColor:Colors.primary },
+  chipTxt:   { fontSize:Fonts.size.sm, fontWeight:'600', color:Colors.textMuted },
+  chipTxtActive:{color:'#fff'},
+  list:      { padding:16, paddingTop:0, gap:12, paddingBottom:80 },
+  card:      { padding:14 },
+  row:       { flexDirection:'row', gap:12 },
+  iconBox:   { width:52, height:52, borderRadius:14, alignItems:'center', justifyContent:'center', flexShrink:0 },
+  info:      { flex:1, gap:4 },
+  title:     { fontSize:Fonts.size.md, fontWeight:'700', color:Colors.text },
+  typeBadge: { alignSelf:'flex-start', paddingHorizontal:8, paddingVertical:2, borderRadius:Radius.full },
+  typeText:  { fontSize:10, fontWeight:'700' },
+  meta:      { fontSize:Fonts.size.xs, color:Colors.textMuted },
+  size:      { fontSize:10, color:Colors.textFaint },
+  actions:   { flexDirection:'row', gap:8, marginTop:12, paddingTop:10, borderTopWidth:1, borderTopColor:Colors.border },
+  actionBtn: { flexDirection:'row', alignItems:'center', paddingHorizontal:12, paddingVertical:6, borderRadius:Radius.lg, borderWidth:1, borderColor:Colors.border },
+  actionTxt: { color:Colors.primary, fontWeight:'600', fontSize:12 },
+  empty:     { alignItems:'center', paddingTop:60, gap:10 },
+  emptyTxt:  { color:Colors.textMuted, fontSize:Fonts.size.sm },
 });

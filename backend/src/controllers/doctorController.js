@@ -58,6 +58,20 @@ exports.getById = async (req, res, next) => {
   }
 };
 
+// ── Get My Profile ────────────────────────────────────────────
+exports.getMyProfile = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ user: req.user._id })
+      .populate("user", "name email avatar phone");
+
+    if (!doctor) return res.status(404).json({ success: false, message: "Doctor profile not found" });
+
+    res.json({ success: true, data: { doctor } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ── Get Doctor Dashboard ──────────────────────────────────────
 exports.getDashboard = async (req, res, next) => {
   try {
@@ -103,11 +117,36 @@ exports.getDashboard = async (req, res, next) => {
 // ── Update Doctor Profile ─────────────────────────────────────
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { bio, specialty, experience, consultationFee, availability, languages, hospital, paymentQRCode } = req.body;
+    const {
+      bio,
+      specialty,
+      subSpecialties,
+      qualifications,
+      experience,
+      licenseNumber,
+      consultationFee,
+      availability,
+      languages,
+      hospital,
+      paymentQRCode
+    } = req.body;
+
+    const updateData = {};
+    if (bio !== undefined) updateData.bio = bio;
+    if (specialty !== undefined) updateData.specialty = specialty;
+    if (subSpecialties !== undefined) updateData.subSpecialties = subSpecialties;
+    if (qualifications !== undefined) updateData.qualifications = qualifications;
+    if (experience !== undefined) updateData.experience = experience;
+    if (licenseNumber !== undefined) updateData.licenseNumber = licenseNumber;
+    if (consultationFee !== undefined) updateData.consultationFee = consultationFee;
+    if (availability !== undefined) updateData.availability = availability;
+    if (languages !== undefined) updateData.languages = languages;
+    if (hospital !== undefined) updateData.hospital = hospital;
+    if (paymentQRCode !== undefined) updateData.paymentQRCode = paymentQRCode;
 
     const doctor = await Doctor.findOneAndUpdate(
       { user: req.user._id },
-      { $set: { bio, specialty, experience, consultationFee, availability, languages, hospital, paymentQRCode } },
+      { $set: updateData },
       { new: true, runValidators: true }
     ).populate("user", "name email avatar");
 

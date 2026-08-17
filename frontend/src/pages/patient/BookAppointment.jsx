@@ -31,13 +31,9 @@ export default function BookAppointment() {
           avatar: (d.user?.name || d.name || "DR").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
         });
       })
-      .catch(() => {
-        // fallback demo doctors
-        const demos = {
-          "1": { name: "Dr. Sarah Johnson", specialty: "Cardiologist", avatar: "SJ" },
-          "2": { name: "Dr. Michael Chen",  specialty: "Neurologist",  avatar: "MC" },
-        };
-        setDoctor(demos[id] || { name: "Dr. Smith", specialty: "General", avatar: "DS" });
+      .catch((err) => {
+        console.error("Failed to load doctor:", err);
+        toast.error("Doctor not found");
       });
   }, [id]);
 
@@ -53,41 +49,68 @@ export default function BookAppointment() {
     if (!selectedDate) return toast.error("Please select a date");
     if (!selectedSlot) return toast.error("Please select a time slot");
 
+    // Validate date — ensure it's a proper YYYY-MM-DD and not a far-future year
+    const dateObj = new Date(selectedDate);
+    const currentYear = new Date().getFullYear();
+    if (isNaN(dateObj.getTime()) || dateObj.getFullYear() > currentYear + 2) {
+      return toast.error("Please select a valid date");
+    }
+    // Ensure we send a clean ISO date string
+    const cleanDate = dateObj.toISOString().split("T")[0];
+
     setLoading(true);
-    const aptId = "APT-" + Date.now().toString(36).toUpperCase();
+    let aptId = "APT-" + Date.now().toString(36).toUpperCase();
+    let apiSuccess = false;
+
+    const doctorUserId = doctor?.user?._id || id;
 
     try {
-      await appointmentAPI.book({
-        doctorId: doctor?.user?._id || id,
-        date: selectedDate,
+      const bookingData = {
+        doctorId: doctorUserId,
+        date: cleanDate,
         timeSlot: selectedSlot,
         type: consultType,
         symptoms: symptoms || "General Checkup",
-      });
-    } catch {
-      // Backend unavailable — still confirm locally
+      };
+
+      const response = await appointmentAPI.book(bookingData);
+
+      // If API succeeds, use the real appointment ID
+      if (response.data.success && response.data.data.appointment) {
+        aptId = response.data.data.appointment.confirmationId || response.data.data.appointment._id;
+        apiSuccess = true;
+      }
+    } catch (error) {
+      console.error("Failed to book appointment:", error);
+      toast.error(error.response?.data?.message || "Booking failed. Please try again.");
     }
 
     setConfirmId(aptId);
     setBooked(true);
 
-    // Save to localStorage so history page picks it up
-    try {
-      const existing = JSON.parse(localStorage.getItem("myAppointments") || "[]");
-      const newApt = {
-        _id: aptId,
-        doctorName: doctor?.name || "Doctor",
-        specialty: doctor?.specialty || "Specialist",
-        avatar: doctor?.avatar || "DR",
-        date: selectedDate,
-        timeSlot: selectedSlot,
-        type: consultType,
-        status: "confirmed",
-        symptoms: symptoms || "",
-        confirmationId: aptId,
-      };
-      localStorage.setItem("myAppointments", JSON.stringify([newApt, ...existing]));
-    } catch {}
+    // Save to localStorage as backup (especially if API failed)
+    if (!apiSuccess) {
+      console.log("Saving to localStorage as fallback");
+      try {
+        const existing = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+        const newApt = {
+          _id: aptId,
+          doctorName: doctor?.name || "Doctor",
+          specialty: doctor?.specialty || "Specialist",
+          avatar: doctor?.avatar || "DR",
+          date: selectedDate,
+          timeSlot: selectedSlot,
+          type: consultType,
+          status: "confirmed",
+          symptoms: symptoms || "",
+          confirmationId: aptId,
+        };
+        localStorage.setItem("myAppointments", JSON.stringify([newApt, ...existing]));
+        console.log("✅ Saved to localStorage");
+      } catch (e) {
+        console.error("Failed to save to localStorage:", e);
+      }
+    }
 
     toast.success("Appointment booked successfully!");
     setLoading(false);

@@ -1,8 +1,13 @@
 {
-  "short_name": "Smart Health",
-  "name": "Smart Healthcare Portal",
-  "description": "Smart Healthcare Record & Doctor-Patient Portal System",
+  "short_name": "MediQ",
+  "name": "MediQ - Smart Healthcare",
+  "description": "Book appointments, consult doctors, manage prescriptions — all in one place.",
   "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
     {
       "src": "/logo192.png",
       "type": "image/png",
@@ -16,14 +21,35 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#0066CC",
-  "background_color": "#F8FAFC",
   "orientation": "portrait-primary",
-  "categories": [
-    "health",
-    "medical",
-    "lifestyle"
+  "theme_color": "#0066CC",
+  "background_color": "#0F172A",
+  "lang": "en",
+  "categories": ["health", "medical", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Book Appointment",
+      "short_name": "Book",
+      "description": "Book a new appointment with a doctor",
+      "url": "/doctors",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Appointments",
+      "short_name": "Appointments",
+      "description": "View your appointments",
+      "url": "/appointments",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Chat",
+      "description": "Open messages",
+      "url": "/chat",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    }
   ]
 }

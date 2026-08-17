@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FiCalendar, FiClock, FiVideo, FiUser, FiSearch,
-  FiFilter, FiCheckCircle, FiXCircle, FiAlertCircle, FiRefreshCw
+  FiCheckCircle, FiXCircle, FiAlertCircle, FiRefreshCw, FiEye, FiX, FiMapPin, FiMessageSquare
 } from "react-icons/fi";
 import { appointmentAPI } from "../../services/api";
 import { useAuthStore } from "../../store/authStore";
+import toast from "react-hot-toast";
 
 const STATUS_STYLES = {
   confirmed:  { bg: "bg-green-100 dark:bg-green-900/30",  text: "text-green-700 dark:text-green-400",  icon: FiCheckCircle,  label: "Confirmed"  },
@@ -15,58 +16,6 @@ const STATUS_STYLES = {
   pending:    { bg: "bg-amber-100 dark:bg-amber-900/30",  text: "text-amber-700 dark:text-amber-400",  icon: FiAlertCircle,  label: "Pending"    },
   rescheduled:{ bg: "bg-purple-100 dark:bg-purple-900/30",text: "text-purple-700 dark:text-purple-400",icon: FiRefreshCw,    label: "Rescheduled"},
 };
-
-// Demo appointments shown when API is unavailable
-const DEMO_APPOINTMENTS = [
-  {
-    _id: "apt-001",
-    doctorName: "Dr. Sarah Johnson",
-    specialty: "Cardiologist",
-    avatar: "SJ",
-    date: "2026-08-10",
-    timeSlot: "10:00 AM",
-    type: "video",
-    status: "completed",
-    symptoms: "Chest pain and shortness of breath",
-    confirmationId: "APT-K2X9P",
-  },
-  {
-    _id: "apt-002",
-    doctorName: "Dr. Michael Chen",
-    specialty: "Neurologist",
-    avatar: "MC",
-    date: "2026-08-19",
-    timeSlot: "10:00 AM",
-    type: "video",
-    status: "confirmed",
-    symptoms: "Frequent headaches",
-    confirmationId: "APT-M8T3R",
-  },
-  {
-    _id: "apt-003",
-    doctorName: "Dr. Priya Sharma",
-    specialty: "Dermatologist",
-    avatar: "PS",
-    date: "2026-07-28",
-    timeSlot: "3:00 PM",
-    type: "in-person",
-    status: "completed",
-    symptoms: "Skin rash on arm",
-    confirmationId: "APT-D4F7Z",
-  },
-  {
-    _id: "apt-004",
-    doctorName: "Dr. James Wilson",
-    specialty: "General Physician",
-    avatar: "JW",
-    date: "2026-07-15",
-    timeSlot: "11:00 AM",
-    type: "video",
-    status: "cancelled",
-    symptoms: "Fever and cough",
-    confirmationId: "APT-C1N6Q",
-  },
-];
 
 const gradients = [
   "from-blue-500 to-blue-700",
@@ -84,44 +33,107 @@ export default function AppointmentHistory() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [selectedApt, setSelectedApt] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        // Load from localStorage first
-        const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
-
-        // Try to get from API
-        const res = await appointmentAPI.getAll({ patient: user?._id });
+        // Try to get from API first
+        const res = await appointmentAPI.getAll();
         const raw = res.data.data.appointments || [];
-        const mapped = raw.map((a) => ({
-          _id: a._id,
-          doctorName: a.doctor?.user?.name || a.doctor?.name || "Doctor",
-          specialty: a.doctor?.specialty || "Specialist",
-          avatar: (a.doctor?.user?.name || a.doctor?.name || "DR")
-            .split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
-          date: a.date?.split("T")[0] || a.date,
-          timeSlot: a.timeSlot,
-          type: a.type || "video",
-          status: a.status || "confirmed",
-          symptoms: a.symptoms || "",
-          confirmationId: a.confirmationId || "APT-" + a._id?.slice(-5).toUpperCase(),
-        }));
+        
+        // Map API appointments properly
+        const mapped = raw.map((a) => {
+          // Get doctor info from populated doctor field
+          const doctorData = a.doctor;
+          const doctorName = doctorData?.user?.name || doctorData?.name || "Doctor";
+          
+          return {
+            _id: a._id,
+            doctorUserId: doctorData?.user?._id || doctorData?._id,
+            doctorName: doctorName,
+            specialty: doctorData?.specialty || "Specialist",
+            avatar: doctorName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase(),
+            date: a.date?.split("T")[0] || a.date,
+            timeSlot: a.timeSlot,
+            type: a.type || "video",
+            status: a.status || "confirmed",
+            symptoms: a.symptoms || "",
+            confirmationId: a.confirmationId || "APT-" + a._id?.slice(-5).toUpperCase(),
+          };
+        });
 
-        // Merge: local + API + demo (if nothing else)
-        const merged = [...localApts, ...mapped];
-        const unique = Array.from(new Map(merged.map(a => [a._id, a])).values());
-        setAppointments(unique.length > 0 ? unique : DEMO_APPOINTMENTS);
-      } catch {
-        // API failed — use localStorage + demo
+        // Load from localStorage as fallback
         const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
-        setAppointments(localApts.length > 0 ? localApts : DEMO_APPOINTMENTS);
+
+        // Merge: prefer API data, fallback to local
+        const merged = [...mapped, ...localApts];
+        const unique = Array.from(new Map(merged.map(a => [a._id, a])).values());
+        
+        setAppointments(unique);
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+        // API failed — use localStorage only
+        const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+        setAppointments(localApts);
       } finally {
         setLoading(false);
       }
     };
     fetchAppointments();
   }, [user]);
+
+  const handleViewDetails = (apt) => {
+    setSelectedApt(apt);
+    setShowDetailsModal(true);
+  };
+
+  const handleCancelAppointment = async (aptId) => {
+    if (!window.confirm("Are you sure you want to cancel this appointment?")) return;
+    
+    setCancelling(true);
+    try {
+      await appointmentAPI.cancel(aptId);
+      // Update local state
+      setAppointments(prev => prev.map(a => a._id === aptId ? { ...a, status: "cancelled" } : a));
+      // Update localStorage
+      const localApts = JSON.parse(localStorage.getItem("myAppointments") || "[]");
+      localStorage.setItem("myAppointments", JSON.stringify(
+        localApts.map(a => a._id === aptId ? { ...a, status: "cancelled" } : a)
+      ));
+      toast.success("Appointment cancelled successfully");
+      setShowDetailsModal(false);
+    } catch (err) {
+      toast.error("Failed to cancel appointment");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleMessageDoctor = async (doctorUserId) => {
+    if (!doctorUserId) { toast("Doctor info not available", { icon: "⚠️" }); return; }
+    try {
+      const token = JSON.parse(localStorage.getItem("healthcare-auth"))?.state?.token;
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000/api/v1"}/chat/conversations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ participantId: doctorUserId }),
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = `/chat/${data.data.conversation._id}`;
+      } else {
+        toast.error("Could not open chat");
+      }
+    } catch (err) {
+      toast.error("Could not open chat");
+    }
+  };
 
   const filtered = appointments.filter((a) => {
     const matchSearch =
@@ -285,19 +297,36 @@ export default function AppointmentHistory() {
                       <span className="text-xs text-gray-400 dark:text-slate-500 font-mono">
                         Ref: {apt.confirmationId}
                       </span>
-                      {isUpcoming && apt.type === "video" && (
-                        <Link
-                          to={`/video-call/${apt._id}`}
-                          className="text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleViewDetails(apt)}
+                          className="text-xs font-semibold text-primary-600 hover:text-primary-700 px-3 py-1.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex items-center gap-1"
                         >
-                          <FiVideo size={11} /> Join Call
-                        </Link>
-                      )}
-                      {isUpcoming && apt.type === "in-person" && (
-                        <span className="text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-lg">
-                          Visit Clinic
-                        </span>
-                      )}
+                          <FiEye size={11} /> View
+                        </button>
+                        <button
+                          onClick={() => handleMessageDoctor(apt.doctorUserId)}
+                          className="text-xs font-semibold text-green-600 hover:text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center gap-1"
+                        >
+                          <FiMessageSquare size={11} /> Message
+                        </button>
+                        {isUpcoming && apt.type === "video" && (
+                          <Link
+                            to={`/video-call/${apt._id}`}
+                            className="text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                          >
+                            <FiVideo size={11} /> Join Call
+                          </Link>
+                        )}
+                        {isUpcoming && (
+                          <button
+                            onClick={() => handleCancelAppointment(apt._id)}
+                            className="text-xs font-semibold text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-1"
+                          >
+                            <FiX size={11} /> Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -306,6 +335,107 @@ export default function AppointmentHistory() {
           })}
         </div>
       )}
+
+      {/* Details Modal */}
+      <AnimatePresence>
+        {showDetailsModal && selectedApt && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDetailsModal(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="sticky top-0 bg-gradient-to-br from-primary-600 to-primary-700 text-white p-6 rounded-t-3xl">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">Appointment Details</h2>
+                      <p className="text-primary-100 text-sm mt-1">Ref: {selectedApt.confirmationId}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowDetailsModal(false)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    >
+                      <FiX size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-6">
+                  {/* Doctor Info */}
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xl`}>
+                      {selectedApt.avatar}
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white text-lg">{selectedApt.doctorName}</p>
+                      <p className="text-primary-600 dark:text-primary-400 font-medium">{selectedApt.specialty}</p>
+                    </div>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: FiCalendar, label: "Date", value: selectedApt.date },
+                      { icon: FiClock, label: "Time", value: selectedApt.timeSlot },
+                      { icon: selectedApt.type === "video" ? FiVideo : FiMapPin, label: "Type", value: selectedApt.type === "video" ? "Video Call" : "In-Person Visit" },
+                      { icon: STATUS_STYLES[selectedApt.status]?.icon || FiAlertCircle, label: "Status", value: STATUS_STYLES[selectedApt.status]?.label || "Unknown" },
+                    ].map(({ icon: Icon, label, value }) => (
+                      <div key={label} className="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon size={14} className="text-gray-400" />
+                          <span className="text-xs text-gray-500 dark:text-slate-400 font-medium">{label}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Symptoms */}
+                  {selectedApt.symptoms && (
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                      <p className="text-xs text-blue-700 dark:text-blue-400 font-semibold mb-2">📝 Symptoms</p>
+                      <p className="text-sm text-gray-700 dark:text-slate-300">{selectedApt.symptoms}</p>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {(selectedApt.status === "confirmed" || selectedApt.status === "pending") && (
+                    <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+                      {selectedApt.type === "video" && (
+                        <Link
+                          to={`/video-call/${selectedApt._id}`}
+                          className="flex-1 btn-primary justify-center gap-2"
+                          onClick={() => setShowDetailsModal(false)}
+                        >
+                          <FiVideo size={16} /> Join Video Call
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => handleCancelAppointment(selectedApt._id)}
+                        disabled={cancelling}
+                        className="flex-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {cancelling ? "Cancelling..." : <><FiX size={16} /> Cancel Appointment</>}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
