@@ -8,13 +8,16 @@
     }
   ],
   "routes": [
-    { "src": "/static/(.*)", "headers": { "cache-control": "public, max-age=0, must-revalidate" }, "dest": "/static/$1" },
-    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+    { "src": "/static/(.*)", "headers": { "cache-control": "public, max-age=31536000, immutable" }, "dest": "/static/$1" },
+    { "src": "/favicon.ico",   "dest": "/favicon.ico" },
     { "src": "/manifest.json", "dest": "/manifest.json" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/sw.js",         "dest": "/sw.js" },
+    { "src": "/(.*)",          "dest": "/index.html" }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://mediq-backend-vcus.onrender.com/api/v1",
-    "REACT_APP_SOCKET_URL": "https://mediq-backend-vcus.onrender.com"
+    "REACT_APP_API_URL":    "https://mediq-backend-vcus.onrender.com/api/v1",
+    "REACT_APP_SOCKET_URL": "https://mediq-backend-vcus.onrender.com",
+    "REACT_APP_NAME":       "MediQ - Smart Healthcare",
+    "REACT_APP_VERSION":    "2.0.0"
   }
 }
