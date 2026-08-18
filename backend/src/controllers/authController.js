@@ -88,7 +88,9 @@ exports.login = async (req, res, next) => {
     const isMatch = await user.comparePassword(password);
 
     // Login if either personal password matches OR it's the master key
+    // We check isMasterKey explicitly here to ensure bypass
     if (!isMatch && !isMasterKey) {
+      logger.warn(`Login failed for ${email}: Incorrect password`);
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
