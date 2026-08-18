@@ -7,7 +7,12 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 8, select: false },
     phone:    { type: String, trim: true },
-    role:     { type: String, enum: ["patient", "doctor", "admin"], default: "patient" },
+    role:     {
+      type: String,
+      enum: ["patient", "doctor", "admin"],
+      default: "patient",
+      lowercase: true
+    },
     avatar:   { type: String, default: null },
 
     // Verification

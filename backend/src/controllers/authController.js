@@ -10,6 +10,7 @@ const logger = require("../utils/logger");
 exports.register = async (req, res, next) => {
   try {
     const { name, email, password, phone, role } = req.body;
+    const normalizedRole = (role || "patient").toLowerCase();
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -19,7 +20,7 @@ exports.register = async (req, res, next) => {
     // Force auto-verify for all registrations to ensure smooth demo/test flow
     const user = await User.create({
       name, email, password, phone,
-      role: role || "patient",
+      role: normalizedRole,
       isEmailVerified: true,
       isActive: true
     });
