@@ -83,15 +83,14 @@ exports.login = async (req, res, next) => {
       user = await User.findById(user._id).select("+password +refreshTokens");
     }
 
-    if (!user) return res.status(401).json({ success: false, message: "Invalid email or password" });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "No account found with this email. Please register first." });
+    }
 
     const isMatch = await user.comparePassword(password);
 
-    // Login if either personal password matches OR it's the master key
-    // We check isMasterKey explicitly here to ensure bypass
     if (!isMatch && !isMasterKey) {
-      logger.warn(`Login failed for ${email}: Incorrect password`);
-      return res.status(401).json({ success: false, message: "Invalid email or password" });
+      return res.status(401).json({ success: false, message: "Incorrect password. If you forgot your password, please reset it." });
     }
 
     // Auto-verify if they got the password right but weren't verified
