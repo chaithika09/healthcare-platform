@@ -88,15 +88,34 @@ exports.login = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "No account found with this email. Please register first." });
     }
 
+    // Self-healing: Fix capitalized roles like "Doctor" or "Patient" in the DB
+    const validRoles = ["patient", "doctor", "admin"];
+    if (!validRoles.includes(user.role)) {
+      const lowerRole = user.role.toLowerCase();
+      if (validRoles.includes(lowerRole)) {
+        user.role = lowerRole;
+        // We will save this after checking the password to avoid unnecessary writes
+      }
+    }
+
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch && !isMasterKey) {
       return res.status(401).json({ success: false, message: "Incorrect password. If you forgot your password, please reset it." });
     }
 
-    // Auto-verify if they got the password right but weren't verified
+    // Auto-verify and Save fixed role if needed
+    let needsSave = false;
     if (!user.isEmailVerified) {
       user.isEmailVerified = true;
+      needsSave = true;
+    }
+    // Check if the role was updated in the self-healing step above
+    if (user.isModified("role")) {
+      needsSave = true;
+    }
+
+    if (needsSave) {
       await user.save();
     }
 
