@@ -82,6 +82,7 @@ exports.login = async (req, res, next) => {
       });
       await Patient.create({ user: user._id });
       user = await User.findById(user._id).select("+password +refreshTokens");
+      if (!user) throw new Error("Auto-registration failed");
     }
 
     if (!user) {
