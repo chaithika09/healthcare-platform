@@ -10,5 +10,6 @@
   },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "_force_rebuild": "2026-08-17T15:00:00Z"
 }
