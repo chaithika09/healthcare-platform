@@ -17,8 +17,6 @@
     "react-hook-form": "7.48.2",
     "zustand": "4.4.6",
     "socket.io-client": "4.6.1",
-    "@stripe/stripe-js": "^2.2.0",
-    "@stripe/react-stripe-js": "^2.4.0",
     "react-icons": "4.11.0",
     "react-hot-toast": "2.4.1",
     "date-fns": "2.30.0",
