@@ -182,9 +182,20 @@ export default function DoctorAppointments() {
                   {apt.status === "upcoming" && (
                     <>
                       {apt.type === "video" && (
-                        <Link to={`/video-call/${apt.id}`} className="btn-primary btn-sm gap-1">
-                          <FiVideo size={12} /> Join Call
-                        </Link>
+                        <>
+                          <Link to={`/video-call/${apt.id}`} className="btn-primary btn-sm gap-1">
+                            <FiVideo size={12} /> Join Call
+                          </Link>
+                          <a
+                            href={`https://meet.jit.si/mediq-${apt.id?.slice(-8)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-outline btn-sm gap-1 text-green-600 border-green-200 dark:border-green-800"
+                            title="Backup video call via Jitsi Meet"
+                          >
+                            <FiVideo size={12} /> Jitsi
+                          </a>
+                        </>
                       )}
                       <button
                         onClick={() => handleStatusChange(apt.id, "completed")}

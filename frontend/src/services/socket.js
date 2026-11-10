@@ -42,6 +42,8 @@ export const getSocket = (token) => {
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   return _socket;

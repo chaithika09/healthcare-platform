@@ -302,12 +302,23 @@ export default function AppointmentHistory() {
                           <FiMessageSquare size={11} /> Message
                         </button>
                         {isUpcoming && apt.type === "video" && (
-                          <Link
-                            to={`/video-call/${apt._id}`}
-                            className="text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
-                          >
-                            <FiVideo size={11} /> Join Call
-                          </Link>
+                          <>
+                            <Link
+                              to={`/video-call/${apt._id}`}
+                              className="text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <FiVideo size={11} /> Join Call
+                            </Link>
+                            <a
+                              href={`https://meet.jit.si/mediq-${apt._id?.slice(-8)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs font-semibold text-teal-600 border border-teal-200 hover:bg-teal-50 dark:border-teal-800 dark:hover:bg-teal-900/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                              title="Alternative video via Jitsi Meet"
+                            >
+                              <FiVideo size={11} /> Alt Call
+                            </a>
+                          </>
                         )}
                         {isUpcoming && (
                           <button
