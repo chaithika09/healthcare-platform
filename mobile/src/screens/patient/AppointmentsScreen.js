@@ -22,36 +22,7 @@ export default function AppointmentsScreen({ navigation }) {
       const res = await appointmentAPI.getAll();
       setAppointments(res.data.data.appointments || []);
     } catch {
-      // Fallback sample data if backend API is offline
-      setAppointments([
-        {
-          _id: '1',
-          doctor: { name: 'Dr. Sarah Johnson', specialty: 'Cardiologist' },
-          date: '2024-06-20',
-          timeSlot: '10:00 AM',
-          type: 'video',
-          status: 'confirmed',
-          fee: 80,
-        },
-        {
-          _id: '2',
-          doctor: { name: 'Dr. Michael Chen', specialty: 'General Physician' },
-          date: '2024-06-25',
-          timeSlot: '02:30 PM',
-          type: 'in-person',
-          status: 'confirmed',
-          fee: 50,
-        },
-        {
-          _id: '3',
-          doctor: { name: 'Dr. Emily Davis', specialty: 'Dermatologist' },
-          date: '2024-05-15',
-          timeSlot: '11:15 AM',
-          type: 'video',
-          status: 'completed',
-          fee: 75,
-        },
-      ]);
+      setAppointments([]);
     }
   };
 
@@ -121,7 +92,7 @@ export default function AppointmentsScreen({ navigation }) {
             </TouchableOpacity>
           )}
 
-          <Text style={styles.fee}>${item.fee}</Text>
+          <Text style={styles.fee}>₹{item.fee || ''}</Text>
         </View>
       </Card>
     );

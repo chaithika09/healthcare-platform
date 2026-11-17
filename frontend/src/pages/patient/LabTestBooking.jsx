@@ -266,7 +266,7 @@ export default function LabTestBooking() {
               <input type="checkbox" checked={homeCollection} onChange={(e) => setHomeCollection(e.target.checked)} className="w-4 h-4 rounded text-primary-600" />
               <div>
                 <p className="text-sm font-medium text-gray-900">Home Sample Collection</p>
-                <p className="text-xs text-gray-500">A technician will visit your home (+$10)</p>
+                <p className="text-xs text-gray-500">A technician will visit your home (+₹10)</p>
               </div>
             </label>
           </div>
@@ -282,7 +282,7 @@ export default function LabTestBooking() {
             {homeCollection && (
               <div className="flex justify-between text-sm py-1.5">
                 <span className="text-gray-700">Home Collection</span>
-                <span className="font-medium">$10</span>
+                <span className="font-medium">₹10</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-gray-900 pt-3 mt-1 border-t border-gray-200">

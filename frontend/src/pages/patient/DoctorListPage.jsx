@@ -155,7 +155,7 @@ export default function DoctorListPage() {
 
             {/* Max Fee */}
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Max Fee: ${priceRange}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-3">Max Fee: ₹{priceRange}</h3>
               <input
                 type="range"
                 min="0"
@@ -166,8 +166,8 @@ export default function DoctorListPage() {
                 className="w-full accent-primary-600"
               />
               <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                <span>$0</span>
-                <span>$500</span>
+                <span>₹0</span>
+                <span>₹500</span>
               </div>
             </div>
           </div>
@@ -241,7 +241,11 @@ export default function DoctorListPage() {
 
                 <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                   <span className="flex items-center gap-1"><FiClock size={11} /> {doc.experience || 5}y exp</span>
-                  <span className="flex items-center gap-1"><FiMapPin size={11} /> {(doc.location || doc.hospital || "Remote").split(",")[0]}</span>
+                  {(doc.hospital) && (
+                    <span className="flex items-center gap-1 truncate max-w-[140px]">
+                      <FiMapPin size={11} /> {doc.hospital.split(",")[0]}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex gap-1.5 mt-2">
@@ -266,7 +270,7 @@ export default function DoctorListPage() {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
               <div>
-                <span className="text-lg font-bold text-gray-900">${doc.fee || doc.consultationFee?.video || 100}</span>
+                <span className="text-lg font-bold text-gray-900">₹{doc.consultationFee?.video || doc.consultationFee?.inPerson || doc.fee || 100}</span>
                 <span className="text-xs text-gray-400 ml-1">/ session</span>
               </div>
               <Link

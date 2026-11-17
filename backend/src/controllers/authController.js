@@ -1,6 +1,7 @@
 const User    = require("../models/User");
 const Patient = require("../models/Patient");
 const Doctor  = require("../models/Doctor");
+const Hospital= require("../models/Hospital");
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken, generateOTP } = require("../utils/jwtUtils");
 const { sendOTPEmail, sendPasswordResetEmail } = require("../utils/emailService");
 const crypto = require("crypto");
@@ -35,6 +36,21 @@ exports.register = async (req, res, next) => {
         licenseNumber: licenseNumber || "PENDING",
         experience:    experience    || 0,
         verificationStatus: "approved"
+      });
+    } else if (user.role === "hospital") {
+      const { hospitalName, registrationNumber, address, city, state, pincode, emergencyPhone, hospitalType } = req.body;
+      await Hospital.create({
+        user:               user._id,
+        hospitalName:       hospitalName       || name,
+        registrationNumber: registrationNumber || "PENDING",
+        address:            address            || "",
+        city:               city               || "",
+        state:              state              || "",
+        pincode:            pincode            || "",
+        phone:              phone              || "",
+        emergencyPhone:     emergencyPhone     || phone,
+        type:               hospitalType       || "private",
+        isVerified:         false,
       });
     }
 
@@ -102,6 +118,8 @@ exports.login = async (req, res, next) => {
           safeUser.profile = await Doctor.findOne({ user: user._id });
         } else if (safeUser.role === "patient") {
           safeUser.profile = await Patient.findOne({ user: user._id });
+        } else if (safeUser.role === "hospital") {
+          safeUser.profile = await Hospital.findOne({ user: user._id });
         }
 
         const payload = { id: user._id, role: user.role, email: user.email };
@@ -172,6 +190,15 @@ exports.login = async (req, res, next) => {
 
     const safeUser = user.toSafeObject();
     safeUser.role = (safeUser.role || "patient").toLowerCase();
+
+    // Attach role-specific profile
+    if (safeUser.role === "doctor") {
+      safeUser.profile = await Doctor.findOne({ user: user._id });
+    } else if (safeUser.role === "patient") {
+      safeUser.profile = await Patient.findOne({ user: user._id });
+    } else if (safeUser.role === "hospital") {
+      safeUser.profile = await Hospital.findOne({ user: user._id });
+    }
 
     res.json({
       success: true,

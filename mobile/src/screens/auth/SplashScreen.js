@@ -19,7 +19,7 @@ export default function SplashScreen({ navigation }) {
       setTimeout(() => {
         const store = useAuthStore.getState();
         if (store.isAuthenticated && store.user) {
-          const map = { doctor: 'DoctorTab', admin: 'AdminTab', patient: 'PatientTab' };
+          const map = { doctor: 'DoctorTab', patient: 'PatientTab' };
           navigation.replace(map[store.user.role] || 'PatientTab');
         } else {
           navigation.replace('Welcome');

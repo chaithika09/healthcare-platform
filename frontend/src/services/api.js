@@ -157,4 +157,12 @@ export const feedbackAPI = {
   getAll:         (params) => api.get("/feedback", { params }),
 };
 
+// ── Ambulance / Emergency ─────────────────────────────────────
+export const ambulanceAPI = {
+  request:        (data)   => api.post("/ambulance/request", data),
+  getMyRequests:  ()       => api.get("/ambulance/my-requests"),
+  getAllRequests:  (params) => api.get("/ambulance/requests", { params }),
+  updateRequest:  (id, data) => api.patch(`/ambulance/requests/${id}`, data),
+};
+
 export default api;

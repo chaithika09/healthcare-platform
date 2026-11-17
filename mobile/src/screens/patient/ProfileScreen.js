@@ -25,7 +25,7 @@ export default function ProfileScreen({ navigation }) {
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
       { text:'Cancel' },
-      { text:'Logout', style:'destructive', onPress: async () => { await logout(); navigation.replace('Auth'); } }
+      { text:'Logout', style:'destructive', onPress: async () => { await logout(); } }
     ]);
   };
 
@@ -59,8 +59,9 @@ export default function ProfileScreen({ navigation }) {
             <Card style={styles.menuCard}>
               <MenuItem icon="document-text-outline" label="Medical Records" onPress={() => navigation.navigate('Records')} />
               <MenuItem icon="medical-outline" label="Prescriptions" onPress={() => navigation.navigate('Prescriptions')} />
-              <MenuItem icon="flask-outline" label="Lab Tests" onPress={() => navigation.navigate('LabTests')} />
-              <MenuItem icon="fitness-outline" label="Medicine Reminders" onPress={() => {}} />
+                  <MenuItem icon="flask-outline"       label="Lab Tests"         onPress={() => navigation.navigate('LabTests')} />
+              <MenuItem icon="fitness-outline"     label="Medicine Reminders" onPress={() => {}} />
+              <MenuItem icon="alert-circle-outline" label="Emergency Support"  onPress={() => navigation.navigate('Emergency')} danger />
             </Card>
           </>
         )}

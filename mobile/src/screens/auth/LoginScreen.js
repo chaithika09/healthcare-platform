@@ -23,7 +23,8 @@ export default function LoginScreen({ navigation }) {
       const res = await authAPI.login({ email: email.trim(), password });
       const { user, token, refreshToken } = res.data.data;
       await setAuth(user, token, refreshToken);
-      const map = { doctor:'DoctorTab', admin:'AdminTab', patient:'PatientTab' };
+      const map = { doctor: 'DoctorTab', patient: 'PatientTab' };
+      // admin and hospital don't have dedicated mobile tabs — stay on patient view
       navigation.replace(map[user.role] || 'PatientTab');
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed. Please try again.';

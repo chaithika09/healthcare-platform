@@ -35,7 +35,7 @@ export default function DoctorDashboard({ navigation }) {
             <Text style={styles.greeting}>Good morning,</Text>
             <Text style={styles.name}>{user?.name || 'Doctor'} 👨‍⚕️</Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notifBtn}>
+          <TouchableOpacity onPress={() => {}} style={styles.notifBtn}>
             <Ionicons name="notifications-outline" size={22} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -57,10 +57,10 @@ export default function DoctorDashboard({ navigation }) {
         {/* Quick actions */}
         <View style={styles.actionsRow}>
           {[
-            { icon:'calendar', label:'Schedule', color:Colors.primary, route:'DoctorAppointments' },
-            { icon:'people', label:'Patients', color:'#8B5CF6', route:'Profile' },
-            { icon:'document-text', label:'Prescriptions', color:Colors.secondary, route:'Profile' },
-            { icon:'chatbubbles', label:'Chat', color:'#F59E0B', route:'Chat' },
+            { icon:'calendar',      label:'Schedule',      color:Colors.primary,  route:'DoctorApts' },
+            { icon:'people',        label:'Patients',      color:'#8B5CF6',       route:'DoctorPatients' },
+            { icon:'document-text', label:'Prescriptions', color:Colors.secondary, route:'DoctorPatients' },
+            { icon:'person',        label:'Profile',       color:'#F59E0B',       route:'DoctorProfile' },
           ].map(a => (
             <TouchableOpacity key={a.label} onPress={() => navigation.navigate(a.route)} style={styles.actionBtn}>
               <View style={[styles.actionIcon, { backgroundColor:a.color+'15' }]}>
@@ -74,7 +74,7 @@ export default function DoctorDashboard({ navigation }) {
         {/* Today appointments */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Today's Appointments</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('DoctorAppointments')}>
+          <TouchableOpacity onPress={() => navigation.navigate('DoctorApts')}>
             <Text style={styles.seeAll}>See all</Text>
           </TouchableOpacity>
         </View>

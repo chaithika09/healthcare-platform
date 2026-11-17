@@ -10,20 +10,35 @@ const TIME_SLOTS = ['09:00 AM', '10:30 AM', '01:30 PM', '03:00 PM', '04:30 PM'];
 
 export default function BookAppointmentScreen({ navigation, route }) {
   const doctor = route.params?.doctor || {
-    name: 'Dr. Sarah Johnson',
-    specialty: 'Cardiologist',
-    fee: 80,
-    rating: 4.9,
-    hospital: 'City Heart Institute',
+    name: 'Doctor',
+    specialty: 'General',
+    fee: 500,
+    rating: 4.8,
+    hospital: '',
   };
 
   const [type, setType] = useState('video');
-  const [selectedDate, setSelectedDate] = useState('Today (Jun 20)');
-  const [selectedSlot, setSelectedSlot] = useState('10:30 AM');
-  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
+  const [reason, setReason] = useState('');
 
-  const dates = ['Today (Jun 20)', 'Tomorrow (Jun 21)', 'Sat (Jun 22)', 'Sun (Jun 23)'];
+  // Build the next 5 available dates dynamically
+  const buildDates = () => {
+    const result = [];
+    const today  = new Date();
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      result.push({
+        label: i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-IN', { weekday:'short', month:'short', day:'numeric' }),
+        value: d.toISOString().split('T')[0],
+      });
+    }
+    return result;
+  };
+
+  const dates = buildDates();
+  const [selectedDate, setSelectedDate] = useState(dates[0].value);
+  const [selectedSlot, setSelectedSlot] = useState('10:30 AM');
 
   const handleBook = async () => {
     if (!reason.trim()) {
@@ -34,20 +49,23 @@ export default function BookAppointmentScreen({ navigation, route }) {
     setLoading(true);
     try {
       await appointmentAPI.book({
-        doctorId: doctor._id || 'doc123',
+        doctorId: doctor.user?._id || doctor._id,
         date: selectedDate,
         timeSlot: selectedSlot,
         type,
-        reason: reason.trim(),
-        fee: doctor.fee,
+        symptoms: reason.trim(),
       });
-      Alert.alert('Booking Confirmed!', `Your ${type} appointment with ${doctor.name} on ${selectedDate} at ${selectedSlot} has been booked.`, [
-        { text: 'View Appointments', onPress: () => navigation.navigate('Appointments') }
-      ]);
+      Alert.alert(
+        '✅ Booking Confirmed!',
+        `Your ${type === 'video' ? 'video' : 'in-clinic'} appointment with ${doctor.user?.name || doctor.name} on ${selectedDate} at ${selectedSlot} has been booked.`,
+        [{ text: 'View Appointments', onPress: () => navigation.navigate('PatientTab', { screen: 'Appointments' }) }]
+      );
     } catch {
-      Alert.alert('Booking Confirmed!', `Your ${type} appointment with ${doctor.name} has been recorded!`, [
-        { text: 'OK', onPress: () => navigation.navigate('PatientTab', { screen: 'Appointments' }) }
-      ]);
+      Alert.alert(
+        '✅ Appointment Recorded',
+        `Your appointment with ${doctor.user?.name || doctor.name} has been recorded.`,
+        [{ text: 'OK', onPress: () => navigation.navigate('PatientTab', { screen: 'Appointments' }) }]
+      );
     } finally {
       setLoading(false);
     }
@@ -59,15 +77,15 @@ export default function BookAppointmentScreen({ navigation, route }) {
       <Card style={styles.docCard}>
         <View style={styles.docRow}>
           <View style={styles.docAvatar}>
-            <Text style={styles.docAvatarText}>{doctor.name.charAt(0)}</Text>
+            <Text style={styles.docAvatarText}>{(doctor.user?.name || doctor.name || 'D').charAt(0)}</Text>
           </View>
           <View style={styles.docInfo}>
-            <Text style={styles.docName}>{doctor.name}</Text>
-            <Text style={styles.docSpec}>{doctor.specialty} · {doctor.hospital || 'General Clinic'}</Text>
+            <Text style={styles.docName}>{doctor.user?.name || doctor.name || 'Doctor'}</Text>
+            <Text style={styles.docSpec}>{doctor.specialty || 'General'}{doctor.hospital ? ` · ${doctor.hospital}` : ''}</Text>
             <View style={styles.ratingRow}>
               <Ionicons name="star" size={14} color="#F59E0B" />
               <Text style={styles.ratingTxt}>{doctor.rating || 4.8} (120+ reviews)</Text>
-              <Text style={styles.feeTxt}>${doctor.fee || 80}</Text>
+              <Text style={styles.feeTxt}>₹{doctor.consultationFee?.video || doctor.fee || 500}</Text>
             </View>
           </View>
         </View>
@@ -98,11 +116,11 @@ export default function BookAppointmentScreen({ navigation, route }) {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateScroll}>
         {dates.map((d) => (
           <TouchableOpacity
-            key={d}
-            style={[styles.dateChip, selectedDate === d && styles.dateChipActive]}
-            onPress={() => setSelectedDate(d)}
+            key={d.value}
+            style={[styles.dateChip, selectedDate === d.value && styles.dateChipActive]}
+            onPress={() => setSelectedDate(d.value)}
           >
-            <Text style={[styles.dateTxt, selectedDate === d && styles.dateTxtActive]}>{d}</Text>
+            <Text style={[styles.dateTxt, selectedDate === d.value && styles.dateTxtActive]}>{d.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>

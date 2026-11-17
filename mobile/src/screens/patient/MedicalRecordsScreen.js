@@ -75,7 +75,7 @@ export default function MedicalRecordsScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Upload FAB */}
-      <TouchableOpacity style={styles.fab} onPress={() => Alert.alert('Upload', 'Document picker coming soon')}>
+      <TouchableOpacity style={styles.fab} onPress={() => Alert.alert('Upload', 'Please use the web portal to upload documents at this time.')}>
         <Ionicons name="cloud-upload" size={22} color="#fff" />
       </TouchableOpacity>
 

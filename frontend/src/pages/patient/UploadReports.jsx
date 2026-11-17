@@ -66,6 +66,7 @@ export default function UploadReports() {
     formData.append("type",       data.type);
     formData.append("reportDate", data.date);
     formData.append("doctor",     data.doctor || "");
+    formData.append("hospital",   data.hospital || "");
     formData.append("notes",      data.notes  || "");
     // Backend uses upload.array("files", 5) — must use "files" field name
     files.forEach(f => formData.append("files", f.file));
@@ -220,27 +221,39 @@ export default function UploadReports() {
             </div>
           </div>
 
-          {/* Doctor — from real appointments */}
-          <div>
-            <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
-              Doctor / Hospital (optional)
-            </label>
-            {doctors.length > 0 ? (
-              <select
-                {...register("doctor")}
-                className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary-400"
-              >
-                <option value="">Select doctor or leave blank</option>
-                {doctors.map(d => <option key={d} value={d}>{d}</option>)}
-                <option value="other">Other / External Doctor</option>
-              </select>
-            ) : (
+          {/* Doctor & Hospital */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
+                Doctor (optional)
+              </label>
+              {doctors.length > 0 ? (
+                <select
+                  {...register("doctor")}
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary-400"
+                >
+                  <option value="">Select from your doctors</option>
+                  {doctors.map(d => <option key={d} value={d}>{d}</option>)}
+                  <option value="other">Other / External Doctor</option>
+                </select>
+              ) : (
+                <input
+                  {...register("doctor")}
+                  placeholder="Enter doctor name"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-400"
+                />
+              )}
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
+                Hospital / Clinic (optional)
+              </label>
               <input
-                {...register("doctor")}
-                placeholder="Enter doctor or hospital name"
+                {...register("hospital")}
+                placeholder="e.g. City General Hospital, Apollo"
                 className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary-400"
               />
-            )}
+            </div>
           </div>
 
           {/* Notes */}

@@ -33,7 +33,7 @@ export default function DoctorProfilePage() {
           education: data.education?.map(e => `${e.degree} - ${e.institution}`) || [],
           specializations: [data.specialty, ...(data.subSpecialties || [])].filter(Boolean),
           languages: data.languages?.length > 0 ? data.languages : ["English"],
-          hospital: data.hospital || "Medical Center",
+          hospital: data.hospital || null,
           consultationTypes: [
             data.consultationTypes?.video && "Video Call",
             data.consultationTypes?.inPerson && "In-Person"
@@ -120,9 +120,11 @@ export default function DoctorProfilePage() {
                       <span className="font-semibold">{doctor.rating}</span>
                       <span className="text-gray-400">({doctor.reviews})</span>
                     </span>
-                    <span className="flex items-center gap-1 text-sm text-gray-500">
-                      <FiMapPin size={13} /> {doctor.location}
-                    </span>
+                    {doctor.hospital && (
+                      <span className="flex items-center gap-1 text-sm text-gray-500">
+                        <FiMapPin size={13} /> {doctor.hospital}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1 text-sm text-gray-500">
                       <FiClock size={13} /> {doctor.experience} years exp.
                     </span>
@@ -202,15 +204,15 @@ export default function DoctorProfilePage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-gray-500">Fee per session</p>
-                  <p className="font-bold text-gray-900 text-lg">${doctor.fee}</p>
+                  <p className="font-bold text-gray-900 text-lg">₹{doctor.fee}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Languages</p>
                   <p className="font-medium text-gray-900">{doctor.languages.join(", ")}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Hospital</p>
-                  <p className="font-medium text-gray-900">{doctor.hospital}</p>
+                  <p className="text-gray-500">Hospital / Clinic</p>
+                  <p className="font-medium text-gray-900">{doctor.hospital || "Not specified"}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Consultation Types</p>

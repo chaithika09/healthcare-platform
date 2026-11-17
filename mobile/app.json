@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Required for profile photo and video consultations",
         "NSMicrophoneUsageDescription": "Required for video consultations",
-        "NSPhotoLibraryUsageDescription": "Required to upload medical records"
+        "NSPhotoLibraryUsageDescription": "Required to upload medical records",
+        "NSLocationWhenInUseUsageDescription": "Required to detect your location for emergency ambulance dispatch"
       }
     },
     "android": {
@@ -33,13 +34,16 @@
         "WRITE_EXTERNAL_STORAGE",
         "RECORD_AUDIO",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
       ]
     },
     "web": { "favicon": "./assets/favicon.png" },
     "plugins": [
       "expo-notifications",
       "expo-secure-store",
+      "expo-location",
       ["expo-image-picker", { "photosPermission": "Allow MedIQ+ to access your photos for uploading medical records." }]
     ],
     "extra": {

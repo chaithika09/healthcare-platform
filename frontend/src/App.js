@@ -51,6 +51,9 @@ const UserManagement    = lazy(() => import("./pages/admin/UserManagement"));
 const DoctorVerification= lazy(() => import("./pages/admin/DoctorVerification"));
 const AnalyticsDashboard= lazy(() => import("./pages/admin/AnalyticsDashboard"));
 const ActivityLogs      = lazy(() => import("./pages/admin/ActivityLogs"));
+const EmergencyDashboard= lazy(() => import("./pages/admin/EmergencyDashboard"));
+const HospitalDashboard = lazy(() => import("./pages/hospital/HospitalDashboard"));
+const HospitalRegister  = lazy(() => import("./pages/auth/HospitalRegisterPage"));
 
 // ── Shared Pages ──────────────────────────────────────────────
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
@@ -140,7 +143,8 @@ export default function App() {
     if (!user) return "/login";
     const role = user.role?.toLowerCase();
     if (role === "doctor") return "/doctor/dashboard";
-    if (role === "admin") return "/admin/dashboard";
+    if (role === "admin")  return "/admin/dashboard";
+    if (role === "hospital") return "/hospital/dashboard";
     return "/patient/dashboard";
   };
 
@@ -158,11 +162,12 @@ export default function App() {
 
         {/* ── Auth routes ── */}
         <Route element={<AuthLayout />}>
-          <Route path="/login"           element={<LoginPage />} />
-          <Route path="/register"        element={<RegisterPage />} />
-          <Route path="/verify-otp"      element={<OTPVerifyPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          <Route path="/login"            element={<LoginPage />} />
+          <Route path="/register"         element={<RegisterPage />} />
+          <Route path="/register/hospital" element={<HospitalRegister />} />
+          <Route path="/verify-otp"       element={<OTPVerifyPage />} />
+          <Route path="/forgot-password"  element={<ForgotPasswordPage />} />
+          <Route path="/reset-password"   element={<ResetPasswordPage />} />
         </Route>
 
         {/* ── Public doctor browsing (no login required) ── */}
@@ -198,6 +203,9 @@ export default function App() {
             <Route path="/admin/verify-doctors" element={<DoctorVerification />} />
             <Route path="/admin/analytics"      element={<AnalyticsDashboard />} />
             <Route path="/admin/logs"           element={<ActivityLogs />} />
+            <Route path="/admin/emergency"      element={<EmergencyDashboard />} />
+
+            {/* Hospital Portal — full-page, no sidebar layout */}
 
             {/* Shared */}
             <Route path="/video-call/:id"       element={<VideoConsultation />} />
@@ -229,6 +237,9 @@ export default function App() {
               : <Navigate to="/welcome" replace />
           }
         />
+
+        {/* ── Hospital Portal (standalone — no sidebar) ── */}
+        <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<NotFoundPage />} />

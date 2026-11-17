@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     phone:    { type: String, trim: true },
     role:     {
       type: String,
-      enum: ["patient", "doctor", "admin"],
+      enum: ["patient", "doctor", "admin", "hospital"],
       default: "patient",
       lowercase: true
     },

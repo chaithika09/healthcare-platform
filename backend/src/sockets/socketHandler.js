@@ -225,7 +225,24 @@ const sendNotification = (userId, notification) => {
   }
 };
 
+// Broadcast an emergency alert to ALL connected admin/hospital sockets
+const broadcastEmergency = (payload) => {
+  if (io) {
+    io.emit("ambulance:new-request", payload);
+  }
+};
+
+// Send ambulance status update to a specific patient
+const sendAmbulanceUpdate = (userId, payload) => {
+  if (io) {
+    io.to(`user:${userId}`).emit("ambulance:status-update", payload);
+  }
+};
+
+// Return the raw io instance (for use in route files)
+const getIO = () => io;
+
 // Check if user is online
 const isUserOnline = (userId) => onlineUsers.has(userId.toString());
 
-module.exports = { initSocket, sendNotification, isUserOnline };
+module.exports = { initSocket, sendNotification, broadcastEmergency, sendAmbulanceUpdate, getIO, isUserOnline };

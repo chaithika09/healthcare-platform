@@ -45,7 +45,7 @@ export default function DoctorsScreen({ navigation }) {
             </View>
           </View>
           <View style={styles.right}>
-            <Text style={styles.fee}>${d.consultationFee?.video || 150}</Text>
+            <Text style={styles.fee}>₹{d.consultationFee?.video || d.consultationFee?.inPerson || 500}</Text>
             <Text style={styles.feeLabel}>/session</Text>
             <TouchableOpacity style={styles.bookBtn} onPress={() => navigation.navigate('BookAppointment', { doctorId: d.user?._id, doctor: d })}>
               <Text style={styles.bookBtnText}>Book</Text>

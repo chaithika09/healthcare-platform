@@ -8,8 +8,9 @@ import { authAPI } from "../../services/api";
 import toast from "react-hot-toast";
 
 const DEMOS = {
-  patient: { email: "lschaithika+patient@gmail.com", password: "Demo@1234" },
-  doctor:  { email: "lschaithika+doctor@gmail.com",  password: "Demo@1234" },
+  patient:  { email: "lschaithika+patient@gmail.com", password: "Demo@1234" },
+  doctor:   { email: "lschaithika+doctor@gmail.com",  password: "Demo@1234" },
+  hospital: { email: "chaithikals09@gmail.com",        password: "Chaithika@09" },
 };
 
 export default function LoginPage() {
@@ -34,7 +35,7 @@ export default function LoginPage() {
     setAuth(user, token || "demo_token_" + Date.now(), refreshToken || "demo_refresh_" + Date.now());
     toast.success(`Welcome back, ${user.name}!`);
     const from = location.state?.from?.pathname;
-    const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard", admin: "/admin/dashboard" };
+    const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard", admin: "/admin/dashboard", hospital: "/hospital/dashboard" };
     navigate(from || dashMap[user.role] || "/patient/dashboard", { replace: true });
   };
 
@@ -110,6 +111,14 @@ export default function LoginPage() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => fillDemo("hospital")}
+          aria-label="Fill hospital credentials"
+          className="w-full mt-2 py-2 px-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-semibold text-red-700 transition-all shadow-sm text-center"
+        >
+          🏥 Hospital Emergency Portal
+        </button>
         <p className="text-xs text-primary-600 text-center mt-2">
           Click a role above to auto-fill credentials, then click <strong>Sign In</strong>
         </p>
@@ -206,6 +215,12 @@ export default function LoginPage() {
         Don't have an account?{" "}
         <Link to="/register" className="text-primary-600 font-semibold hover:text-primary-700">
           Create one
+        </Link>
+      </p>
+      <p className="text-center text-sm text-gray-500 mt-2">
+        Are you a hospital?{" "}
+        <Link to="/register/hospital" className="text-red-600 font-semibold hover:text-red-700">
+          Register Hospital Portal →
         </Link>
       </p>
     </motion.div>

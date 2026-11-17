@@ -39,13 +39,14 @@ const doctorNav = [
 
 // ── Admin Navigation ──
 const adminNav = [
-  { to: "/admin/dashboard",      icon: FiHome,        label: "Admin Dashboard" },
-  { to: "/admin/users",          icon: FiUsers,       label: "User Management" },
-  { to: "/admin/verify-doctors", icon: FiShield,      label: "Doctor Verification" },
-  { to: "/admin/analytics",      icon: FiBarChart2,   label: "Analytics" },
-  { to: "/admin/logs",           icon: FiActivity,    label: "Activity Logs" },
-  { to: "/feedback",             icon: FiStar,        label: "Feedback" },
-  { to: "/notifications",        icon: FiBell,        label: "Notifications" },
+  { to: "/admin/dashboard",      icon: FiHome,         label: "Admin Dashboard" },
+  { to: "/admin/users",          icon: FiUsers,        label: "User Management" },
+  { to: "/admin/verify-doctors", icon: FiShield,       label: "Doctor Verification" },
+  { to: "/admin/analytics",      icon: FiBarChart2,    label: "Analytics" },
+  { to: "/admin/emergency",      icon: FiAlertCircle,  label: "Emergency Alerts", badge: "LIVE" },
+  { to: "/admin/logs",           icon: FiActivity,     label: "Activity Logs" },
+  { to: "/feedback",             icon: FiStar,         label: "Feedback" },
+  { to: "/notifications",        icon: FiBell,         label: "Notifications" },
 ];
 
 const bottomNav = [
@@ -199,9 +200,14 @@ export default function Sidebar() {
                       initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -5 }}
-                      className="whitespace-nowrap"
+                      className="whitespace-nowrap flex items-center gap-2"
                     >
                       {item.label}
+                      {item.badge && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white animate-pulse leading-none">
+                          {item.badge}
+                        </span>
+                      )}
                     </motion.span>
                   )}
                 </AnimatePresence>
