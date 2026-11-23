@@ -6,7 +6,7 @@ import {
   FiUsers, FiSettings, FiBell, FiLogOut, FiActivity,
   FiShield, FiBarChart2, FiClipboard, FiHeart, FiAlertCircle,
   FiBook, FiStar, FiHelpCircle, FiChevronLeft, FiChevronRight,
-  FiUser, FiDroplet, FiUpload} from "react-icons/fi";
+  FiUser, FiUpload} from "react-icons/fi";
 import { useAuthStore } from "../../store/authStore";
 import { useUIStore } from "../../store/uiStore";
 import { LogoIcon } from "../common/Logo";

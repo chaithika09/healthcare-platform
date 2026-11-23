@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiTruck, FiMapPin, FiPhone, FiClock, FiAlertCircle,
-  FiCheckCircle, FiRefreshCw, FiExternalLink, FiEdit3,
+  FiCheckCircle, FiRefreshCw, FiExternalLink,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { ambulanceAPI } from "../../services/api";
@@ -17,12 +17,14 @@ const STATUS_CFG = {
   cancelled:  { bg: "bg-gray-50 dark:bg-slate-800",    text: "text-gray-500 dark:text-slate-400", dot: "bg-gray-400",   label: "Cancelled"  },
 };
 
+// eslint-disable-next-line no-unused-vars
 const STATUS_FLOW = ["pending", "dispatched", "arrived", "completed"];
 
 export default function EmergencyDashboard() {
   const { token } = useAuthStore();
   const [requests,  setRequests]  = useState([]);
   const [loading,   setLoading]   = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [selected,  setSelected]  = useState(null);
   const [updating,  setUpdating]  = useState(null);
   const [filterStatus, setFilter] = useState("all");

@@ -11,7 +11,7 @@ router.post("/register",
     body("email").isEmail().normalizeEmail().withMessage("Valid email required"),
     body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters")
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage("Password must include uppercase, lowercase, and number"),
-    body("role").optional().isIn(["patient", "doctor"]).withMessage("Role must be patient or doctor"),
+    body("role").optional().isIn(["patient", "doctor", "hospital"]).withMessage("Role must be patient, doctor, or hospital"),
   ],
   validate,
   authController.register

@@ -57,6 +57,7 @@ const HospitalRegister  = lazy(() => import("./pages/auth/HospitalRegisterPage")
 
 // ── Shared Pages ──────────────────────────────────────────────
 const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
+// eslint-disable-next-line no-unused-vars
 const UserProfile       = lazy(() => import("./pages/UserProfile"));
 const EditProfile       = lazy(() => import("./pages/EditProfile"));
 const SettingsPage      = lazy(() => import("./pages/SettingsPage"));

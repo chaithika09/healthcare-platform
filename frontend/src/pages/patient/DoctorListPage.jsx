@@ -22,6 +22,7 @@ export default function DoctorListPage() {
   const [consultType, setConsultType] = useState("all"); // 'all' | 'video' | 'in-person'
   const [priceRange, setPriceRange] = useState(500);
   const [doctors, setDoctors] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

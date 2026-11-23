@@ -16,6 +16,7 @@ export default function LabTestBooking() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [homeCollection, setHomeCollection] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [booking, setBooking] = useState(false);
   const [activeTab, setActiveTab] = useState("book"); // "book" | "bookings"
   const [myBookings, setMyBookings] = useState([]);
