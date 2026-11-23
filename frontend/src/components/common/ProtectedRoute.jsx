@@ -11,7 +11,12 @@ export default function ProtectedRoute({ allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    const dashMap = { patient: "/patient/dashboard", doctor: "/doctor/dashboard", admin: "/admin/dashboard" };
+    const dashMap = {
+      patient:  "/patient/dashboard",
+      doctor:   "/doctor/dashboard",
+      admin:    "/admin/dashboard",
+      hospital: "/hospital/dashboard",
+    };
     return <Navigate to={dashMap[user?.role] || "/login"} replace />;
   }
 

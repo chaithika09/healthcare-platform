@@ -161,21 +161,26 @@ export default function App() {
         <Route path="/welcome"     element={<WelcomePage />} />
         <Route path="/onboarding"  element={<OnboardingPage />} />
 
-        {/* ── Auth routes ── */}
+        {/* ── Auth routes (public) ── */}
         <Route element={<AuthLayout />}>
-          <Route path="/login"            element={<LoginPage />} />
-          <Route path="/register"         element={<RegisterPage />} />
+          <Route path="/login"             element={<LoginPage />} />
+          <Route path="/register"          element={<RegisterPage />} />
           <Route path="/register/hospital" element={<HospitalRegister />} />
-          <Route path="/verify-otp"       element={<OTPVerifyPage />} />
-          <Route path="/forgot-password"  element={<ForgotPasswordPage />} />
-          <Route path="/reset-password"   element={<ResetPasswordPage />} />
+          <Route path="/verify-otp"        element={<OTPVerifyPage />} />
+          <Route path="/forgot-password"   element={<ForgotPasswordPage />} />
+          <Route path="/reset-password"    element={<ResetPasswordPage />} />
         </Route>
 
         {/* ── Public doctor browsing (no login required) ── */}
-        <Route path="/doctors"              element={<DoctorListPage />} />
-        <Route path="/doctors/:id"          element={<DoctorProfilePage />} />
+        <Route path="/doctors"     element={<DoctorListPage />} />
+        <Route path="/doctors/:id" element={<DoctorProfilePage />} />
 
-        {/* ── Protected app routes ── */}
+        {/* ── HOSPITAL PORTAL — protected, NO sidebar ── */}
+        <Route element={<ProtectedRoute allowedRoles={["hospital", "admin"]} />}>
+          <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
+        </Route>
+
+        {/* ── All other protected routes — with sidebar ── */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
 
@@ -206,15 +211,11 @@ export default function App() {
             <Route path="/admin/logs"           element={<ActivityLogs />} />
             <Route path="/admin/emergency"      element={<EmergencyDashboard />} />
 
-            {/* Hospital Portal — full-page, no sidebar layout */}
-
             {/* Shared */}
             <Route path="/video-call/:id"       element={<VideoConsultation />} />
             <Route path="/chat"                 element={<ChatPage />} />
             <Route path="/chat/:id"             element={<ChatPage />} />
             <Route path="/notifications"        element={<NotificationsPage />} />
-
-
             <Route path="/profile/edit"         element={<EditProfile />} />
             <Route path="/settings"             element={<SettingsPage />} />
             <Route path="/articles"             element={<HealthArticles />} />
@@ -238,9 +239,6 @@ export default function App() {
               : <Navigate to="/welcome" replace />
           }
         />
-
-        {/* ── Hospital Portal (standalone — no sidebar) ── */}
-        <Route path="/hospital/dashboard" element={<HospitalDashboard />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<NotFoundPage />} />

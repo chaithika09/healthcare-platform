@@ -98,27 +98,23 @@ export default function LoginPage() {
         <p className="text-xs font-bold text-primary-900 mb-2 flex items-center gap-1.5">
           💡 Quick Fill Demo Credentials:
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          {["patient", "doctor"].map((role) => (
+        <div className="grid grid-cols-3 gap-2">
+          {["patient", "doctor", "hospital"].map((role) => (
             <button
               key={role}
               type="button"
               onClick={() => fillDemo(role)}
               aria-label={`Fill ${role} credentials`}
-              className="py-2 px-2 bg-white hover:bg-primary-100 border border-primary-200 rounded-xl text-xs font-semibold text-primary-700 transition-all capitalize shadow-sm text-center"
+              className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all shadow-sm text-center border ${
+                role === "hospital"
+                  ? "bg-red-50 hover:bg-red-100 border-red-200 text-red-700"
+                  : "bg-white hover:bg-primary-100 border-primary-200 text-primary-700"
+              }`}
             >
-              {role === "patient" ? "🧑‍⚕️ Patient" : "👨‍⚕️ Doctor"}
+              {role === "patient" ? "🧑‍⚕️ Patient" : role === "doctor" ? "👨‍⚕️ Doctor" : "🏥 Hospital"}
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={() => fillDemo("hospital")}
-          aria-label="Fill hospital credentials"
-          className="w-full mt-2 py-2 px-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-semibold text-red-700 transition-all shadow-sm text-center"
-        >
-          🏥 Hospital Emergency Portal
-        </button>
         <p className="text-xs text-primary-600 text-center mt-2">
           Click a role above to auto-fill credentials, then click <strong>Sign In</strong>
         </p>
@@ -193,16 +189,20 @@ export default function LoginPage() {
         <p className="text-xs text-gray-400 text-center mb-3">
           ⚡ Demo Accounts (Click for Instant Sign-In)
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          {["patient", "doctor"].map((role) => (
+        <div className="grid grid-cols-3 gap-2">
+          {["patient", "doctor", "hospital"].map((role) => (
             <button
               key={role}
               type="button"
               onClick={() => fillDemo(role)}
               aria-label={`Sign in as demo ${role}`}
-              className="py-2 px-3 rounded-xl border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-primary-300 transition-all capitalize"
+              className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all capitalize ${
+                role === "hospital"
+                  ? "border-red-200 text-red-600 hover:bg-red-50"
+                  : "border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-primary-300"
+              }`}
             >
-              {role === "patient" ? "🧑‍⚕️ Patient" : "👨‍⚕️ Doctor"}
+              {role === "patient" ? "🧑‍⚕️ Patient" : role === "doctor" ? "👨‍⚕️ Doctor" : "🏥 Hospital"}
             </button>
           ))}
         </div>
