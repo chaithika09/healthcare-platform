@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiSearch, FiFilter, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
+import { FiSearch, FiStar, FiMapPin, FiClock, FiVideo, FiSliders } from "react-icons/fi";
 import { doctorAPI } from "../../services/api";
 
 const specialties = ["All", "General", "Cardiologist", "Neurologist", "Dermatologist", "Pediatrician", "Orthopedic", "Gynecologist", "Psychiatrist", "Ophthalmologist"];

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiTruck, FiMapPin, FiPhone, FiClock, FiAlertCircle,
-  FiCheckCircle, FiRefreshCw, FiExternalLink, FiBell,
-  FiHome, FiUsers, FiActivity,
+  FiCheckCircle, FiRefreshCw, FiExternalLink,
+  FiActivity,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../store/authStore";
