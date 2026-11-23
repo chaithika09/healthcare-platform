@@ -61,11 +61,31 @@ router.put("/profile", async (req, res, next) => {
 });
 
 // ── GET /hospital/emergencies ─────────────────────────────────
-// Get all incoming ambulance/emergency requests (live feed)
+// Smart feed:
+//   - "pending" requests → ALL hospitals can see (first to respond wins)
+//   - non-pending requests → only the hospital that claimed it
 router.get("/emergencies", async (req, res, next) => {
   try {
     const { status, page = 1, limit = 50 } = req.query;
-    const query = status && status !== "all" ? { status } : {};
+
+    let query;
+    if (status && status !== "all") {
+      if (status === "pending") {
+        // All hospitals see all pending
+        query = { status: "pending" };
+      } else {
+        // Only show non-pending requests that this hospital responded to
+        query = { status, respondedBy: req.user._id };
+      }
+    } else {
+      // "all" tab: pending (everyone) + this hospital's claimed requests
+      query = {
+        $or: [
+          { status: "pending" },
+          { respondedBy: req.user._id },
+        ],
+      };
+    }
 
     const total    = await AmbulanceRequest.countDocuments(query);
     const requests = await AmbulanceRequest.find(query)
@@ -74,27 +94,54 @@ router.get("/emergencies", async (req, res, next) => {
       .skip((page - 1) * parseInt(limit))
       .limit(parseInt(limit));
 
-    // Count by status
-    const counts = await AmbulanceRequest.aggregate([
-      { $group: { _id: "$status", count: { $sum: 1 } } },
+    // Count for THIS hospital's view
+    const [pendingCount, dispatchedCount, arrivedCount, completedCount] = await Promise.all([
+      AmbulanceRequest.countDocuments({ status: "pending" }),
+      AmbulanceRequest.countDocuments({ status: "dispatched", respondedBy: req.user._id }),
+      AmbulanceRequest.countDocuments({ status: "arrived",    respondedBy: req.user._id }),
+      AmbulanceRequest.countDocuments({ status: "completed",  respondedBy: req.user._id }),
     ]);
-    const statusCounts = counts.reduce((acc, c) => {
-      acc[c._id] = c.count;
-      return acc;
-    }, {});
 
-    res.json({ success: true, data: { requests, total, statusCounts } });
+    res.json({
+      success: true,
+      data: {
+        requests,
+        total,
+        statusCounts: {
+          pending:    pendingCount,
+          dispatched: dispatchedCount,
+          arrived:    arrivedCount,
+          completed:  completedCount,
+        },
+      },
+    });
   } catch (error) { next(error); }
 });
 
 // ── PATCH /hospital/emergencies/:id ──────────────────────────
-// Hospital responds to an emergency — update status, dispatch unit
+// Hospital responds — record which hospital claimed it
 router.patch("/emergencies/:id", async (req, res, next) => {
   try {
     const { status, assignedUnit, eta, responseNotes } = req.body;
 
-    const hospital = await Hospital.findOne({ user: req.user._id });
+    const hospital     = await Hospital.findOne({ user: req.user._id });
     const hospitalName = hospital?.hospitalName || req.user.name;
+
+    // If dispatching, check request isn't already claimed by another hospital
+    const existing = await AmbulanceRequest.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Emergency request not found" });
+    }
+    if (
+      existing.status !== "pending" &&
+      existing.respondedBy &&
+      existing.respondedBy.toString() !== req.user._id.toString()
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: `This emergency has already been claimed by ${existing.respondedByName || "another hospital"}.`,
+      });
+    }
 
     const request = await AmbulanceRequest.findByIdAndUpdate(
       req.params.id,
@@ -103,38 +150,35 @@ router.patch("/emergencies/:id", async (req, res, next) => {
         ...(assignedUnit && { assignedUnit }),
         ...(eta          && { eta }),
         ...(responseNotes && { notes: responseNotes }),
-        respondedAt: new Date(),
+        // Record which hospital claimed this request
+        respondedBy:     req.user._id,
+        respondedByName: hospitalName,
+        respondedAt:     new Date(),
         ...(status === "completed" && { completedAt: new Date() }),
       },
       { new: true }
     ).populate("patient", "name email phone _id");
 
-    if (!request) {
-      return res.status(404).json({ success: false, message: "Emergency request not found" });
-    }
-
-    // Build the message the patient will see
+    // Status messages shown to patient
     const statusMessages = {
       dispatched: `🚑 ${hospitalName} has dispatched ${assignedUnit || "an ambulance"}! ETA: ${eta || "8–12 minutes"}. Stay calm.`,
       arrived:    `🏥 Ambulance from ${hospitalName} has arrived at your location.`,
       completed:  `✅ Emergency case handled by ${hospitalName}. Please ensure you receive proper care.`,
       cancelled:  `⚠️ ${hospitalName} cancelled the request. Please call 108 immediately.`,
     };
+    const patientMessage = statusMessages[status] || `${hospitalName}: status updated to ${status}`;
 
-    const patientMessage = statusMessages[status] || `${hospitalName}: Ambulance status updated to ${status}`;
-
-    // Push socket update to patient
+    // Notify patient via socket + in-app notification
     if (request.patient?._id) {
       sendAmbulanceUpdate(request.patient._id.toString(), {
-        requestId:    request._id,
+        requestId: request._id,
         status,
         assignedUnit,
         eta,
-        message:      patientMessage,
+        message:   patientMessage,
         hospitalName,
       });
 
-      // Create in-app notification for patient
       const notif = await Notification.create({
         recipient: request.patient._id,
         type:      "alert",
@@ -147,31 +191,40 @@ router.patch("/emergencies/:id", async (req, res, next) => {
       sendNotification(request.patient._id.toString(), notif);
     }
 
-    logger.info(`Hospital ${hospitalName} updated emergency ${request._id} to ${status}`);
+    logger.info(`Hospital "${hospitalName}" updated emergency ${request._id} → ${status}`);
     res.json({ success: true, message: "Emergency updated", data: { request } });
   } catch (error) { next(error); }
 });
 
 // ── GET /hospital/dashboard ───────────────────────────────────
-// Dashboard stats for the hospital
 router.get("/dashboard", async (req, res, next) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [total, todayCount, pending, dispatched, completed, hospital] = await Promise.all([
-      AmbulanceRequest.countDocuments({}),
-      AmbulanceRequest.countDocuments({ createdAt: { $gte: today } }),
+    const myId = req.user._id;
+
+    const [total, todayCount, pending, dispatched, arrived, completed, hospital] = await Promise.all([
+      // Total = pending (all) + this hospital's claimed
+      AmbulanceRequest.countDocuments({
+        $or: [{ status: "pending" }, { respondedBy: myId }],
+      }),
+      // Today's requests this hospital can see
+      AmbulanceRequest.countDocuments({
+        createdAt: { $gte: today },
+        $or: [{ status: "pending" }, { respondedBy: myId }],
+      }),
       AmbulanceRequest.countDocuments({ status: "pending" }),
-      AmbulanceRequest.countDocuments({ status: "dispatched" }),
-      AmbulanceRequest.countDocuments({ status: "completed" }),
-      Hospital.findOne({ user: req.user._id }),
+      AmbulanceRequest.countDocuments({ status: "dispatched", respondedBy: myId }),
+      AmbulanceRequest.countDocuments({ status: "arrived",    respondedBy: myId }),
+      AmbulanceRequest.countDocuments({ status: "completed",  respondedBy: myId }),
+      Hospital.findOne({ user: myId }),
     ]);
 
     res.json({
       success: true,
       data: {
-        stats: { total, todayCount, pending, dispatched, completed },
+        stats: { total, todayCount, pending, dispatched, arrived, completed },
         hospital,
       },
     });

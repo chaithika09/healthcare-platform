@@ -14,6 +14,9 @@ const ambulanceRequestSchema = new mongoose.Schema(
       enum: ["pending", "dispatched", "arrived", "completed", "cancelled"],
       default: "pending",
     },
+    // Which hospital claimed/responded to this request
+    respondedBy:   { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    respondedByName: String,
     assignedUnit:  String,
     eta:           String,
     respondedAt:   Date,

@@ -119,11 +119,14 @@ router.post("/request", authenticate, async (req, res, next) => {
       createdAt:     request.createdAt,
     });
 
-    // 3. Create in-app Notification for all admins AND hospitals (non-blocking)
-    User.find({ role: { $in: ["admin", "hospital"] } }).select("_id").lean()
-      .then(async (admins) => {
-        const notifs = admins.map((a) => ({
-          recipient: a._id,
+    // 3. Create in-app Notification + send email to ALL registered hospitals (non-blocking)
+    User.find({ role: { $in: ["admin", "hospital"] } })
+      .select("_id email name")
+      .lean()
+      .then(async (recipients) => {
+        // In-app notifications
+        const notifs = recipients.map((r) => ({
+          recipient: r._id,
           type:      "alert",
           title:     `🚨 Ambulance Request — ${request.emergencyType}`,
           message:   `${req.user.name} needs emergency help at: ${location.trim().slice(0, 80)}`,
@@ -131,24 +134,30 @@ router.post("/request", authenticate, async (req, res, next) => {
         }));
         if (notifs.length > 0) {
           const created = await Notification.insertMany(notifs);
-          // Push each admin notification via socket
           created.forEach((n) => sendNotification(n.recipient.toString(), n));
         }
-      })
-      .catch((e) => logger.error("Admin notification error:", e.message));
 
-    // 4. Send email to hospital/admin (non-blocking)
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const { subject, html } = buildEmergencyEmail(request, mapsLink);
-      transporter.sendMail({
-        from:    `"MedIQ Emergency 🚑" <${process.env.SMTP_USER}>`,
-        to:      process.env.EMERGENCY_EMAIL || process.env.SMTP_USER,
-        subject,
-        html,
+        // Send email to EVERY registered hospital + admin
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+          const { subject, html } = buildEmergencyEmail(request, mapsLink);
+          const hospitalEmails = recipients.map((r) => r.email).filter(Boolean);
+          // Always include the fixed emergency email too
+          if (process.env.EMERGENCY_EMAIL && !hospitalEmails.includes(process.env.EMERGENCY_EMAIL)) {
+            hospitalEmails.push(process.env.EMERGENCY_EMAIL);
+          }
+          if (hospitalEmails.length > 0) {
+            transporter.sendMail({
+              from:    `"MedIQ Emergency 🚑" <${process.env.SMTP_USER}>`,
+              to:      hospitalEmails.join(","),
+              subject,
+              html,
+            })
+              .then(() => logger.info(`Emergency email sent to ${hospitalEmails.length} recipient(s): ${hospitalEmails.join(", ")}`))
+              .catch((e) => logger.error("Emergency email failed:", e.message));
+          }
+        }
       })
-        .then(() => logger.info(`Emergency email sent for request ${request._id}`))
-        .catch((e) => logger.error("Emergency email failed:", e.message));
-    }
+      .catch((e) => logger.error("Notification/email error:", e.message));
 
     logger.info(`Ambulance request created: ${request._id} by ${req.user.email}`);
 

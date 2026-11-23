@@ -100,8 +100,12 @@ export default function HospitalDashboard() {
       await api.patch(`/hospital/emergencies/${id}`, { status, ...extra });
       toast.success(`Marked as ${status}`);
       await load();
-    } catch {
-      toast.error("Failed to update");
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error(err.response.data.message || "Already claimed by another hospital");
+      } else {
+        toast.error("Failed to update");
+      }
     } finally {
       setUpdating(null);
     }
@@ -306,6 +310,13 @@ export default function HospitalDashboard() {
                           {req.notes && (
                             <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 italic bg-gray-50 dark:bg-slate-800 rounded-xl px-3 py-2">
                               📝 {req.notes}
+                            </p>
+                          )}
+
+                          {/* Show which hospital claimed this */}
+                          {req.respondedByName && req.status !== "pending" && (
+                            <p className="text-xs font-semibold mt-2 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-xl inline-block">
+                              🏥 Claimed by: {req.respondedByName}
                             </p>
                           )}
 
