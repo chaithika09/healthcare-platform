@@ -38,6 +38,7 @@ export default function EmergencySupport() {
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
   const [editingLocation, setEditingLocation] = useState(false);
   const [hospitalCount,   setHospitalCount]   = useState(0);
+  const [selectedHospital, setSelectedHospital] = useState(null);
   const hasDetected = useRef(false);
 
   const detectGPS = () => {
@@ -116,10 +117,11 @@ export default function EmergencySupport() {
 
     try {
       const res = await ambulanceAPI.request({
-        location:      location.trim(),
+        location:         location.trim(),
         gpsCoords,
         emergencyType,
         notes,
+        targetHospital:   selectedHospital?.name || null,
       });
       setRequestData(res.data?.data);
       setStep("done");
@@ -143,6 +145,7 @@ export default function EmergencySupport() {
     setGpsCoords(null);
     setGpsError("");
     setNotes("");
+    setSelectedHospital(null);
     hasDetected.current = false;
     setTimeout(() => detectGPS(), 100);
   };
@@ -163,6 +166,9 @@ export default function EmergencySupport() {
 
           <div className="text-left mt-4 space-y-2 text-sm bg-white/5 rounded-2xl p-4">
             <p className="text-white flex items-center gap-2">🚑 Unit dispatched to your location</p>
+            {selectedHospital && (
+              <p className="text-green-300 font-semibold">🏥 Sent to: {selectedHospital.name} ({selectedHospital.dist})</p>
+            )}
             <p className="text-orange-300 flex items-start gap-2">
               <FiMapPin size={14} className="mt-0.5 flex-shrink-0" />
               {location}
@@ -363,44 +369,94 @@ export default function EmergencySupport() {
           <><FiLoader size={28} className="animate-spin" /> Alerting Hospitals…</>
         ) : step === "detecting" ? (
           <><FiLoader size={28} className="animate-spin" /> Getting Location…</>
+        ) : selectedHospital ? (
+          <><FiTruck size={28} /> 🚨 Send SOS to {selectedHospital.name}</>
         ) : (
-          <><FiTruck size={28} /> 🚨 SOS — Send Emergency Alert</>
+          <><FiTruck size={28} /> 🚨 SOS — Alert Nearest Hospital</>
         )}
       </motion.button>
       <p className="text-center text-xs text-gray-400 dark:text-slate-500 -mt-2">
         Alerts nearest hospitals + dials 108 automatically
       </p>
 
-      {/* Nearby hospitals preview */}
+      {/* Nearby hospitals — SELECTABLE */}
       {nearbyHospitals.length > 0 && (
         <div className="space-y-2">
-          <p className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
-            🏥 Hospitals Near You
-            <span className="text-xs font-normal text-gray-400">({nearbyHospitals.length} found)</span>
+          <div className="flex items-center justify-between">
+            <p className="font-bold text-gray-900 dark:text-white text-sm">
+              🏥 Select a Hospital to Request
+            </p>
+            {selectedHospital && (
+              <button onClick={() => setSelectedHospital(null)}
+                className="text-xs text-gray-400 hover:text-gray-600 underline">
+                Clear selection
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 dark:text-slate-500">
+            Tap a hospital to send your request directly to them. Or press SOS to alert the nearest one automatically.
           </p>
           {nearbyHospitals.map((h, i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-lg flex-shrink-0">🏥</div>
+            <motion.button
+              key={i}
+              onClick={() => setSelectedHospital(selectedHospital?.name === h.name ? null : h)}
+              whileTap={{ scale: 0.98 }}
+              className={`w-full text-left rounded-2xl p-4 flex items-center gap-3 border-2 transition-all ${
+                selectedHospital?.name === h.name
+                  ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                  : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-red-200"
+              }`}
+            >
+              {/* Rank badge */}
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 ${
+                i === 0
+                  ? "bg-green-500 text-white"
+                  : selectedHospital?.name === h.name
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300"
+              }`}>
+                {i === 0 ? "⭐" : `#${i + 1}`}
+              </div>
+
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{h.name}</p>
+                <p className={`font-bold text-sm truncate ${
+                  selectedHospital?.name === h.name
+                    ? "text-red-700 dark:text-red-300"
+                    : "text-gray-900 dark:text-white"
+                }`}>
+                  {h.name}
+                  {i === 0 && <span className="ml-2 text-xs font-semibold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Nearest</span>}
+                </p>
                 <p className="text-xs text-gray-400 truncate">{h.address}</p>
                 <div className="flex gap-3 mt-1 text-xs text-gray-400">
                   <span className="flex items-center gap-1"><FiMapPin size={10} /> {h.dist}</span>
                   <span className="flex items-center gap-1"><FiClock size={10} /> {h.time} drive</span>
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <a href={h.mapsUrl} target="_blank" rel="noreferrer"
-                  className="text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-xl transition-colors">
-                  <FiNavigation size={11} className="inline mr-1" />Go
-                </a>
-                <a href="tel:108"
-                  className="text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-colors text-center">
-                  108
-                </a>
+
+              {/* Selection indicator */}
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                selectedHospital?.name === h.name
+                  ? "border-red-500 bg-red-500"
+                  : "border-gray-300 dark:border-slate-600"
+              }`}>
+                {selectedHospital?.name === h.name && (
+                  <FiCheckCircle size={14} color="white" />
+                )}
               </div>
-            </div>
+            </motion.button>
           ))}
+
+          {/* Selection status */}
+          {selectedHospital ? (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-3 text-sm text-red-700 dark:text-red-300 font-semibold flex items-center gap-2">
+              🏥 Request will go to: <strong>{selectedHospital.name}</strong> ({selectedHospital.dist})
+            </div>
+          ) : (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-3 text-xs text-blue-600 dark:text-blue-400">
+              💡 No hospital selected — SOS will automatically alert the <strong>nearest registered hospital</strong>
+            </div>
+          )}
         </div>
       )}
     </div>
