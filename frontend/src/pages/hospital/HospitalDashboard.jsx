@@ -233,7 +233,24 @@ export default function HospitalDashboard() {
         {/* ── EMERGENCY REQUESTS TAB ── */}
         {activeTab === "emergencies" && (
           <>
-            {/* Filter chips */}
+            {/* ── GPS Warning if not set ── */}
+        {activeTab === "emergencies" && hospital && !hospital.location?.lat && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-start gap-3">
+            <span className="text-2xl flex-shrink-0">⚠️</span>
+            <div className="flex-1">
+              <p className="font-bold text-amber-800 dark:text-amber-200 text-sm">GPS not set — you are receiving ALL emergency alerts</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                Set your hospital GPS location in the <strong>🏥 Hospital Profile</strong> tab so only nearby patients alert your hospital.
+              </p>
+            </div>
+            <button onClick={() => setActiveTab("profile")}
+              className="text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 px-3 py-2 rounded-xl whitespace-nowrap transition-colors">
+              Set GPS →
+            </button>
+          </div>
+        )}
+
+        {/* Filter chips */}
             <div className="flex gap-2 flex-wrap">
               {["all", "pending", "dispatched", "arrived", "completed", "cancelled"].map(s => (
                 <button key={s} onClick={() => setFilter(s)}
@@ -425,6 +442,51 @@ export default function HospitalDashboard() {
                   <p className="text-gray-900 dark:text-white font-semibold mt-0.5">{f.value || "—"}</p>
                 </div>
               ))}
+            </div>
+
+            {/* GPS Location Setup */}
+            <div className="mt-6 p-4 rounded-2xl border-2 border-dashed border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10">
+              <p className="font-bold text-red-800 dark:text-red-300 text-sm mb-1 flex items-center gap-2">
+                📍 Hospital GPS Location
+                {hospital.location?.lat
+                  ? <span className="text-green-600 dark:text-green-400 font-bold text-xs bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">✅ Set</span>
+                  : <span className="text-red-600 font-bold text-xs bg-red-100 px-2 py-0.5 rounded-full">⚠️ Not Set</span>
+                }
+              </p>
+              {hospital.location?.lat ? (
+                <p className="text-xs text-green-700 dark:text-green-400 mb-3">
+                  GPS: {hospital.location.lat.toFixed(5)}, {hospital.location.lng.toFixed(5)}<br/>
+                  ✅ Emergency requests within range will be routed to your hospital first.
+                </p>
+              ) : (
+                <p className="text-xs text-red-700 dark:text-red-400 mb-3">
+                  ⚠️ <strong>GPS not set.</strong> Without GPS, your hospital receives ALL emergency alerts regardless of distance.<br/>
+                  Set your location so only nearby patients alert your hospital.
+                </p>
+              )}
+              <button
+                onClick={async () => {
+                  if (!navigator.geolocation) { alert("GPS not supported in this browser."); return; }
+                  toast("📍 Detecting your hospital location...", { icon: "⏳" });
+                  navigator.geolocation.getCurrentPosition(
+                    async (pos) => {
+                      const { latitude: lat, longitude: lng } = pos.coords;
+                      try {
+                        await api.put("/hospital/profile", { location: { lat, lng } });
+                        toast.success(`✅ Hospital GPS saved: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                        load(); // refresh dashboard
+                      } catch {
+                        toast.error("Failed to save GPS. Please try again.");
+                      }
+                    },
+                    () => toast.error("Could not get GPS. Please allow location access."),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                  );
+                }}
+                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                📍 {hospital.location?.lat ? "Update My Hospital Location" : "Set My Hospital Location (Required for Proximity Alerts)"}
+              </button>
             </div>
           </div>
         )}

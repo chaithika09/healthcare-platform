@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   FiPhone, FiMapPin, FiAlertCircle, FiTruck,
-  FiHeart, FiCheckCircle, FiNavigation, FiLoader,
-  FiExternalLink, FiClock, FiAlertTriangle, FiWifi, FiEdit2
+  FiCheckCircle, FiNavigation, FiLoader,
+  FiClock, FiEdit2
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { ambulanceAPI } from "../../services/api";
@@ -40,13 +40,6 @@ export default function EmergencySupport() {
   const [hospitalCount,   setHospitalCount]   = useState(0);
   const hasDetected = useRef(false);
 
-  // ── Auto-detect GPS as soon as page loads ──────────────────
-  useEffect(() => {
-    if (hasDetected.current) return;
-    hasDetected.current = true;
-    detectGPS();
-  }, []);
-
   const detectGPS = () => {
     if (!navigator.geolocation) {
       setGpsError("GPS not supported. Please type your address.");
@@ -57,8 +50,6 @@ export default function EmergencySupport() {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lng } }) => {
         setGpsCoords({ lat, lng });
-
-        // Reverse geocode using OpenStreetMap
         try {
           const res  = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
@@ -68,8 +59,6 @@ export default function EmergencySupport() {
         } catch {
           setLocation(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         }
-
-        // Find nearby real hospitals from OpenStreetMap
         findNearbyHospitals(lat, lng);
         setStep("ready");
       },
@@ -83,6 +72,13 @@ export default function EmergencySupport() {
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
+
+  // ── Auto-detect GPS as soon as page loads ──────────────────
+  useEffect(() => {
+    if (hasDetected.current) return;
+    hasDetected.current = true;
+    detectGPS(); // safe — defined above, stable reference via useRef pattern
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const findNearbyHospitals = async (lat, lng) => {
     try {
