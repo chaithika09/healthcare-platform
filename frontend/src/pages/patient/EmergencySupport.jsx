@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   FiPhone, FiMapPin, FiAlertCircle, FiTruck,
-  FiCheckCircle, FiNavigation, FiLoader,
-  FiClock, FiEdit2
+  FiCheckCircle, FiNavigation, FiLoader, FiEdit2
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { ambulanceAPI } from "../../services/api";
@@ -60,7 +59,8 @@ export default function EmergencySupport() {
         } catch {
           setLocation(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         }
-        findNearbyHospitals(lat, lng);
+        // Load registered hospitals from OUR portal sorted by distance
+        loadRegisteredHospitals(lat, lng);
         setStep("ready");
       },
       (err) => {
@@ -68,6 +68,8 @@ export default function EmergencySupport() {
           ? "Location permission denied. Please type your address below."
           : "Could not get GPS. Please type your address.";
         setGpsError(msg);
+        // Even without GPS, load all registered hospitals
+        loadRegisteredHospitals(null, null);
         setStep("ready");
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -81,25 +83,10 @@ export default function EmergencySupport() {
     detectGPS(); // safe — defined above, stable reference via useRef pattern
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const findNearbyHospitals = async (lat, lng) => {
+  const loadRegisteredHospitals = async (lat, lng) => {
     try {
-      const res  = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=hospital&format=json&limit=5&bounded=1` +
-        `&viewbox=${lng - 0.05},${lat + 0.05},${lng + 0.05},${lat - 0.05}`
-      );
-      const data = await res.json();
-      const list = data.slice(0, 4).map((h) => {
-        const dlat = (parseFloat(h.lat) - lat) * 111;
-        const dlng = (parseFloat(h.lon) - lng) * 111 * Math.cos(lat * Math.PI / 180);
-        const dist = Math.sqrt(dlat * dlat + dlng * dlng);
-        return {
-          name:    h.display_name.split(",")[0],
-          address: h.display_name.split(",").slice(1, 3).join(",").trim(),
-          dist:    dist < 1 ? `${(dist * 1000).toFixed(0)} m` : `${dist.toFixed(1)} km`,
-          time:    `${Math.round(dist * 3 + 2)} min`,
-          mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lon}`,
-        };
-      });
+      const res  = await ambulanceAPI.getRegisteredHospitals(lat, lng);
+      const list = res.data?.data?.hospitals || [];
       setNearbyHospitals(list);
       setHospitalCount(list.length);
     } catch {
@@ -121,7 +108,7 @@ export default function EmergencySupport() {
         gpsCoords,
         emergencyType,
         notes,
-        targetHospital:   selectedHospital?.name || null,
+        targetHospitalId: selectedHospital?._id || null,
       });
       setRequestData(res.data?.data);
       setStep("done");
@@ -167,7 +154,7 @@ export default function EmergencySupport() {
           <div className="text-left mt-4 space-y-2 text-sm bg-white/5 rounded-2xl p-4">
             <p className="text-white flex items-center gap-2">🚑 Unit dispatched to your location</p>
             {selectedHospital && (
-              <p className="text-green-300 font-semibold">🏥 Sent to: {selectedHospital.name} ({selectedHospital.dist})</p>
+              <p className="text-green-300 font-semibold">🏥 Sent to: {selectedHospital.hospitalName}{selectedHospital.distanceKm ? ` (${selectedHospital.distanceKm} km)` : ""}</p>
             )}
             <p className="text-orange-300 flex items-start gap-2">
               <FiMapPin size={14} className="mt-0.5 flex-shrink-0" />
@@ -370,7 +357,7 @@ export default function EmergencySupport() {
         ) : step === "detecting" ? (
           <><FiLoader size={28} className="animate-spin" /> Getting Location…</>
         ) : selectedHospital ? (
-          <><FiTruck size={28} /> 🚨 Send SOS to {selectedHospital.name}</>
+          <><FiTruck size={28} /> 🚨 Send SOS to {selectedHospital.hospitalName}</>
         ) : (
           <><FiTruck size={28} /> 🚨 SOS — Alert Nearest Hospital</>
         )}
@@ -379,84 +366,96 @@ export default function EmergencySupport() {
         Alerts nearest hospitals + dials 108 automatically
       </p>
 
-      {/* Nearby hospitals — SELECTABLE */}
+      {/* Nearby hospitals — SELECTABLE — FROM OUR PORTAL */}
       {nearbyHospitals.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="font-bold text-gray-900 dark:text-white text-sm">
-              🏥 Select a Hospital to Request
+              🏥 Registered Hospitals — Select to Request
             </p>
             {selectedHospital && (
               <button onClick={() => setSelectedHospital(null)}
                 className="text-xs text-gray-400 hover:text-gray-600 underline">
-                Clear selection
+                Clear
               </button>
             )}
           </div>
           <p className="text-xs text-gray-400 dark:text-slate-500">
-            Tap a hospital to send your request directly to them. Or press SOS to alert the nearest one automatically.
+            These hospitals are registered on MedIQ portal. Tap one to send your request directly to them.
           </p>
+
           {nearbyHospitals.map((h, i) => (
             <motion.button
-              key={i}
-              onClick={() => setSelectedHospital(selectedHospital?.name === h.name ? null : h)}
+              key={h._id || i}
+              onClick={() => setSelectedHospital(selectedHospital?._id === h._id ? null : h)}
               whileTap={{ scale: 0.98 }}
               className={`w-full text-left rounded-2xl p-4 flex items-center gap-3 border-2 transition-all ${
-                selectedHospital?.name === h.name
+                selectedHospital?._id === h._id
                   ? "border-red-500 bg-red-50 dark:bg-red-900/20"
                   : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-red-200"
               }`}
             >
-              {/* Rank badge */}
+              {/* Rank / nearest badge */}
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0 ${
-                i === 0
-                  ? "bg-green-500 text-white"
-                  : selectedHospital?.name === h.name
+                selectedHospital?._id === h._id
                   ? "bg-red-500 text-white"
+                  : i === 0 && h.distanceKm !== null
+                  ? "bg-green-500 text-white"
                   : "bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300"
               }`}>
-                {i === 0 ? "⭐" : `#${i + 1}`}
+                {selectedHospital?._id === h._id ? "✓" : i === 0 && h.distanceKm !== null ? "⭐" : `#${i + 1}`}
               </div>
 
               <div className="flex-1 min-w-0">
                 <p className={`font-bold text-sm truncate ${
-                  selectedHospital?.name === h.name
-                    ? "text-red-700 dark:text-red-300"
-                    : "text-gray-900 dark:text-white"
+                  selectedHospital?._id === h._id ? "text-red-700 dark:text-red-300" : "text-gray-900 dark:text-white"
                 }`}>
-                  {h.name}
-                  {i === 0 && <span className="ml-2 text-xs font-semibold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Nearest</span>}
+                  {h.hospitalName}
+                  {i === 0 && h.distanceKm !== null && (
+                    <span className="ml-2 text-xs font-semibold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Nearest</span>
+                  )}
                 </p>
-                <p className="text-xs text-gray-400 truncate">{h.address}</p>
-                <div className="flex gap-3 mt-1 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><FiMapPin size={10} /> {h.dist}</span>
-                  <span className="flex items-center gap-1"><FiClock size={10} /> {h.time} drive</span>
+                <p className="text-xs text-gray-400 truncate">{h.address}{h.city ? `, ${h.city}` : ""}</p>
+                <div className="flex gap-3 mt-1 text-xs">
+                  {h.distanceKm !== null
+                    ? <span className="text-green-600 font-semibold flex items-center gap-1"><FiMapPin size={10} /> {h.distanceKm} km · {h.driveMinutes} min drive</span>
+                    : <span className="text-gray-400 flex items-center gap-1"><FiMapPin size={10} /> Distance not available</span>
+                  }
+                  {h.emergencyPhone && (
+                    <span className="text-gray-400 flex items-center gap-1">📞 {h.emergencyPhone}</span>
+                  )}
                 </div>
               </div>
 
-              {/* Selection indicator */}
+              {/* Selection radio */}
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                selectedHospital?.name === h.name
+                selectedHospital?._id === h._id
                   ? "border-red-500 bg-red-500"
                   : "border-gray-300 dark:border-slate-600"
               }`}>
-                {selectedHospital?.name === h.name && (
-                  <FiCheckCircle size={14} color="white" />
-                )}
+                {selectedHospital?._id === h._id && <FiCheckCircle size={14} color="white" />}
               </div>
             </motion.button>
           ))}
 
           {/* Selection status */}
           {selectedHospital ? (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-3 text-sm text-red-700 dark:text-red-300 font-semibold flex items-center gap-2">
-              🏥 Request will go to: <strong>{selectedHospital.name}</strong> ({selectedHospital.dist})
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-3 text-sm font-semibold text-red-700 dark:text-red-300 flex items-center gap-2">
+              🏥 Request will go to: <strong>{selectedHospital.hospitalName}</strong>
+              {selectedHospital.distanceKm && <span className="text-xs font-normal">({selectedHospital.distanceKm} km)</span>}
             </div>
           ) : (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-3 text-xs text-blue-600 dark:text-blue-400">
-              💡 No hospital selected — SOS will automatically alert the <strong>nearest registered hospital</strong>
+              💡 No hospital selected — SOS will alert the <strong>nearest registered hospital</strong> automatically
             </div>
           )}
+        </div>
+      )}
+
+      {/* No hospitals registered yet */}
+      {nearbyHospitals.length === 0 && step === "ready" && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 text-sm text-amber-700 dark:text-amber-300">
+          ⚠️ No hospitals registered on MedIQ portal yet. Your SOS will still be sent and <strong>108 will be dialed</strong>.
         </div>
       )}
     </div>

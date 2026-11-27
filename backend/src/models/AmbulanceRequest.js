@@ -17,6 +17,8 @@ const ambulanceRequestSchema = new mongoose.Schema(
     // Which hospital claimed/responded to this request
     respondedBy:   { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     respondedByName: String,
+    // Which hospital the patient specifically requested
+    targetHospital: { type: mongoose.Schema.Types.ObjectId, ref: "Hospital" },
     assignedUnit:  String,
     eta:           String,
     respondedAt:   Date,

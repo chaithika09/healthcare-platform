@@ -92,12 +92,64 @@ function buildEmergencyEmail(request, mapsLink) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// GET /api/v1/ambulance/hospitals?lat=&lng=
+// PUBLIC — Patient fetches registered hospitals sorted by distance
+// ─────────────────────────────────────────────────────────────
+router.get("/hospitals", authenticate, async (req, res, next) => {
+  try {
+    const { lat, lng } = req.query;
+    const patLat = parseFloat(lat);
+    const patLng = parseFloat(lng);
+
+    // Get all registered hospitals with their profile
+    const hospitals = await Hospital.find({})
+      .populate("user", "name email phone")
+      .lean();
+
+    const list = hospitals.map(h => {
+      const hasGps = h.location?.lat && h.location?.lng;
+      const distKm = hasGps && patLat && patLng
+        ? haversineKm(patLat, patLng, h.location.lat, h.location.lng)
+        : null;
+      const driveMins = distKm ? Math.round(distKm * 3 + 2) : null;
+
+      return {
+        _id:           h._id,
+        userId:        h.user?._id,
+        hospitalName:  h.hospitalName,
+        address:       h.address,
+        city:          h.city,
+        state:         h.state,
+        emergencyPhone: h.emergencyPhone || h.phone || h.user?.phone,
+        email:         h.user?.email,
+        type:          h.type,
+        hasGps,
+        location:      h.location,
+        distanceKm:    distKm ? parseFloat(distKm.toFixed(1)) : null,
+        driveMinutes:  driveMins,
+      };
+    })
+    // Sort: hospitals with GPS by distance first, then those without GPS
+    .sort((a, b) => {
+      if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+      if (a.distanceKm !== null) return -1;
+      if (b.distanceKm !== null) return 1;
+      return 0;
+    });
+
+    res.json({ success: true, data: { hospitals: list } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
 // POST /api/v1/ambulance/request
 // Patient submits an emergency ambulance request
 // ─────────────────────────────────────────────────────────────
 router.post("/request", authenticate, async (req, res, next) => {
   try {
-    const { location, gpsCoords, emergencyType, notes } = req.body;
+    const { location, gpsCoords, emergencyType, notes, targetHospitalId } = req.body;
 
     if (!location?.trim()) {
       return res.status(400).json({ success: false, message: "Location is required" });
@@ -113,13 +165,14 @@ router.post("/request", authenticate, async (req, res, next) => {
       emergencyType: emergencyType || "Medical Emergency",
       notes:         notes || "",
       status:        "pending",
+      ...(targetHospitalId && { targetHospital: targetHospitalId }),
     });
 
     const mapsLink = gpsCoords?.lat
       ? `https://www.google.com/maps?q=${gpsCoords.lat},${gpsCoords.lng}`
       : `https://maps.google.com/?q=${encodeURIComponent(location)}`;
 
-    // 2. Real-time socket broadcast to ALL connected admins/hospital staff
+    // 2. Real-time socket broadcast
     broadcastEmergency({
       requestId:     request._id,
       patientName:   req.user.name,
@@ -129,60 +182,69 @@ router.post("/request", authenticate, async (req, res, next) => {
       emergencyType: request.emergencyType,
       mapsLink,
       createdAt:     request.createdAt,
+      targetHospitalId: targetHospitalId || null,
     });
 
-    // 3. Find nearest hospitals, sort by distance, notify closest 5 first
+    // 3. Notify hospitals
     User.find({ role: { $in: ["admin", "hospital"] } })
       .select("_id email name role")
       .lean()
       .then(async (recipients) => {
-
         const hospitalUsers = recipients.filter(r => r.role === "hospital");
         const adminUsers    = recipients.filter(r => r.role === "admin");
-        let sortedHospitals = hospitalUsers;
+        let notifyHospitals = [];
 
-        // Sort hospitals by distance if patient GPS available
-        if (gpsCoords?.lat && gpsCoords?.lng) {
-          const profiles = await Hospital.find({
-            user: { $in: hospitalUsers.map(h => h._id) },
-          }).select("user location hospitalName city").lean();
+        if (targetHospitalId) {
+          // ── Patient chose a specific hospital — notify ONLY that one ──
+          const targetHosp = await Hospital.findById(targetHospitalId).select("user hospitalName").lean();
+          if (targetHosp) {
+            const targetUser = hospitalUsers.find(h => h._id.toString() === targetHosp.user.toString());
+            if (targetUser) notifyHospitals = [{ ...targetUser, hospitalName: targetHosp.hospitalName, distanceKm: null }];
+          }
+        } else {
+          // ── No selection — sort by distance and notify nearest 5 ──
+          if (gpsCoords?.lat && gpsCoords?.lng) {
+            const profiles = await Hospital.find({
+              user: { $in: hospitalUsers.map(h => h._id) },
+            }).select("user location hospitalName").lean();
 
-          const profileMap = {};
-          profiles.forEach(p => { profileMap[p.user.toString()] = p; });
+            const profileMap = {};
+            profiles.forEach(p => { profileMap[p.user.toString()] = p; });
 
-          sortedHospitals = hospitalUsers.map(h => {
-            const p      = profileMap[h._id.toString()];
-            const hasGps = p?.location?.lat && p?.location?.lng;
-            const dist   = hasGps
-              ? haversineKm(gpsCoords.lat, gpsCoords.lng, p.location.lat, p.location.lng)
-              : 999999;
-            return { ...h, distanceKm: dist, hospitalName: p?.hospitalName };
-          }).sort((a, b) => a.distanceKm - b.distanceKm);
-
-          sortedHospitals.forEach(h =>
-            logger.info(`  Hospital "${h.hospitalName || h.name}": ${h.distanceKm < 999999 ? h.distanceKm.toFixed(1) + " km" : "GPS not set"}`)
-          );
+            notifyHospitals = hospitalUsers.map(h => {
+              const p      = profileMap[h._id.toString()];
+              const hasGps = p?.location?.lat && p?.location?.lng;
+              const dist   = hasGps
+                ? haversineKm(gpsCoords.lat, gpsCoords.lng, p.location.lat, p.location.lng)
+                : 999999;
+              return { ...h, distanceKm: dist, hospitalName: p?.hospitalName };
+            })
+            .sort((a, b) => a.distanceKm - b.distanceKm)
+            .slice(0, 5);
+          } else {
+            notifyHospitals = hospitalUsers.slice(0, 5);
+          }
         }
 
-        // Notify nearest 5 hospitals + all admins
-        const notifyList = [...sortedHospitals.slice(0, 5), ...adminUsers];
+        const notifyList = [...notifyHospitals, ...adminUsers];
 
-        // In-app notifications (include distance in message)
+        // In-app notifications
         const notifs = notifyList.map(r => ({
           recipient: r._id,
           type:      "alert",
           title:     `🚨 Ambulance Request — ${request.emergencyType}`,
-          message:   r.distanceKm !== undefined && r.distanceKm < 999999
-            ? `${req.user.name} needs help — ${r.distanceKm.toFixed(1)} km away at: ${location.trim().slice(0, 60)}`
+          message:   r.distanceKm !== undefined && r.distanceKm !== null && r.distanceKm < 999999
+            ? `${req.user.name} needs help — ${r.distanceKm.toFixed(1)} km away`
             : `${req.user.name} needs emergency help at: ${location.trim().slice(0, 80)}`,
-          data: { requestId: request._id, mapsLink, distanceKm: r.distanceKm },
+          data: { requestId: request._id, mapsLink },
         }));
+
         if (notifs.length > 0) {
           const created = await Notification.insertMany(notifs);
           created.forEach(n => sendNotification(n.recipient.toString(), n));
         }
 
-        // Send email to nearest hospitals + admins
+        // Send emails
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
           const { subject, html } = buildEmergencyEmail(request, mapsLink);
           const emailList = notifyList.map(r => r.email).filter(Boolean);
@@ -196,12 +258,14 @@ router.post("/request", authenticate, async (req, res, next) => {
               subject,
               html,
             })
-              .then(() => logger.info(`Emergency email sent to ${emailList.length} recipient(s)`))
-              .catch(e  => logger.error("Emergency email failed:", e.message));
+              .then(() => logger.info(`Emergency email sent to: ${emailList.join(", ")}`))
+              .catch(e  => logger.error("Email failed:", e.message));
           }
         }
+
+        logger.info(`Notified ${notifyList.length} recipient(s). Target: ${targetHospitalId || "nearest"}`);
       })
-      .catch(e => logger.error("Proximity notification error:", e.message));
+      .catch(e => logger.error("Notification error:", e.message));
 
     logger.info(`Ambulance request created: ${request._id} by ${req.user.email}`);
 
