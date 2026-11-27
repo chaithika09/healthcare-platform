@@ -61,9 +61,9 @@ router.put("/profile", async (req, res, next) => {
 });
 
 // ── GET /hospital/emergencies ─────────────────────────────────
-// Smart feed:
-//   - "pending" requests → ALL hospitals can see (first to respond wins)
-//   - non-pending requests → only the hospital that claimed it
+// Feed rules:
+//   - "pending" AND not yet claimed by any hospital → ALL hospitals see
+//   - claimed (non-pending) → ONLY the hospital that claimed it sees it
 router.get("/emergencies", async (req, res, next) => {
   try {
     const { status, page = 1, limit = 50 } = req.query;
@@ -71,17 +71,20 @@ router.get("/emergencies", async (req, res, next) => {
     let query;
     if (status && status !== "all") {
       if (status === "pending") {
-        // All hospitals see all pending
+        // Pending = not yet claimed by anyone
         query = { status: "pending" };
       } else {
-        // Only show non-pending requests that this hospital responded to
+        // Non-pending = only THIS hospital's claimed requests
         query = { status, respondedBy: req.user._id };
       }
     } else {
-      // "all" tab: pending (everyone) + this hospital's claimed requests
+      // "all" tab:
+      //   pending requests that have NOT been claimed yet (no respondedBy)
+      //   OR requests this hospital has claimed (any status)
       query = {
         $or: [
-          { status: "pending" },
+          { status: "pending", respondedBy: { $exists: false } },
+          { status: "pending", respondedBy: null },
           { respondedBy: req.user._id },
         ],
       };
@@ -96,7 +99,11 @@ router.get("/emergencies", async (req, res, next) => {
 
     // Count for THIS hospital's view
     const [pendingCount, dispatchedCount, arrivedCount, completedCount] = await Promise.all([
-      AmbulanceRequest.countDocuments({ status: "pending" }),
+      // Pending = unclaimed by anyone
+      AmbulanceRequest.countDocuments({
+        status: "pending",
+        $or: [{ respondedBy: { $exists: false } }, { respondedBy: null }],
+      }),
       AmbulanceRequest.countDocuments({ status: "dispatched", respondedBy: req.user._id }),
       AmbulanceRequest.countDocuments({ status: "arrived",    respondedBy: req.user._id }),
       AmbulanceRequest.countDocuments({ status: "completed",  respondedBy: req.user._id }),
@@ -205,16 +212,26 @@ router.get("/dashboard", async (req, res, next) => {
     const myId = req.user._id;
 
     const [total, todayCount, pending, dispatched, arrived, completed, hospital] = await Promise.all([
-      // Total = pending (all) + this hospital's claimed
+      // Total = unclaimed pending + this hospital's claimed
       AmbulanceRequest.countDocuments({
-        $or: [{ status: "pending" }, { respondedBy: myId }],
+        $or: [
+          { status: "pending", $or: [{ respondedBy: { $exists: false } }, { respondedBy: null }] },
+          { respondedBy: myId },
+        ],
       }),
-      // Today's requests this hospital can see
+      // Today
       AmbulanceRequest.countDocuments({
         createdAt: { $gte: today },
-        $or: [{ status: "pending" }, { respondedBy: myId }],
+        $or: [
+          { status: "pending", $or: [{ respondedBy: { $exists: false } }, { respondedBy: null }] },
+          { respondedBy: myId },
+        ],
       }),
-      AmbulanceRequest.countDocuments({ status: "pending" }),
+      // Unclaimed pending
+      AmbulanceRequest.countDocuments({
+        status: "pending",
+        $or: [{ respondedBy: { $exists: false } }, { respondedBy: null }],
+      }),
       AmbulanceRequest.countDocuments({ status: "dispatched", respondedBy: myId }),
       AmbulanceRequest.countDocuments({ status: "arrived",    respondedBy: myId }),
       AmbulanceRequest.countDocuments({ status: "completed",  respondedBy: myId }),
