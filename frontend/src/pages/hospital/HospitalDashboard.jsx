@@ -378,25 +378,42 @@ export default function HospitalDashboard() {
                             )}
 
                             {req.status === "dispatched" && (
-                              <button disabled={updating === req._id}
-                                onClick={() => updateStatus(req._id, "arrived")}
-                                className="flex items-center gap-1.5 text-sm font-black text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-xl transition-colors disabled:opacity-60">
-                                <FiCheckCircle size={14} /> Mark Arrived
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-2 text-sm font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 px-4 py-2 rounded-xl">
+                                  <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                                  🚑 Ambulance On The Way
+                                </span>
+                                <button disabled={updating === req._id}
+                                  onClick={() => updateStatus(req._id, "arrived")}
+                                  className="text-xs font-semibold text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-2 rounded-xl transition-colors border border-gray-200 dark:border-slate-700">
+                                  Mark Arrived
+                                </button>
+                              </div>
                             )}
 
                             {req.status === "arrived" && (
-                              <button disabled={updating === req._id}
-                                onClick={() => updateStatus(req._id, "completed")}
-                                className="flex items-center gap-1.5 text-sm font-black text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded-xl transition-colors disabled:opacity-60">
-                                <FiCheckCircle size={14} /> Mark Completed
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2 rounded-xl">
+                                  🏥 Ambulance Arrived
+                                </span>
+                                <button disabled={updating === req._id}
+                                  onClick={() => updateStatus(req._id, "completed")}
+                                  className="text-xs font-semibold text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 px-3 py-2 rounded-xl transition-colors border border-gray-200 dark:border-slate-700">
+                                  <FiCheckCircle size={13} className="inline mr-1" />Mark Completed
+                                </button>
+                              </div>
                             )}
 
-                            {["pending", "dispatched"].includes(req.status) && (
+                            {req.status === "completed" && (
+                              <span className="flex items-center gap-2 text-sm font-bold text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-2 rounded-xl">
+                                ✅ Case Completed
+                              </span>
+                            )}
+
+                            {req.status === "pending" && (
                               <button disabled={updating === req._id}
                                 onClick={() => updateStatus(req._id, "cancelled")}
-                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2 rounded-xl transition-colors">
+                                className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2 rounded-xl transition-colors">
                                 Cancel
                               </button>
                             )}
