@@ -38,7 +38,7 @@ exports.register = async (req, res, next) => {
         verificationStatus: "approved"
       });
     } else if (user.role === "hospital") {
-      const { hospitalName, registrationNumber, address, city, state, pincode, emergencyPhone, hospitalType } = req.body;
+      const { hospitalName, registrationNumber, address, city, state, pincode, emergencyPhone, hospitalType, location } = req.body;
       await Hospital.create({
         user:               user._id,
         hospitalName:       hospitalName       || name,
@@ -51,6 +51,10 @@ exports.register = async (req, res, next) => {
         emergencyPhone:     emergencyPhone     || phone,
         type:               hospitalType       || "private",
         isVerified:         false,
+        // Save GPS if provided
+        ...(location?.lat && location?.lng && {
+          location: { lat: parseFloat(location.lat), lng: parseFloat(location.lng) }
+        }),
       });
     }
 

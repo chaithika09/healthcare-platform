@@ -1,428 +1,412 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiPhone, FiMapPin, FiAlertCircle, FiTruck,
   FiHeart, FiCheckCircle, FiNavigation, FiLoader,
-  FiExternalLink, FiClock, FiAlertTriangle, FiWifi
+  FiExternalLink, FiClock, FiAlertTriangle, FiWifi, FiEdit2
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { ambulanceAPI } from "../../services/api";
 
-/* ── India Emergency Numbers ── */
-const EMERGENCY_CONTACTS = [
-  { label: "Ambulance",          number: "108",  color: "bg-red-500",    icon: FiTruck,         description: "Free ambulance service" },
-  { label: "Police",             number: "100",  color: "bg-blue-600",   icon: FiAlertCircle,   description: "Police emergency" },
-  { label: "Fire Brigade",       number: "101",  color: "bg-orange-500", icon: FiAlertTriangle, description: "Fire & rescue" },
-  { label: "Women Helpline",     number: "1091", color: "bg-pink-500",   icon: FiHeart,         description: "Women safety helpline" },
-  { label: "National Emergency", number: "112",  color: "bg-purple-600", icon: FiPhone,         description: "All emergencies" },
-  { label: "Child Helpline",     number: "1098", color: "bg-green-500",  icon: FiHeart,         description: "Child in distress" },
+const EMERGENCY_TYPES = [
+  { label: "Heart Attack",         icon: "❤️", value: "Cardiac Emergency / Heart Attack" },
+  { label: "Accident / Trauma",    icon: "🚗", value: "Accident / Trauma" },
+  { label: "Breathing Difficulty", icon: "🫁", value: "Breathing Difficulty" },
+  { label: "Stroke",               icon: "🧠", value: "Stroke / Paralysis" },
+  { label: "Severe Bleeding",      icon: "🩸", value: "Severe Bleeding" },
+  { label: "Unconscious",          icon: "😶", value: "Unconscious Person" },
+  { label: "Pregnancy",            icon: "🤰", value: "Pregnancy Emergency" },
+  { label: "Poisoning",            icon: "☠️", value: "Poisoning / Overdose" },
+  { label: "Other",                icon: "🏥", value: "Other Medical Emergency" },
 ];
 
-const EMERGENCY_TYPES = [
-  "Cardiac Emergency / Heart Attack",
-  "Accident / Trauma",
-  "Breathing Difficulty",
-  "Stroke / Paralysis",
-  "Severe Bleeding",
-  "Unconscious Person",
-  "Pregnancy Emergency",
-  "Poisoning / Overdose",
-  "Other Medical Emergency",
+const EMERGENCY_CONTACTS = [
+  { label: "Ambulance", number: "108",  color: "bg-red-500"    },
+  { label: "Police",    number: "100",  color: "bg-blue-600"   },
+  { label: "Fire",      number: "101",  color: "bg-orange-500" },
+  { label: "Emergency", number: "112",  color: "bg-purple-600" },
 ];
 
 export default function EmergencySupport() {
-  const [booking,         setBooking]         = useState(false);
-  const [booked,          setBooked]          = useState(false);
-  const [requestData,     setRequestData]     = useState(null);
+  const [step,            setStep]            = useState("idle"); // idle | detecting | ready | submitting | done
   const [location,        setLocation]        = useState("");
-  const [gpsLoading,      setGpsLoading]      = useState(false);
   const [gpsCoords,       setGpsCoords]       = useState(null);
-  const [emergencyType,   setEmergencyType]   = useState(EMERGENCY_TYPES[0]);
+  const [gpsError,        setGpsError]        = useState("");
+  const [emergencyType,   setEmergencyType]   = useState(EMERGENCY_TYPES[0].value);
   const [notes,           setNotes]           = useState("");
+  const [requestData,     setRequestData]     = useState(null);
   const [nearbyHospitals, setNearbyHospitals] = useState([]);
-  const [hospitalsLoading,setHospitalsLoading]= useState(false);
-  const [mapsUrl,         setMapsUrl]         = useState("");
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [hospitalCount,   setHospitalCount]   = useState(0);
+  const hasDetected = useRef(false);
 
-  /* ── GPS detection ── */
-  const detectLocation = () => {
-    if (!navigator.geolocation) { toast.error("GPS not supported on this device"); return; }
-    setGpsLoading(true);
+  // ── Auto-detect GPS as soon as page loads ──────────────────
+  useEffect(() => {
+    if (hasDetected.current) return;
+    hasDetected.current = true;
+    detectGPS();
+  }, []);
+
+  const detectGPS = () => {
+    if (!navigator.geolocation) {
+      setGpsError("GPS not supported. Please type your address.");
+      setStep("ready");
+      return;
+    }
+    setStep("detecting");
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lng } }) => {
         setGpsCoords({ lat, lng });
+
+        // Reverse geocode using OpenStreetMap
         try {
-          const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+          const res  = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+          );
           const data = await res.json();
-          const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-          setLocation(addr);
-          toast.success("📍 Location detected!");
-          setMapsUrl(`https://www.google.com/maps/search/hospital+near+me/@${lat},${lng},14z`);
-          findNearbyHospitals(lat, lng);
+          setLocation(data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
         } catch {
           setLocation(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-          toast.success("📍 GPS coordinates captured");
         }
-        setGpsLoading(false);
+
+        // Find nearby real hospitals from OpenStreetMap
+        findNearbyHospitals(lat, lng);
+        setStep("ready");
       },
       (err) => {
-        setGpsLoading(false);
-        if (err.code === 1) toast.error("Location permission denied. Enter address manually.");
-        else if (err.code === 2) toast.error("Location unavailable. Enter address manually.");
-        else toast.error("Could not get location.");
+        const msg = err.code === 1
+          ? "Location permission denied. Please type your address below."
+          : "Could not get GPS. Please type your address.";
+        setGpsError(msg);
+        setStep("ready");
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
-  /* ── OpenStreetMap nearby hospitals ── */
   const findNearbyHospitals = async (lat, lng) => {
-    setHospitalsLoading(true);
     try {
       const res  = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=hospital&format=json&limit=5&bounded=1&viewbox=${lng-0.05},${lat+0.05},${lng+0.05},${lat-0.05}`
+        `https://nominatim.openstreetmap.org/search?q=hospital&format=json&limit=5&bounded=1` +
+        `&viewbox=${lng - 0.05},${lat + 0.05},${lng + 0.05},${lat - 0.05}`
       );
       const data = await res.json();
-      const hospitals = data.slice(0, 4).map((h) => {
-        const dlat = (h.lat - lat) * 111;
-        const dlng = (h.lon - lng) * 111 * Math.cos(lat * Math.PI / 180);
+      const list = data.slice(0, 4).map((h) => {
+        const dlat = (parseFloat(h.lat) - lat) * 111;
+        const dlng = (parseFloat(h.lon) - lng) * 111 * Math.cos(lat * Math.PI / 180);
         const dist = Math.sqrt(dlat * dlat + dlng * dlng);
-        const mins = Math.round(dist * 3 + 2);
         return {
-          name:     h.display_name.split(",")[0],
-          address:  h.display_name.split(",").slice(1, 3).join(",").trim(),
-          distance: dist < 1 ? `${(dist * 1000).toFixed(0)} m` : `${dist.toFixed(1)} km`,
-          time:     `${mins} min`,
-          mapsUrl:  `https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lon}`,
+          name:    h.display_name.split(",")[0],
+          address: h.display_name.split(",").slice(1, 3).join(",").trim(),
+          dist:    dist < 1 ? `${(dist * 1000).toFixed(0)} m` : `${dist.toFixed(1)} km`,
+          time:    `${Math.round(dist * 3 + 2)} min`,
+          mapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lon}`,
         };
       });
-      setNearbyHospitals(hospitals);
+      setNearbyHospitals(list);
+      setHospitalCount(list.length);
     } catch {
       setNearbyHospitals([]);
-    } finally {
-      setHospitalsLoading(false);
     }
   };
 
-  /* ── Submit ambulance request ── */
-  const bookAmbulance = async () => {
-    if (!location.trim()) { toast.error("Please enter or detect your location first"); return; }
-    setBooking(true);
+  // ── ONE TAP SOS ────────────────────────────────────────────
+  const handleSOS = async () => {
+    if (!location.trim()) {
+      toast.error("Location is required. Please allow GPS or type your address.");
+      return;
+    }
+    setStep("submitting");
 
     try {
-      // 1. Send to backend — saves to DB, emails hospital admin, broadcasts socket
       const res = await ambulanceAPI.request({
         location:      location.trim(),
         gpsCoords,
         emergencyType,
         notes,
       });
-
-      setRequestData(res.data.data);
-      setBooked(true);
-      toast.success("🚑 Ambulance request sent to hospital!");
-
-      // 2. Auto-dial 108 after 500ms
-      setTimeout(() => { window.location.href = "tel:108"; }, 500);
-
-    } catch (err) {
-      // Even on API error, still set booked and dial 108
+      setRequestData(res.data?.data);
+      setStep("done");
+      toast.success("🚑 Nearest hospitals alerted!");
+      // Auto-dial 108
+      setTimeout(() => { window.location.href = "tel:108"; }, 800);
+    } catch {
       setRequestData({
         requestId:        "LOCAL-" + Date.now().toString(36).toUpperCase(),
-        status:           "pending",
         estimatedArrival: "8–12 minutes",
-        message:          "Please call 108 directly.",
       });
-      setBooked(true);
-      toast("⚠️ Request saved locally. Calling 108 now.", { icon: "⚠️" });
-      setTimeout(() => { window.location.href = "tel:108"; }, 500);
-    } finally {
-      setBooking(false);
+      setStep("done");
+      setTimeout(() => { window.location.href = "tel:108"; }, 800);
     }
   };
 
   const reset = () => {
-    setBooked(false);
+    setStep("idle");
     setRequestData(null);
     setLocation("");
     setGpsCoords(null);
+    setGpsError("");
     setNotes("");
+    hasDetected.current = false;
+    setTimeout(() => detectGPS(), 100);
   };
 
-  return (
-    <div className="space-y-5 max-w-2xl mx-auto pb-8">
-
-      {/* ── Banner ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-red-500 to-red-600 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl"
-      >
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center animate-pulse">
-              <FiAlertCircle size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Emergency Support</h1>
-              <p className="text-red-100 text-sm">24/7 emergency assistance · Instant hospital alert</p>
-            </div>
+  // ── DONE STATE ─────────────────────────────────────────────
+  if (step === "done") {
+    return (
+      <div className="max-w-lg mx-auto space-y-4 pb-8">
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          className="bg-gray-900 dark:bg-slate-900 rounded-3xl p-6 text-center">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <FiCheckCircle size={44} className="text-green-400" />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <a href="tel:108"
-              className="inline-flex items-center gap-2 bg-white text-red-600 font-bold px-5 py-2.5 rounded-2xl text-sm hover:bg-red-50 transition-colors shadow">
-              <FiPhone size={15} /> Call 108 (Ambulance)
-            </a>
-            <a href="tel:112"
-              className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-5 py-2.5 rounded-2xl text-sm hover:bg-white/30 transition-colors border border-white/30">
-              <FiPhone size={15} /> Call 112 (National)
-            </a>
-          </div>
-        </div>
-      </motion.div>
+          <h2 className="text-2xl font-black text-white">Ambulance Dispatched!</h2>
+          <p className="text-orange-400 font-bold text-lg mt-1">
+            ETA: {requestData?.estimatedArrival || "8–12 minutes"}
+          </p>
 
-      {/* ── Emergency Contacts ── */}
-      <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <FiPhone size={16} className="text-red-500" /> Emergency Contacts
-        </h2>
-        <div className="grid grid-cols-2 gap-2.5">
-          {EMERGENCY_CONTACTS.map((c) => (
-            <a key={c.label} href={`tel:${c.number}`}
-              className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-3.5 flex items-center gap-3 hover:shadow-md active:scale-95 transition-all">
-              <div className={`w-10 h-10 rounded-xl ${c.color} flex items-center justify-center text-white flex-shrink-0`}>
-                <c.icon size={17} />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{c.label}</p>
-                <p className="text-red-600 dark:text-red-400 font-bold text-sm">{c.number}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Request Ambulance ── */}
-      <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
-        <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <FiTruck size={18} className="text-orange-500" /> Request Ambulance
-          <span className="ml-auto flex items-center gap-1 text-xs font-normal text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-full">
-            <FiWifi size={11} /> Alerts hospital instantly
-          </span>
-        </h2>
-
-        <AnimatePresence mode="wait">
-          {!booked ? (
-            <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-
-              {/* Location */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <FiMapPin size={13} /> Your Location *
-                  </label>
-                  <button type="button" onClick={detectLocation} disabled={gpsLoading}
-                    className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 font-semibold hover:underline disabled:opacity-60">
-                    {gpsLoading
-                      ? <><FiLoader size={12} className="animate-spin" /> Detecting…</>
-                      : <><FiNavigation size={12} /> Detect GPS</>}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter your full address or use GPS detect…"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
-                />
-                {gpsCoords && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
-                    <FiCheckCircle size={11} /> GPS: {gpsCoords.lat.toFixed(5)}, {gpsCoords.lng.toFixed(5)}
-                  </p>
-                )}
-              </div>
-
-              {/* Emergency Type */}
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
-                  Emergency Type *
-                </label>
-                <select
-                  value={emergencyType}
-                  onChange={(e) => setEmergencyType(e.target.value)}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400"
-                >
-                  {EMERGENCY_TYPES.map((t) => <option key={t}>{t}</option>)}
-                </select>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
-                  Additional Notes (optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Patient age, allergies, symptoms, floor/flat number…"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none"
-                />
-              </div>
-
-              {/* What happens info box */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-3 text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                <p className="font-bold text-sm mb-2">📡 When you submit this request:</p>
-                <p>✅ <strong>Saved to database</strong> — permanent record created</p>
-                <p>✅ <strong>Hospital admin alerted instantly</strong> via real-time notification</p>
-                <p>✅ <strong>Email sent</strong> to emergency response team with your GPS + maps link</p>
-                <p>✅ <strong>108 called</strong> — your phone dials the ambulance service</p>
-              </div>
-
-              <button
-                onClick={bookAmbulance}
-                disabled={booking || !location.trim()}
-                className="w-full py-3.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 text-base"
-              >
-                {booking
-                  ? <><FiLoader size={18} className="animate-spin" /> Dispatching…</>
-                  : <><FiTruck size={18} /> Dispatch Ambulance + Call 108</>}
-              </button>
-
-              <p className="text-xs text-center text-gray-400 dark:text-slate-500">
-                For immediate help, always call <strong>108</strong> directly
-              </p>
-            </motion.div>
-
-          ) : (
-            /* ── Confirmed State ── */
-            <motion.div key="success"
-              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-2">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiCheckCircle size={42} className="text-green-500" />
-              </div>
-              <h3 className="font-bold text-gray-900 dark:text-white text-xl">Ambulance Dispatched!</h3>
-              <p className="text-orange-500 font-bold mt-1">
-                ETA: {requestData?.estimatedArrival || "8–12 minutes"}
-              </p>
-
-              <div className="bg-gray-900 dark:bg-slate-800 rounded-2xl p-4 mt-4 text-left space-y-2 text-sm">
-                <p className="text-white">🚑 Unit dispatched to your location</p>
-                <p className="text-white">📍 Location: <span className="text-orange-300">{location}</span></p>
-                <p className="text-white">🏥 Type: <span className="text-orange-300">{emergencyType}</span></p>
-                {requestData?.requestId && (
-                  <p className="text-gray-400 text-xs">Request ID: {requestData.requestId}</p>
-                )}
-                <p className="text-orange-400 font-bold">Stay calm. Keep your phone on.</p>
-              </div>
-
-              {/* How it was received */}
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-2xl p-4 mt-3 text-left text-xs text-green-700 dark:text-green-300 space-y-1.5">
-                <p className="font-bold text-sm text-green-800 dark:text-green-200 mb-2">✅ Hospital Received Your Alert:</p>
-                <p>🔔 <strong>Real-time notification</strong> sent to hospital admin dashboard</p>
-                <p>📧 <strong>Email dispatched</strong> to emergency response team with your GPS</p>
-                <p>🗄 <strong>Request saved</strong> in database (ID: {requestData?.requestId})</p>
-                <p>📞 <strong>108 auto-dialed</strong> on your phone</p>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <a href="tel:108"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl text-sm transition-colors">
-                  <FiPhone size={15} /> Call 108
-                </a>
-                <button onClick={reset}
-                  className="flex-1 py-3 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-2xl text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                  New Request
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Nearby Hospitals ── */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            🏥 Nearby Hospitals
-          </h2>
-          {mapsUrl && (
-            <a href={mapsUrl} target="_blank" rel="noreferrer"
-              className="text-xs text-primary-600 dark:text-primary-400 font-semibold flex items-center gap-1 hover:underline">
-              View on Maps <FiExternalLink size={11} />
-            </a>
-          )}
-        </div>
-
-        {!gpsCoords && !hospitalsLoading && nearbyHospitals.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-6 text-center">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">
-              📍 Detect your GPS location above to find nearby hospitals
+          <div className="text-left mt-4 space-y-2 text-sm bg-white/5 rounded-2xl p-4">
+            <p className="text-white flex items-center gap-2">🚑 Unit dispatched to your location</p>
+            <p className="text-orange-300 flex items-start gap-2">
+              <FiMapPin size={14} className="mt-0.5 flex-shrink-0" />
+              {location}
             </p>
-            <button onClick={detectLocation} disabled={gpsLoading}
-              className="mt-3 btn-primary btn-sm gap-1.5">
-              <FiNavigation size={13} /> Detect My Location
+            <p className="text-orange-300">🏥 {emergencyType}</p>
+            <p className="text-gray-500 text-xs">ID: {requestData?.requestId}</p>
+          </div>
+
+          <div className="bg-green-900/30 border border-green-800 rounded-2xl p-4 mt-4 text-left space-y-2 text-xs text-green-300">
+            <p className="font-bold text-green-200 text-sm">✅ Nearby Hospitals Notified:</p>
+            <p>🔔 Real-time alert sent to <strong>nearest hospitals</strong> on their dashboard</p>
+            <p>📧 Email sent to hospital emergency teams with your GPS</p>
+            <p>🗺️ Google Maps link with your exact location shared</p>
+            <p>📞 108 is being dialed on your phone now</p>
+          </div>
+
+          <p className="text-orange-400 font-black text-lg mt-4">Stay calm. Help is on the way.</p>
+
+          <div className="flex gap-3 mt-5">
+            <a href="tel:108"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors">
+              <FiPhone size={16} /> Call 108
+            </a>
+            <button onClick={reset}
+              className="flex-1 border border-gray-600 text-gray-300 font-semibold py-3.5 rounded-2xl hover:bg-gray-800 transition-colors">
+              New Request
             </button>
           </div>
-        ) : hospitalsLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin w-6 h-6 border-4 border-primary-500 border-t-transparent rounded-full" />
-          </div>
-        ) : nearbyHospitals.length === 0 && gpsCoords ? (
-          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-6 text-center">
-            <p className="text-gray-400 dark:text-slate-500 text-sm">No hospitals found nearby. Try Google Maps.</p>
-            {mapsUrl && (
-              <a href={mapsUrl} target="_blank" rel="noreferrer" className="mt-3 btn-primary btn-sm gap-1.5 inline-flex">
-                <FiExternalLink size={13} /> Open Google Maps
-              </a>
-            )}
-          </div>
-        ) : (
+        </motion.div>
+
+        {/* Nearby hospitals */}
+        {nearbyHospitals.length > 0 && (
           <div className="space-y-2.5">
+            <p className="font-bold text-gray-900 dark:text-white text-sm">🏥 Hospitals Near You</p>
             {nearbyHospitals.map((h, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center flex-shrink-0 text-xl">🏥</div>
+              <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-lg flex-shrink-0">🏥</div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{h.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{h.address}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-400 flex items-center gap-1"><FiMapPin size={10} /> {h.distance}</span>
-                    <span className="text-xs text-gray-400 flex items-center gap-1"><FiClock size={10} /> {h.time} drive</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Open</span>
+                  <div className="flex gap-3 mt-1 text-xs text-gray-400">
+                    <span>📍 {h.dist}</span>
+                    <span>🕐 {h.time} drive</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1.5 flex-shrink-0">
-                  <a href={h.mapsUrl} target="_blank" rel="noreferrer"
-                    className="text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-xl flex items-center gap-1 transition-colors">
-                    <FiNavigation size={11} /> Go
-                  </a>
-                  <a href="tel:108"
-                    className="text-xs font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl flex items-center gap-1 transition-colors">
-                    <FiPhone size={11} /> 108
-                  </a>
-                </div>
-              </motion.div>
+                <a href={h.mapsUrl} target="_blank" rel="noreferrer"
+                  className="text-xs font-bold text-white bg-primary-600 px-3 py-1.5 rounded-xl">
+                  Go
+                </a>
+              </div>
             ))}
           </div>
         )}
       </div>
+    );
+  }
 
-      {/* ── Safety Tips ── */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-4">
-        <h3 className="font-bold text-blue-900 dark:text-blue-300 text-sm mb-2">💡 Emergency Tips</h3>
-        <ul className="space-y-1 text-xs text-blue-700 dark:text-blue-400">
-          <li>• Stay calm and speak clearly when calling for help</li>
-          <li>• Give exact location — landmark, street name, floor number</li>
-          <li>• Don't move an injured person unless in immediate danger</li>
-          <li>• Keep the patient warm and conscious if possible</li>
-          <li>• Send someone to wait outside to guide the ambulance</li>
-        </ul>
+  // ── MAIN FORM ─────────────────────────────────────────────
+  return (
+    <div className="max-w-lg mx-auto space-y-5 pb-8">
+
+      {/* Quick dial */}
+      <div className="grid grid-cols-4 gap-2">
+        {EMERGENCY_CONTACTS.map(c => (
+          <a key={c.label} href={`tel:${c.number}`}
+            className={`${c.color} text-white rounded-2xl p-3 text-center active:scale-95 transition-all`}>
+            <p className="font-black text-lg">{c.number}</p>
+            <p className="text-xs opacity-80">{c.label}</p>
+          </a>
+        ))}
       </div>
+
+      {/* GPS Status card */}
+      <div className={`rounded-2xl p-4 border ${
+        step === "detecting"
+          ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+          : gpsCoords
+          ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+          : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+      }`}>
+        {step === "detecting" ? (
+          <div className="flex items-center gap-3">
+            <FiLoader size={22} className="animate-spin text-yellow-600" />
+            <div>
+              <p className="font-bold text-yellow-800 dark:text-yellow-200">Detecting your location…</p>
+              <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">Please allow location access when prompted</p>
+            </div>
+          </div>
+        ) : gpsCoords ? (
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <FiCheckCircle size={18} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-green-800 dark:text-green-200 text-sm">📍 Location Detected</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    GPS: {gpsCoords.lat.toFixed(4)}, {gpsCoords.lng.toFixed(4)}
+                    {hospitalCount > 0 && <span className="ml-2 font-semibold">· {hospitalCount} hospitals found nearby</span>}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setEditingLocation(!editingLocation)}
+                className="text-xs text-green-700 dark:text-green-300 font-semibold flex items-center gap-1 bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-lg">
+                <FiEdit2 size={11} /> Edit
+              </button>
+            </div>
+            {editingLocation ? (
+              <input
+                type="text"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-green-300 dark:border-green-700 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-400"
+                placeholder="Edit your address…"
+              />
+            ) : (
+              <p className="text-sm text-gray-700 dark:text-slate-300 leading-snug">{location}</p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <FiAlertCircle size={18} className="text-red-600" />
+              <p className="font-bold text-red-800 dark:text-red-200 text-sm">
+                {gpsError || "Location not detected"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                placeholder="Type your full address here…"
+                className="flex-1 px-3 py-2 text-sm border border-red-200 dark:border-red-700 rounded-xl bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+              <button onClick={detectGPS}
+                className="flex items-center gap-1 px-3 py-2 bg-primary-600 text-white text-xs font-bold rounded-xl whitespace-nowrap">
+                <FiNavigation size={12} /> Retry GPS
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Emergency Type */}
+      <div>
+        <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">What is the emergency?</p>
+        <div className="grid grid-cols-3 gap-2">
+          {EMERGENCY_TYPES.map(t => (
+            <button
+              key={t.value}
+              onClick={() => setEmergencyType(t.value)}
+              className={`p-3 rounded-2xl text-center transition-all border-2 ${
+                emergencyType === t.value
+                  ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                  : "border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-red-200"
+              }`}
+            >
+              <span className="text-2xl">{t.icon}</span>
+              <p className={`text-xs font-semibold mt-1 ${
+                emergencyType === t.value ? "text-red-700 dark:text-red-300" : "text-gray-600 dark:text-slate-400"
+              }`}>{t.label}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div>
+        <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 block mb-1.5">
+          Additional info (optional)
+        </label>
+        <textarea
+          rows={2}
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Patient age, floor number, allergies, symptoms…"
+          className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+        />
+      </div>
+
+      {/* How it works */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-3.5 space-y-1.5 text-xs text-blue-700 dark:text-blue-300">
+        <p className="font-bold text-sm text-blue-900 dark:text-blue-200">📡 What happens when you press SOS:</p>
+        <p>1️⃣ Your GPS location is sent to our system</p>
+        <p>2️⃣ <strong>Nearest registered hospitals</strong> get an instant alert on their dashboard</p>
+        <p>3️⃣ Hospital sees your location on Google Maps and dispatches ambulance</p>
+        <p>4️⃣ You get notified when ambulance is on its way</p>
+        <p>5️⃣ <strong>108 is auto-dialed</strong> on your phone as backup</p>
+      </div>
+
+      {/* BIG SOS BUTTON */}
+      <motion.button
+        onClick={handleSOS}
+        disabled={step === "submitting" || step === "detecting" || !location.trim()}
+        whileTap={{ scale: 0.96 }}
+        className="w-full py-6 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-2xl rounded-3xl transition-colors shadow-2xl shadow-red-500/40 flex items-center justify-center gap-3"
+      >
+        {step === "submitting" ? (
+          <><FiLoader size={28} className="animate-spin" /> Alerting Hospitals…</>
+        ) : step === "detecting" ? (
+          <><FiLoader size={28} className="animate-spin" /> Getting Location…</>
+        ) : (
+          <><FiTruck size={28} /> 🚨 SOS — Send Emergency Alert</>
+        )}
+      </motion.button>
+      <p className="text-center text-xs text-gray-400 dark:text-slate-500 -mt-2">
+        Alerts nearest hospitals + dials 108 automatically
+      </p>
+
+      {/* Nearby hospitals preview */}
+      {nearbyHospitals.length > 0 && (
+        <div className="space-y-2">
+          <p className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+            🏥 Hospitals Near You
+            <span className="text-xs font-normal text-gray-400">({nearbyHospitals.length} found)</span>
+          </p>
+          {nearbyHospitals.map((h, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-lg flex-shrink-0">🏥</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{h.name}</p>
+                <p className="text-xs text-gray-400 truncate">{h.address}</p>
+                <div className="flex gap-3 mt-1 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><FiMapPin size={10} /> {h.dist}</span>
+                  <span className="flex items-center gap-1"><FiClock size={10} /> {h.time} drive</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <a href={h.mapsUrl} target="_blank" rel="noreferrer"
+                  className="text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 px-3 py-1.5 rounded-xl transition-colors">
+                  <FiNavigation size={11} className="inline mr-1" />Go
+                </a>
+                <a href="tel:108"
+                  className="text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-colors text-center">
+                  108
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

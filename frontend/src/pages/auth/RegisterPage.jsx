@@ -42,10 +42,12 @@ export default function RegisterPage() {
   const [showPass,      setShowPass]      = useState(false);
   const [loading,       setLoading]       = useState(false);
   const [selectedRole,  setSelectedRole]  = useState("patient");
+  const [hospitalGps,   setHospitalGps]   = useState(null);
+  const [gpsLoading,    setGpsLoading]    = useState(false);
   const navigate  = useNavigate();
   const { setAuth } = useAuthStore();
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, getValues, setValue, formState: { errors } } = useForm({
     defaultValues: { role: "patient", hospitalType: "government" },
   });
 
@@ -71,6 +73,10 @@ export default function RegisterPage() {
         payload.pincode            = data.pincode;
         payload.emergencyPhone     = data.emergencyPhone || data.phone;
         payload.hospitalType       = data.hospitalType;
+        // Include GPS if captured
+        if (hospitalGps) {
+          payload.location = hospitalGps;
+        }
       }
 
       // Doctor-specific fields
@@ -334,6 +340,52 @@ export default function RegisterPage() {
                     className="input"
                   />
                   <p className="text-xs text-gray-400 mt-1">This number is shown to patients calling for help</p>
+                </div>
+
+                {/* GPS Location */}
+                <div>
+                  <label className="label flex items-center justify-between">
+                    <span>Hospital GPS Location</span>
+                    <button type="button"
+                      onClick={async () => {
+                        if (!navigator.geolocation) { alert("GPS not supported"); return; }
+                        setGpsLoading(true);
+                        navigator.geolocation.getCurrentPosition(
+                          async (pos) => {
+                            const { latitude: lat, longitude: lng } = pos.coords;
+                            setHospitalGps({ lat, lng });
+                            // Reverse geocode to fill city/state
+                            try {
+                              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+                              const data = await res.json();
+                              const addr = data.address;
+                              if (addr.city || addr.town || addr.village) {
+                                setValue("city",  addr.city || addr.town || addr.village);
+                              }
+                              if (addr.state) setValue("state", addr.state);
+                              if (addr.postcode) setValue("pincode", addr.postcode);
+                            } catch {}
+                            setGpsLoading(false);
+                          },
+                          () => setGpsLoading(false),
+                          { enableHighAccuracy: true, timeout: 10000 }
+                        );
+                      }}
+                      className="text-xs text-primary-600 font-semibold hover:underline flex items-center gap-1"
+                    >
+                      {gpsLoading ? "⏳ Detecting..." : "📍 Detect my location"}
+                    </button>
+                  </label>
+                  {hospitalGps ? (
+                    <p className="text-xs text-green-600 font-semibold bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                      ✅ GPS captured: {hospitalGps.lat.toFixed(5)}, {hospitalGps.lng.toFixed(5)}
+                      <br/><span className="text-gray-500">Emergency requests will be routed to your hospital based on proximity</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                      ⚠️ GPS not set — click "Detect my location" to enable proximity-based routing
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>

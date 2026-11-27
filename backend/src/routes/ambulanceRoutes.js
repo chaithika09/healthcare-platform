@@ -5,8 +5,20 @@ const { authenticate, authorize } = require("../middleware/auth");
 const AmbulanceRequest = require("../models/AmbulanceRequest");
 const Notification     = require("../models/Notification");
 const User             = require("../models/User");
+const Hospital         = require("../models/Hospital");
 const logger           = require("../utils/logger");
 const { broadcastEmergency, sendAmbulanceUpdate, sendNotification } = require("../sockets/socketHandler");
+
+// ── Haversine distance (km) between two GPS points ────────────
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R    = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a    = Math.sin(dLat/2) * Math.sin(dLat/2)
+             + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180)
+             * Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
 // ── Email transporter ─────────────────────────────────────────
 const transporter = nodemailer.createTransport({
@@ -119,45 +131,77 @@ router.post("/request", authenticate, async (req, res, next) => {
       createdAt:     request.createdAt,
     });
 
-    // 3. Create in-app Notification + send email to ALL registered hospitals (non-blocking)
+    // 3. Find nearest hospitals, sort by distance, notify closest 5 first
     User.find({ role: { $in: ["admin", "hospital"] } })
-      .select("_id email name")
+      .select("_id email name role")
       .lean()
       .then(async (recipients) => {
-        // In-app notifications
-        const notifs = recipients.map((r) => ({
+
+        const hospitalUsers = recipients.filter(r => r.role === "hospital");
+        const adminUsers    = recipients.filter(r => r.role === "admin");
+        let sortedHospitals = hospitalUsers;
+
+        // Sort hospitals by distance if patient GPS available
+        if (gpsCoords?.lat && gpsCoords?.lng) {
+          const profiles = await Hospital.find({
+            user: { $in: hospitalUsers.map(h => h._id) },
+          }).select("user location hospitalName city").lean();
+
+          const profileMap = {};
+          profiles.forEach(p => { profileMap[p.user.toString()] = p; });
+
+          sortedHospitals = hospitalUsers.map(h => {
+            const p      = profileMap[h._id.toString()];
+            const hasGps = p?.location?.lat && p?.location?.lng;
+            const dist   = hasGps
+              ? haversineKm(gpsCoords.lat, gpsCoords.lng, p.location.lat, p.location.lng)
+              : 999999;
+            return { ...h, distanceKm: dist, hospitalName: p?.hospitalName };
+          }).sort((a, b) => a.distanceKm - b.distanceKm);
+
+          sortedHospitals.forEach(h =>
+            logger.info(`  Hospital "${h.hospitalName || h.name}": ${h.distanceKm < 999999 ? h.distanceKm.toFixed(1) + " km" : "GPS not set"}`)
+          );
+        }
+
+        // Notify nearest 5 hospitals + all admins
+        const notifyList = [...sortedHospitals.slice(0, 5), ...adminUsers];
+
+        // In-app notifications (include distance in message)
+        const notifs = notifyList.map(r => ({
           recipient: r._id,
           type:      "alert",
           title:     `🚨 Ambulance Request — ${request.emergencyType}`,
-          message:   `${req.user.name} needs emergency help at: ${location.trim().slice(0, 80)}`,
-          data:      { requestId: request._id, mapsLink },
+          message:   r.distanceKm !== undefined && r.distanceKm < 999999
+            ? `${req.user.name} needs help — ${r.distanceKm.toFixed(1)} km away at: ${location.trim().slice(0, 60)}`
+            : `${req.user.name} needs emergency help at: ${location.trim().slice(0, 80)}`,
+          data: { requestId: request._id, mapsLink, distanceKm: r.distanceKm },
         }));
         if (notifs.length > 0) {
           const created = await Notification.insertMany(notifs);
-          created.forEach((n) => sendNotification(n.recipient.toString(), n));
+          created.forEach(n => sendNotification(n.recipient.toString(), n));
         }
 
-        // Send email to EVERY registered hospital + admin
+        // Send email to nearest hospitals + admins
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
           const { subject, html } = buildEmergencyEmail(request, mapsLink);
-          const hospitalEmails = recipients.map((r) => r.email).filter(Boolean);
-          // Always include the fixed emergency email too
-          if (process.env.EMERGENCY_EMAIL && !hospitalEmails.includes(process.env.EMERGENCY_EMAIL)) {
-            hospitalEmails.push(process.env.EMERGENCY_EMAIL);
+          const emailList = notifyList.map(r => r.email).filter(Boolean);
+          if (process.env.EMERGENCY_EMAIL && !emailList.includes(process.env.EMERGENCY_EMAIL)) {
+            emailList.push(process.env.EMERGENCY_EMAIL);
           }
-          if (hospitalEmails.length > 0) {
+          if (emailList.length > 0) {
             transporter.sendMail({
-              from:    `"MedIQ Emergency 🚑" <${process.env.SMTP_USER}>`,
-              to:      hospitalEmails.join(","),
+              from: `"MedIQ Emergency 🚑" <${process.env.SMTP_USER}>`,
+              to:   emailList.join(","),
               subject,
               html,
             })
-              .then(() => logger.info(`Emergency email sent to ${hospitalEmails.length} recipient(s): ${hospitalEmails.join(", ")}`))
-              .catch((e) => logger.error("Emergency email failed:", e.message));
+              .then(() => logger.info(`Emergency email sent to ${emailList.length} recipient(s)`))
+              .catch(e  => logger.error("Emergency email failed:", e.message));
           }
         }
       })
-      .catch((e) => logger.error("Notification/email error:", e.message));
+      .catch(e => logger.error("Proximity notification error:", e.message));
 
     logger.info(`Ambulance request created: ${request._id} by ${req.user.email}`);
 

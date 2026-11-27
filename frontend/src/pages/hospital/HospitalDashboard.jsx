@@ -17,6 +17,16 @@ const getSocketUrl = () => {
   return "http://localhost:5000";
 };
 
+// Haversine distance in km
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R    = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a    = Math.sin(dLat/2) ** 2
+             + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 const STATUS_CFG = {
   pending:    { bg: "bg-red-50 dark:bg-red-900/20",     text: "text-red-600",    dot: "bg-red-500",    label: "Pending"    },
   dispatched: { bg: "bg-orange-50 dark:bg-orange-900/20", text: "text-orange-600", dot: "bg-orange-500", label: "Dispatched" },
@@ -305,6 +315,12 @@ export default function HospitalDashboard() {
                             <span className="flex items-center gap-1.5">
                               <FiClock size={13} /> {new Date(req.createdAt).toLocaleString("en-IN")}
                             </span>
+                            {/* Distance from THIS hospital to patient */}
+                            {hospital?.location?.lat && req.gpsCoords?.lat && (
+                              <span className="flex items-center gap-1.5 font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded-full text-xs">
+                                📍 {distanceKm(hospital.location.lat, hospital.location.lng, req.gpsCoords.lat, req.gpsCoords.lng).toFixed(1)} km away
+                              </span>
+                            )}
                           </div>
 
                           {req.notes && (
@@ -319,7 +335,6 @@ export default function HospitalDashboard() {
                               🏥 Claimed by: {req.respondedByName}
                             </p>
                           )}
-
                           {/* Action Buttons */}
                           <div className="flex flex-wrap gap-2 mt-4">
                             <a href={maps} target="_blank" rel="noreferrer"
